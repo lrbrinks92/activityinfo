@@ -117,7 +117,7 @@ public class UpdateFormClassHandler implements CommandHandler<UpdateFormClass> {
      */
     private void syncEntities(Activity activity, FormClass formClass) {
 
-        activity.setName(formClass.getLabel());
+        activity.setName(truncate(formClass.getLabel(), 255));
 
         List<FormFieldEntity> fields = new ArrayList<>();
         fields.addAll(activity.getIndicators());
@@ -244,7 +244,7 @@ public class UpdateFormClassHandler implements CommandHandler<UpdateFormClass> {
     }
 
     private void updateAttributeGroupProperties(AttributeGroup group, FormField field, int sortOrder) {
-        group.setName(truncate(field.getLabel(), 255));
+        group.setName(truncate(field.getLabel(), 191));
         group.setMandatory(field.isRequired());
         group.setMultipleAllowed(((EnumType) field.getType()).getCardinality() == Cardinality.MULTIPLE);
         group.setSortOrder(sortOrder);
@@ -270,7 +270,7 @@ public class UpdateFormClassHandler implements CommandHandler<UpdateFormClass> {
                 group.getAttributes().add(attribute);
             } else {
                 // update properties
-                attribute.setName(item.getLabel());
+                attribute.setName(truncate(item.getLabel(), 255));
                 attribute.setSortOrder(sortOrder);
             }
             sortOrder++;
