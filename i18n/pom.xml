@@ -43,16 +43,22 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.activityinfo</groupId>
-        <artifactId>activityinfo-i18n-maven-plugin</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <groupId>com.bedatadriven</groupId>
+        <artifactId>translations-maven-plugin</artifactId>
+        <version>1.0-SNAPSHOT</version>
         <configuration>
+          <translationSource implementation="com.bedatadriven.translations.PoEditorSource">
+            <projectId>26801</projectId>
+            <apiToken>${po.editor.api.token}</apiToken>
+          </translationSource>
           <resourceClasses>
             <resourceClass>org.activityinfo.i18n.shared.UiConstants</resourceClass>
+            <resourceClass>org.activityinfo.i18n.shared.UiMessages</resourceClass>
           </resourceClasses>
           <languages>
-            <language>fr</language>
             <language>en</language>
+            <language>fr</language>
+            <language>es</language>
           </languages>
         </configuration>
       </plugin>
