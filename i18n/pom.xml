@@ -61,6 +61,15 @@
             <language>es</language>
           </languages>
         </configuration>
+        <executions>
+          <execution>
+            <id>check-translations</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

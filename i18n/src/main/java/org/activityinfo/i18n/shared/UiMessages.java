@@ -73,8 +73,8 @@ public interface UiMessages extends com.google.gwt.i18n.client.Messages {
      *
      * @return translated "Quarter"
      */
-    @DefaultMessage("Quarter")
-    String quarter(int year, int quarter);
+    @DefaultMessage("{0,number,#}Q{1}")
+    String quarterName(int year, int quarter);
 
     /**
      * Translated "{0,number,#}W{1}"
@@ -82,15 +82,15 @@ public interface UiMessages extends com.google.gwt.i18n.client.Messages {
      * @return translated "{0,number,#}W{1}"
      */
     @DefaultMessage("{0,number,#}W{1}")
-    String week(int year, int week);
+    String weekName(int year, int week);
 
     /**
      * Translated "Month"
      *
      * @return translated "Month"
      */
-    @DefaultMessage("Month")
-    String month(Date month);
+    @DefaultMessage("{0,date,MMM}")
+    String monthName(Date month);
 
     /**
      * Translated "{0} most recent added sites for search query"
@@ -162,6 +162,7 @@ public interface UiMessages extends com.google.gwt.i18n.client.Messages {
      * @return translated "Use site"
      */
     @DefaultMessage("Use site")
+    @Key("useNamedLocation")
     String useLocation(String name);
 
     /**
@@ -553,8 +554,8 @@ public interface UiMessages extends com.google.gwt.i18n.client.Messages {
      *
      * @return translated "Do you want to retry deletion?"
      */
-    @DefaultMessage("Do you want to retry deletion?")
-    String retryDeletion(int size, String formClassLabel);
+    @DefaultMessage("Do you want to retry deleting {0} row(s) from {1}?")
+    String retryDeletingRowRange(int size, String formClassLabel);
 
     /**
      * Translated "Deleting {0} row(s) from {1}..."
@@ -569,7 +570,8 @@ public interface UiMessages extends com.google.gwt.i18n.client.Messages {
      *
      * @return translated "Add new site"
      */
-    @DefaultMessage("Add new site")
+    @DefaultMessage("Add {0}")
+    @Key("addNamedThing")
     String addLocation(String locationTypeName);
 
     /**
@@ -641,8 +643,8 @@ public interface UiMessages extends com.google.gwt.i18n.client.Messages {
      *
      * @return translated "Please provide valid comma separated text"
      */
-    @DefaultMessage("Please provide valid comma separated text")
-    String pleaseProvideCommaSeparatedText(int rowNumber);
+    @DefaultMessage("Please provide valid comma separated text. Column count does not match in row number {0}.")
+    String columnCountMismatchAtRow(int rowNumber);
 
     /**
      * Translated "Exceeds maximum length of {0} characters."

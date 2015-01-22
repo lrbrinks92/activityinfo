@@ -74,7 +74,7 @@ public class DeleteAction implements ConfirmDialog.Action {
     public ConfirmDialog.Messages getFailureMessages() {
         return new ConfirmDialog.Messages(
                 I18N.CONSTANTS.deletionFailed(),
-                I18N.MESSAGES.retryDeletion(selection.size(), formClassLabel),
+                I18N.MESSAGES.retryDeletingRowRange(selection.size(), formClassLabel),
                 I18N.CONSTANTS.retry());
     }
 

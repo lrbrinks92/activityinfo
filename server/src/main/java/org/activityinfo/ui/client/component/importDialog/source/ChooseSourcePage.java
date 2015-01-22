@@ -73,7 +73,7 @@ public class ChooseSourcePage extends ResizeComposite implements ImportPage {
 
     private String errorMessage(PastedTable pastedTable) {
         if (pastedTable != null && pastedTable.getFirstInvalidRow() > 0) {
-            return I18N.MESSAGES.pleaseProvideCommaSeparatedText(pastedTable.getFirstInvalidRow());
+            return I18N.MESSAGES.columnCountMismatchAtRow(pastedTable.getFirstInvalidRow());
         }
         return I18N.CONSTANTS.pleaseProvideCommaSeparatedText();
     }
