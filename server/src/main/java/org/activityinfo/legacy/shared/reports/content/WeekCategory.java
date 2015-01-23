@@ -95,6 +95,6 @@ public class WeekCategory implements DimensionCategory {
 
     @Override
     public String getLabel() {
-        return I18N.MESSAGES.weekName(year, week);
+        return I18N.CALENDAR.weekName(year, week);
     }
 }

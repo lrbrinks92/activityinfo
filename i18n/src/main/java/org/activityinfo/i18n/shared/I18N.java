@@ -35,6 +35,7 @@ public final class I18N {
 
     public static final UiConstants CONSTANTS;
     public static final UiMessages MESSAGES;
+    public static final LocalCalendar CALENDAR = new LocalCalendar();
 
     static {
         if (GWT.isClient()) {

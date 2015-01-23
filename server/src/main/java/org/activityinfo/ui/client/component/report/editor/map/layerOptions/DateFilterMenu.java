@@ -102,7 +102,7 @@ public class DateFilterMenu extends Menu {
         DateWrapper from = new DateWrapper(year, quarter * 3, 1);
         DateWrapper to = from.addMonths(3).addDays(-1);
 
-        addFixedRange(I18N.MESSAGES.quarterName(year, (quarter + 1)), new DateRange(from.asDate(), to.asDate()));
+        addFixedRange(I18N.CALENDAR.yearQuarterName(year, (quarter + 1)), new DateRange(from.asDate(), to.asDate()));
     }
 
     private void addFixedRange(String label, final DateRange dateRange) {

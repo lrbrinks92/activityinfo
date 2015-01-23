@@ -28,10 +28,12 @@
   <!-- work-around to eliminate "default locale" permutations -->
   <!-- http://www.google.com/url?sa=D&q=http://code.google.com/p/google-web-toolkit/issues/detail%3Fid%3D5769%23c1 -->
 
-  <extend-property name="locale" values="en,fr"/>
+  <extend-property name="locale" values="en,fr,es"/>
   <set-property-fallback name="locale" value="en"/>
 
-  <set-property name="locale" value="en"/>
+  <collapse-property name="locale" values="*" />
+  <collapse-property name="user.agent" values="ie*"/>
+
   <set-property name="gwt.logging.logLevel" value="SEVERE" />
 
   <entry-point class="org.activityinfo.ui.client.ActivityInfoEntryPoint"/>

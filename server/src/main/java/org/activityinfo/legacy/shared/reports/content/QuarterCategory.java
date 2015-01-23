@@ -93,6 +93,6 @@ public class QuarterCategory implements DimensionCategory {
 
     @Override
     public String getLabel() {
-        return I18N.MESSAGES.quarterName(year, quarter);
+        return I18N.CALENDAR.yearQuarterName(year, quarter);
     }
 }

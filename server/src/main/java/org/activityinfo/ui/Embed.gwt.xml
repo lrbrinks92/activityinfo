@@ -23,6 +23,8 @@
   <inherits name='com.google.gwt.user.User'/>
   <inherits name="org.activityinfo.ui.ActivityInfoCore"/>
 
+  <set-property name="locale" value="en"/>
+
   <entry-point class="org.activityinfo.ui.client.EmbedEntryPoint"/>
 
   <source path='client'/>

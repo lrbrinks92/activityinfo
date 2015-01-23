@@ -69,30 +69,6 @@ public interface UiMessages extends com.google.gwt.i18n.client.Messages {
     String projectsForDatabase(String arg0);
 
     /**
-     * Translated "Quarter"
-     *
-     * @return translated "Quarter"
-     */
-    @DefaultMessage("{0,number,#}Q{1}")
-    String quarterName(int year, int quarter);
-
-    /**
-     * Translated "{0,number,#}W{1}"
-     *
-     * @return translated "{0,number,#}W{1}"
-     */
-    @DefaultMessage("{0,number,#}W{1}")
-    String weekName(int year, int week);
-
-    /**
-     * Translated "Month"
-     *
-     * @return translated "Month"
-     */
-    @DefaultMessage("{0,date,MMM}")
-    String monthName(Date month);
-
-    /**
      * Translated "{0} most recent added sites for search query"
      *
      * @return translated "{0} most recent added sites for search query"
@@ -161,7 +137,7 @@ public interface UiMessages extends com.google.gwt.i18n.client.Messages {
      *
      * @return translated "Use site"
      */
-    @DefaultMessage("Use site")
+    @DefaultMessage("Use site ''{0}''")
     @Key("useNamedLocation")
     String useLocation(String name);
 
