@@ -31,6 +31,7 @@ import org.activityinfo.server.branding.BrandingModule;
 import org.activityinfo.server.database.ServerDatabaseModule;
 import org.activityinfo.server.database.hibernate.HibernateModule;
 import org.activityinfo.server.digest.DigestModule;
+import org.activityinfo.server.endpoint.akvo.flow.AkvoFlowModule;
 import org.activityinfo.server.endpoint.content.ContentModule;
 import org.activityinfo.server.endpoint.export.ExportModule;
 import org.activityinfo.server.endpoint.gwtrpc.GwtRpcModule;
@@ -96,6 +97,7 @@ public class StartupListener extends GuiceServletContextListener {
                 new JaxRsModule(),
                 new RestApiModule(),
                 new OdkModule(),
+                new AkvoFlowModule(),
                 new GcsBlobFieldStorageServiceModule());
     }
 
