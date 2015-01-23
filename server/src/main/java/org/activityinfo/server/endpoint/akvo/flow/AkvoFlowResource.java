@@ -50,7 +50,7 @@ public class AkvoFlowResource {
     public AkvoFlowResource(ResourceLocatorSync resourceLocatorSync, DispatcherSync dispatcherSync) {
         locator = resourceLocatorSync;
         dispatcher = dispatcherSync;
-        feedService = new AkvoFlowFeed(CuidAdapter.activityFormClass(1187), resourceLocatorSync);
+        feedService = new AkvoFlowFeed(CuidAdapter.activityFormClass(13365), resourceLocatorSync);
     }
 
     @POST
