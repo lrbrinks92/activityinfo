@@ -58,7 +58,7 @@ public class AkvoFlowFeed implements FeedService {
             formInstance.set(CuidAdapter.field(formClassId, CuidAdapter.END_DATE_FIELD), end);
 
             for (QuestionAnswer questionAnswer : akvoFlow.getQuestionAnswers(instance.keyId)) {
-                FormField formField = formFields.get("Q" + questionAnswer.textualQuestionId.replace("-", "_"));
+                FormField formField = formFields.get(questionAnswer.textualQuestionId);
 
                 for (EnumItem enumItem : ((EnumType) formField.getType()).getValues()) {
                     if (enumItem.getLabel().equals(questionAnswer.value)) {
