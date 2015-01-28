@@ -15,6 +15,10 @@ import org.activityinfo.service.feed.FeedService;
 import java.util.Date;
 import java.util.Map;
 
+import static com.google.appengine.api.taskqueue.QueueFactory.getDefaultQueue;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
+import static org.activityinfo.model.resource.Resources.toJson;
+
 public class AkvoFlowFeed implements FeedService {
     final private ResourceId parameterFormClassId;
     final private ResourceLocatorSync locator;
@@ -67,7 +71,7 @@ public class AkvoFlowFeed implements FeedService {
                 }
             }
 
-            locator.persist(formInstance);
+            getDefaultQueue().add(withUrl("/AkvoFlow/worker").payload(toJson(formInstance.asResource())));
         }
 
         locator.persist(parameters);
