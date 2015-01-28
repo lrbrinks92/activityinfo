@@ -101,7 +101,7 @@ public class AuthenticatedUser {
     }
 
     public boolean isAnonymous() {
-        return AnonymousUser.AUTHTOKEN.equals(authToken);
+        return isAnonymous(userId);
     }
 
     public static boolean isAnonymous(int userId) {
@@ -109,7 +109,7 @@ public class AuthenticatedUser {
     }
 
     public static boolean isAnonymous(AuthenticatedUser user) {
-        return user == null || ANONYMOUS_ID == user.getId();
+        return user == null || user.isAnonymous();
     }
 
 }
