@@ -1,5 +1,6 @@
 package org.activityinfo.server.endpoint.akvo.flow;
 
+import com.google.api.client.util.Lists;
 import com.google.api.client.util.Maps;
 import org.activityinfo.model.form.FormClass;
 import org.activityinfo.model.form.FormField;
@@ -13,6 +14,7 @@ import org.activityinfo.server.command.ResourceLocatorSync;
 import org.activityinfo.service.feed.FeedService;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.appengine.api.taskqueue.QueueFactory.getDefaultQueue;
@@ -41,6 +43,7 @@ public class AkvoFlowFeed implements FeedService {
     }
 
     private void updateFeed(AkvoFlow akvoFlow, FormClass formClass, FormInstance parameters) {
+        List<FormInstance> formInstances = Lists.newArrayList();
         ResourceId formClassId = formClass.getId(), timestampId = null;
         Map<String, FormField> formFields = Maps.newHashMap();
 
@@ -69,6 +72,8 @@ public class AkvoFlowFeed implements FeedService {
             for (QuestionAnswer questionAnswer : akvoFlow.getQuestionAnswers(instance.keyId)) {
                 FormField formField = formFields.get(questionAnswer.textualQuestionId);
 
+                if (formField == null) throw new IllegalStateException("Can't get " + questionAnswer.textualQuestionId);
+
                 for (EnumItem enumItem : ((EnumType) formField.getType()).getValues()) {
                     if (enumItem.getLabel().equals(questionAnswer.value)) {
                         formInstance.set(formField.getId(), new EnumValue(enumItem.getId()));
@@ -76,6 +81,10 @@ public class AkvoFlowFeed implements FeedService {
                 }
             }
 
+            formInstances.add(formInstance);
+        }
+
+        for (FormInstance formInstance : formInstances) {
             getDefaultQueue().add(withUrl("/tasks/persist")
                     .param("resource", toJson(formInstance.asResource()))
                     .param("userId", String.valueOf(CuidAdapter.getLegacyIdFromCuid(formClass.getOwnerId()))));
