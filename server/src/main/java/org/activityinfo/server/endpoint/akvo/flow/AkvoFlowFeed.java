@@ -71,7 +71,7 @@ public class AkvoFlowFeed implements FeedService {
                 }
             }
 
-            getDefaultQueue().add(withUrl("/AkvoFlow/worker").payload(toJson(formInstance.asResource())));
+            getDefaultQueue().add(withUrl("/tasks/worker").payload(toJson(formInstance.asResource())));
         }
 
         locator.persist(parameters);

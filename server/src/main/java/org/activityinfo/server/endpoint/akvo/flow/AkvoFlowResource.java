@@ -11,10 +11,8 @@ import org.activityinfo.legacy.shared.model.LocationTypeDTO;
 import org.activityinfo.legacy.shared.model.UserDatabaseDTO;
 import org.activityinfo.model.form.FormClass;
 import org.activityinfo.model.form.FormField;
-import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.legacy.CuidAdapter;
 import org.activityinfo.model.resource.ResourceId;
-import org.activityinfo.model.resource.Resources;
 import org.activityinfo.model.type.enumerated.EnumItem;
 import org.activityinfo.model.type.enumerated.EnumType;
 import org.activityinfo.server.command.DispatcherSync;
@@ -145,11 +143,5 @@ public class AkvoFlowResource {
     public void importFormClass(@FormParam("formClassId") ResourceId formClassId,
                                 @FormParam("parameterId") ResourceId parameterId) {
         feedService.updateFeed(locator.getFormClass(formClassId), locator.getFormInstance(parameterId));
-    }
-
-    @POST
-    @Path("/worker")
-    public void persist(String resource) {
-        locator.persist(FormInstance.fromResource(Resources.fromJson(resource)));
     }
 }
