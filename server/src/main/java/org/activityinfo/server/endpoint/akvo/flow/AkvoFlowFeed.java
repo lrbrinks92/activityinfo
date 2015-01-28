@@ -35,9 +35,14 @@ public class AkvoFlowFeed implements FeedService {
 
     @Override
     public void updateFeed(FormClass formClass, FormInstance parameters) {
+        try (AkvoFlow akvoFlow = initialize(parameters)) {
+            updateFeed(akvoFlow, formClass, parameters);
+        }
+    }
+
+    private void updateFeed(AkvoFlow akvoFlow, FormClass formClass, FormInstance parameters) {
         ResourceId formClassId = formClass.getId(), timestampId = null;
         Map<String, FormField> formFields = Maps.newHashMap();
-        AkvoFlow akvoFlow = initialize(parameters);
 
         for (FormField formField : getParameterFormClass().getFields()) {
             if ("timestamp".equals(formField.getCode()) && parameters.getString(formField.getId()) != null) {

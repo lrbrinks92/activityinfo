@@ -16,15 +16,18 @@ import java.util.List;
 
 import static com.google.common.base.Optional.of;
 
-public class AkvoFlow {
+final public class AkvoFlow implements AutoCloseable {
     static final private String ALGORITHM = "HmacSHA1";
 
+    final private Client client;
     final private String server;
     final private String access;
     final private Mac mac;
     final private int survey;
 
     public AkvoFlow(String server, String access, String secret, String survey) {
+        client = Client.create();
+
         try {
             this.server = server;
             this.access = access;
@@ -71,8 +74,6 @@ public class AkvoFlow {
     }
 
     private <T> T get(String location, Optional<String> parameters, Class<T> type) {
-        final Client client = Client.create();
-
         try {
             String resource = "/api/v1/" + location;
             String url = "http://" + server + resource;
@@ -89,8 +90,11 @@ public class AkvoFlow {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            client.destroy();
         }
+    }
+
+    @Override
+    public void close() {
+        client.destroy();
     }
 }
