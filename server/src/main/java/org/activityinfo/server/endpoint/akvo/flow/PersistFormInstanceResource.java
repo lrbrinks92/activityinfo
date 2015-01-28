@@ -3,13 +3,16 @@ package org.activityinfo.server.endpoint.akvo.flow;
 import com.google.inject.Inject;
 import org.activityinfo.model.auth.AuthenticatedUser;
 import org.activityinfo.model.form.FormInstance;
-import org.activityinfo.model.legacy.CuidAdapter;
 import org.activityinfo.model.resource.Resources;
 import org.activityinfo.server.authentication.ServerSideAuthProvider;
 import org.activityinfo.server.command.ResourceLocatorSync;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+
+import static javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED;
 
 @Path("/tasks/persist")
 public class PersistFormInstanceResource {
@@ -24,11 +27,10 @@ public class PersistFormInstanceResource {
     }
 
     @POST
-    public void persist(String resource) {
-        FormInstance formInstance = FormInstance.fromResource(Resources.fromJson(resource));
-        int userId = CuidAdapter.getLegacyIdFromCuid(locator.getFormClass(formInstance.getClassId()).getOwnerId());
+    @Consumes(APPLICATION_FORM_URLENCODED)
+    public void persist(@FormParam("resource") String resource, @FormParam("userId") int userId) {
         AuthenticatedUser authenticatedUser = authProvider.get();
         authProvider.set(new AuthenticatedUser(authenticatedUser.getAuthToken(), userId, authenticatedUser.getEmail()));
-        locator.persist(formInstance);
+        locator.persist(FormInstance.fromResource(Resources.fromJson(resource)));
     }
 }

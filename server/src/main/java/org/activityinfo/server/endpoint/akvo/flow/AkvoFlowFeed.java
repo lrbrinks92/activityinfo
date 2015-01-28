@@ -71,7 +71,9 @@ public class AkvoFlowFeed implements FeedService {
                 }
             }
 
-            getDefaultQueue().add(withUrl("/tasks/persist").payload(toJson(formInstance.asResource())));
+            getDefaultQueue().add(withUrl("/tasks/persist")
+                    .param("resource", toJson(formInstance.asResource()))
+                    .param("userId", String.valueOf(CuidAdapter.getLegacyIdFromCuid(formClass.getOwnerId()))));
         }
 
         locator.persist(parameters);
