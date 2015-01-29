@@ -92,6 +92,8 @@ public class AkvoFlowFeed implements FeedService {
             for (QuestionAnswer questionAnswer : akvoFlow.getQuestionAnswers(Integer.parseInt(id, 10))) {
                 FormField formField = formFields.get(questionAnswer.textualQuestionId);
 
+                if (formField == null) throw new IllegalStateException("Can't get " + questionAnswer.textualQuestionId);
+
                 for (EnumItem enumItem : ((EnumType) formField.getType()).getValues()) {
                     if (enumItem.getLabel().equals(questionAnswer.value)) {
                         formInstance.set(formField.getId(), new EnumValue(enumItem.getId()));
