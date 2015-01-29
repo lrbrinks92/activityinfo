@@ -128,10 +128,8 @@ public class Resources {
         return record;
     }
 
-    public static String toJson(Resource resource) {
-        JsonObject resourceObject = toJsonObject(resource);
-
-        return resourceObject.toString();
+    public static String toJson(IsResource resource) {
+        return toJsonObject(resource.asResource()).toString();
     }
 
     public static JsonObject toJsonObject(Resource resource) {

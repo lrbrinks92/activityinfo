@@ -16,7 +16,7 @@ public class UpdateFormClass implements Command<VoidResult> {
 
     public UpdateFormClass(FormClass formClass) {
         this.formClassId = formClass.getId().asString();
-        this.json = Resources.toJson(formClass.asResource());
+        this.json = Resources.toJson(formClass);
     }
 
     public String getFormClassId() {

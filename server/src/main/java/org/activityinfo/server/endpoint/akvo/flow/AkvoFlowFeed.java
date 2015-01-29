@@ -1,6 +1,12 @@
 package org.activityinfo.server.endpoint.akvo.flow;
 
 import com.google.api.client.util.Maps;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import org.activityinfo.model.form.FormClass;
 import org.activityinfo.model.form.FormField;
 import org.activityinfo.model.form.FormInstance;
@@ -15,7 +21,14 @@ import org.activityinfo.service.feed.FeedService;
 import java.util.Date;
 import java.util.Map;
 
+import static com.google.appengine.api.taskqueue.QueueFactory.getQueue;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
+import static org.activityinfo.model.resource.Resources.toJson;
+
 public class AkvoFlowFeed implements FeedService {
+    static final public String KIND = "AkvoFlowSurveyId";
+    static final private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+
     final private ResourceId parameterFormClassId;
     final private ResourceLocatorSync locator;
 
@@ -31,7 +44,7 @@ public class AkvoFlowFeed implements FeedService {
 
     @Override
     public void updateFeed(FormClass formClass, FormInstance parameters) {
-        ResourceId formClassId = formClass.getId(), timestampId = null;
+        ResourceId timestampId = null;
         Map<String, FormField> formFields = Maps.newHashMap();
         AkvoFlow akvoFlow = initialize(parameters);
 
@@ -50,14 +63,33 @@ public class AkvoFlowFeed implements FeedService {
         }
 
         for (SurveyInstance instance : akvoFlow.getSurveyInstances(parameters, timestampId)) {
+            getQueue("akvo-fetch").add(withUrl("/tasks/fetch")
+                    .param("formClass", toJson(formClass))
+                    .param("parameters", toJson(parameters))
+                    .param("id", String.valueOf(instance.keyId))
+                    .param("startDate", String.valueOf(instance.collectionDate))
+                    .param("endDate", String.valueOf(instance.collectionDate + instance.surveyalTime * 1000L)));
+        }
+
+        locator.persist(parameters);
+    }
+
+    @Override
+    public void fetchInstance(FormClass formClass, FormInstance parameters, String id, long startDate, long endDate) {
+        Key key = KeyFactory.createKey(KIND, id);
+
+        try {
+            datastoreService.get(key);
+        } catch (EntityNotFoundException e) {
+            ResourceId formClassId = formClass.getId();
+            Map<String, FormField> formFields = Maps.newHashMap();
+            AkvoFlow akvoFlow = initialize(parameters);
             FormInstance formInstance = new FormInstance(CuidAdapter.newLegacyFormInstanceId(formClassId), formClassId);
-            Date start = new Date(instance.collectionDate);
-            Date end = new Date(instance.collectionDate + instance.surveyalTime * 1000L);
 
-            formInstance.set(CuidAdapter.field(formClassId, CuidAdapter.START_DATE_FIELD), start);
-            formInstance.set(CuidAdapter.field(formClassId, CuidAdapter.END_DATE_FIELD), end);
+            formInstance.set(CuidAdapter.field(formClassId, CuidAdapter.START_DATE_FIELD), new Date(startDate));
+            formInstance.set(CuidAdapter.field(formClassId, CuidAdapter.END_DATE_FIELD), new Date(endDate));
 
-            for (QuestionAnswer questionAnswer : akvoFlow.getQuestionAnswers(instance.keyId)) {
+            for (QuestionAnswer questionAnswer : akvoFlow.getQuestionAnswers(Integer.parseInt(id, 10))) {
                 FormField formField = formFields.get(questionAnswer.textualQuestionId);
 
                 for (EnumItem enumItem : ((EnumType) formField.getType()).getValues()) {
@@ -67,10 +99,10 @@ public class AkvoFlowFeed implements FeedService {
                 }
             }
 
+            Entity entity = new Entity(key);
             locator.persist(formInstance);
+            datastoreService.put(null, entity);
         }
-
-        locator.persist(parameters);
     }
 
     private AkvoFlow initialize(FormInstance parameters) {

@@ -18,7 +18,6 @@ import org.activityinfo.model.type.enumerated.EnumType;
 import org.activityinfo.server.command.DispatcherSync;
 import org.activityinfo.server.command.ResourceLocatorSync;
 import org.activityinfo.server.endpoint.rest.RootResource;
-import org.activityinfo.service.feed.FeedService;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -32,17 +31,19 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.logging.Logger;
 
+import static com.google.appengine.api.taskqueue.QueueFactory.getQueue;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
 import static java.util.logging.Level.SEVERE;
 import static javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.activityinfo.model.resource.Resources.toJson;
 
 @Path("/AkvoFlow")
 public class AkvoFlowResource {
     private static final Logger LOGGER = Logger.getLogger(AkvoFlowResource.class.getName());
 
-    private final FeedService feedService;
     private final DispatcherSync dispatcher;
     private final ResourceLocatorSync locator;
 
@@ -50,7 +51,6 @@ public class AkvoFlowResource {
     public AkvoFlowResource(ResourceLocatorSync resourceLocatorSync, DispatcherSync dispatcherSync) {
         locator = resourceLocatorSync;
         dispatcher = dispatcherSync;
-        feedService = new AkvoFlowFeed(CuidAdapter.activityFormClass(13365), resourceLocatorSync);
     }
 
     @POST
@@ -142,6 +142,8 @@ public class AkvoFlowResource {
     @Consumes(APPLICATION_FORM_URLENCODED)
     public void importFormClass(@FormParam("formClassId") ResourceId formClassId,
                                 @FormParam("parameterId") ResourceId parameterId) {
-        feedService.updateFeed(locator.getFormClass(formClassId), locator.getFormInstance(parameterId));
+        getQueue("akvo-index").add(withUrl("/tasks/index")
+                .param("formClass", toJson(locator.getFormClass(formClassId)))
+                .param("parameters", toJson(locator.getFormInstance(parameterId))));
     }
 }

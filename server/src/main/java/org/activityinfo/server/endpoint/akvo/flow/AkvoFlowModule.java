@@ -28,5 +28,6 @@ public class AkvoFlowModule extends AbstractRestModule {
     @Override
     protected void configureResources() {
         bindResource(AkvoFlowResource.class, "/AkvoFlow/*");
+        bindResource(AkvoFlowTaskResource.class, "/tasks/*");
     }
 }
