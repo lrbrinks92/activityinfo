@@ -29,8 +29,7 @@ public class PersistFormInstanceResource {
     @POST
     @Consumes(APPLICATION_FORM_URLENCODED)
     public void persist(@FormParam("resource") String resource, @FormParam("userId") int userId) {
-        AuthenticatedUser authenticatedUser = authProvider.get();
-        authProvider.set(new AuthenticatedUser(authenticatedUser.getAuthToken(), userId, authenticatedUser.getEmail()));
+        authProvider.set(new AuthenticatedUser("", userId, "@"));
         locator.persist(FormInstance.fromResource(Resources.fromJson(resource)));
     }
 }
