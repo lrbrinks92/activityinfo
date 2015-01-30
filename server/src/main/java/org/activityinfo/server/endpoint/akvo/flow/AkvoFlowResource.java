@@ -60,7 +60,7 @@ public class AkvoFlowResource {
         final int databaseId;
         final UserDatabaseDTO schema;
         final String table[][], label, description;
-        CSVReader csvReader = new CSVReader(new StringReader(input));
+        final CSVReader csvReader = new CSVReader(new StringReader(input));
 
         try {
             table = (String[][]) csvReader.readAll().toArray(new String[0][0]);

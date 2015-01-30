@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.base.Optional.of;
+import static org.codehaus.jackson.map.DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 public class AkvoFlow {
     static final private String ALGORITHM = "HmacSHA1";
@@ -81,7 +82,7 @@ public class AkvoFlow {
             String signature = Base64.encodeBase64String(mac.doFinal(plaintext.getBytes()));
             WebResource webResource = client.resource(parameters.isPresent() ? url + "?" + parameters.get() : url);
 
-            return new ObjectMapper().readValue(webResource
+            return new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(webResource
                     .header("Date", date)
                     .header("Authorization", String.format("%s:%s", access, signature))
                     .get(String.class), type);
