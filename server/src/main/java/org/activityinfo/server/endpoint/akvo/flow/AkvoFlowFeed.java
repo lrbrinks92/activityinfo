@@ -45,7 +45,6 @@ public class AkvoFlowFeed implements FeedService {
     @Override
     public void updateFeed(FormClass formClass, FormInstance parameters) {
         ResourceId timestampId = null;
-        Map<String, FormField> formFields = Maps.newHashMap();
         AkvoFlow akvoFlow = initialize(parameters);
 
         for (FormField formField : getParameterFormClass().getFields()) {
@@ -56,10 +55,6 @@ public class AkvoFlowFeed implements FeedService {
 
         if (timestampId == null) {
             throw new IllegalStateException("ParameterFormClass is invalid");
-        }
-
-        for (FormField formField : formClass.getFields()) {
-            formFields.put(formField.getCode(), formField);
         }
 
         for (SurveyInstance instance : akvoFlow.getSurveyInstances(parameters, timestampId)) {
@@ -88,6 +83,10 @@ public class AkvoFlowFeed implements FeedService {
 
             formInstance.set(CuidAdapter.field(formClassId, CuidAdapter.START_DATE_FIELD), new Date(startDate));
             formInstance.set(CuidAdapter.field(formClassId, CuidAdapter.END_DATE_FIELD), new Date(endDate));
+
+            for (FormField formField : formClass.getFields()) {
+                formFields.put(formField.getCode(), formField);
+            }
 
             for (QuestionAnswer questionAnswer : akvoFlow.getQuestionAnswers(Integer.parseInt(id, 10))) {
                 FormField formField = formFields.get(questionAnswer.textualQuestionId);
