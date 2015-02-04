@@ -29,6 +29,12 @@
 
     <dependency>
       <groupId>org.activityinfo.io</groupId>
+      <artifactId>akvo-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.activityinfo.io</groupId>
       <artifactId>activityinfo-xform</artifactId>
       <version>${project.version}</version>
     </dependency>

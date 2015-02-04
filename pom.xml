@@ -102,6 +102,7 @@
     <module>server</module>
     <module>i18n</module>
     <module>io/xform</module>
+    <module>io/akvo-api</module>
   </modules>
 
   <dependencies>

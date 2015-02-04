@@ -1,4 +1,4 @@
-package org.activityinfo.server.endpoint.akvo.flow;
+package org.activityinfo.io.akvo.flow;
 
 final public class SurveyInstance {
     static final public class Array {

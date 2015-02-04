@@ -5,6 +5,8 @@ import com.google.api.client.util.Lists;
 import com.google.common.base.Optional;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
+import org.activityinfo.io.akvo.flow.QuestionAnswer;
+import org.activityinfo.io.akvo.flow.SurveyInstance;
 import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.resource.ResourceId;
 import org.codehaus.jackson.map.ObjectMapper;
