@@ -103,6 +103,7 @@
     <module>i18n</module>
     <module>io/xform</module>
     <module>io/akvo-api</module>
+    <module>io/akvo-stub</module>
   </modules>
 
   <dependencies>
