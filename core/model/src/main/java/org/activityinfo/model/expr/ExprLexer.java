@@ -144,12 +144,18 @@ public class ExprLexer extends UnmodifiableIterator<Token> {
         final int currentIndex = currentCharIndex - 1;
         if (c == 't' || c == 'T') {
             String trueLiteral = Boolean.TRUE.toString();
-            String literal = string.substring(currentIndex, currentIndex + trueLiteral.length());
-            return trueLiteral.equalsIgnoreCase(literal);
+            int endIndex = currentIndex + trueLiteral.length();
+            if (endIndex <= string.length()) {
+                String literal = string.substring(currentIndex, endIndex);
+                return trueLiteral.equalsIgnoreCase(literal);
+            }
         } else if (c == 'f' || c == 'F') {
             String falseLiteral = Boolean.FALSE.toString();
-            String literal = string.substring(currentIndex, currentIndex + falseLiteral.length());
-            return falseLiteral.equalsIgnoreCase(literal);
+            int endIndex = currentIndex + falseLiteral.length();
+            if (endIndex <= string.length()) {
+                String literal = string.substring(currentIndex, endIndex);
+                return falseLiteral.equalsIgnoreCase(literal);
+            }
         }
         return false;
     }

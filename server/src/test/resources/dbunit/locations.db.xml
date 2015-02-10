@@ -79,4 +79,9 @@
             name="NFI Distribution" AllowEdit="1" ReportingFrequency="1"
             sortOrder="1"/>
 
+  <location locationId="1" name="Penekusu Kivu" locationTypeId="1" X="1.532" Y="27.323" timeEdited="1"/>
+  <site siteId="1" activityId="1" locationId="1" partnerId="1"
+          Date1="2009-01-01" Date2="2009-01-02" DateCreated="2009-02-01"
+          DateEdited="2009-02-01" timeEdited="3" ProjectId="1" Comments="He said 'booyah'"/>
+
 </dataset>

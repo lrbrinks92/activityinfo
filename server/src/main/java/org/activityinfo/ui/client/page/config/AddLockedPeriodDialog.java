@@ -130,13 +130,8 @@ public class AddLockedPeriodDialog extends FormPanel implements AddLockedPeriodV
 
         radioDatabase = new Radio();
         radioDatabase.setFieldLabel(I18N.CONSTANTS.database());
-        radioDatabase.addListener(Events.Change, new Listener<FieldEvent>() {
-            @Override
-            public void handleEvent(FieldEvent be) {
-
-            }
-        });
         radiogroupContainer.add(radioDatabase);
+
         panelDatabase = new HorizontalPanel();
         panelDatabase.add(labelDatabase);
         panelDatabase.add(radioDatabase);
@@ -188,14 +183,25 @@ public class AddLockedPeriodDialog extends FormPanel implements AddLockedPeriodV
         checkboxEnabled.setFieldLabel(I18N.CONSTANTS.enabledColumn());
         add(checkboxEnabled);
 
+        datefieldToDate = new DateField();
+
         datefieldFromDate = new DateField();
         datefieldFromDate.setFieldLabel(I18N.CONSTANTS.fromDate());
         datefieldFromDate.setAllowBlank(false);
+        datefieldFromDate.setValidator(new Validator() {
+            @Override
+            public String validate(Field<?> field, String value) {
+                if (datefieldFromDate.getValue().after(datefieldToDate.getValue())) {
+                    return I18N.CONSTANTS.fromDateIsBeforeToDate();
+                }
+                return null;
+            }
+        });
         add(datefieldFromDate);
 
-        datefieldToDate = new DateField();
+
         datefieldToDate.setFieldLabel(I18N.CONSTANTS.toDate());
-        datefieldFromDate.setAllowBlank(false);
+        datefieldToDate.setAllowBlank(false);
         add(datefieldToDate);
 
         radiogroupContainer.addListener(Events.Change, new Listener<FieldEvent>() {
@@ -212,7 +218,6 @@ public class AddLockedPeriodDialog extends FormPanel implements AddLockedPeriodV
 
     @Override
     public void initialize() {
-
     }
 
     @Override
@@ -278,7 +283,6 @@ public class AddLockedPeriodDialog extends FormPanel implements AddLockedPeriodV
     @Override
     public HandlerRegistration addStartCreateHandler(org.activityinfo.ui.client.page.config.mvp.CanCreate
                                                                  .StartCreateHandler handler) {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -305,64 +309,52 @@ public class AddLockedPeriodDialog extends FormPanel implements AddLockedPeriodV
 
     @Override
     public void update(LockedPeriodDTO item) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void cancelUpdate(LockedPeriodDTO item) {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public void cancelUpdateAll() {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public void startUpdate() {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public void setUpdateEnabled(boolean updateEnabled) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public HandlerRegistration addUpdateHandler(org.activityinfo.ui.client.page.config.mvp.CanUpdate.UpdateHandler
                                                             handler) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public HandlerRegistration addCancelUpdateHandler(org.activityinfo.ui.client.page.config.mvp.CanUpdate
                                                                   .CancelUpdateHandler handler) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public HandlerRegistration addRequestUpdateHandler(org.activityinfo.ui.client.page.config.mvp.CanUpdate
                                                                    .RequestUpdateHandler handler) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public AsyncMonitor getCreatingMonitor() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public AsyncMonitor getUpdatingMonitor() {
-        // TODO Auto-generated method stub
         return null;
     }
 }

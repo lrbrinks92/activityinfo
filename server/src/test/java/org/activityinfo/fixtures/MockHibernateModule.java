@@ -47,6 +47,11 @@ import javax.validation.ValidatorFactory;
 public class MockHibernateModule extends AbstractModule {
     private static EntityManagerFactory emf = null;
 
+    public MockHibernateModule() {
+        TestConnectionProvider connectionProvider = new TestConnectionProvider();
+        System.out.println(connectionProvider.getClass().getName());
+    }
+
     @Override
     protected void configure() {
 
@@ -90,15 +95,11 @@ public class MockHibernateModule extends AbstractModule {
                                     "org.hibernate.spatial.dialect.mysql.MySQLSpatialInnoDBDialect");
                             config.setProperty("hibernate.connection.driver_class",
                                     "com.mysql.jdbc.Driver");
-                            config.setProperty("hibernate.connection.url",
-                                    TestConnectionProvider.URL);
-                            config.setProperty("hibernate.connection.username",
-                                    TestConnectionProvider.USERNAME);
-                            config.setProperty("hibernate.connection.password",
-                                    TestConnectionProvider.PASSWORD);
+                            config.setProperty("hibernate.connection.provider_class",
+                                    TestConnectionProvider.class.getName());
                             config.setProperty("hibernate.hbm2ddl.auto", "none");
                             config.setProperty("hibernate.show_sql", "true");
-                            config.setProperty("hibernate.connection.pool_size", "0");
+                            config.setProperty("hibernate.connection.pool_size", "2");
                             config.setNamingStrategy(new AINamingStrategy());
                             for (Class clazz : HibernateModule
                                     .getPersistentClasses()) {

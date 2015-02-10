@@ -42,6 +42,7 @@ import com.google.inject.ImplementedBy;
 import com.google.inject.Inject;
 import org.activityinfo.i18n.shared.I18N;
 import org.activityinfo.i18n.shared.UiConstants;
+import org.activityinfo.legacy.client.AsyncMonitor;
 import org.activityinfo.legacy.client.Dispatcher;
 import org.activityinfo.legacy.client.callback.SuccessCallback;
 import org.activityinfo.legacy.client.monitor.MaskingAsyncMonitor;
@@ -98,6 +99,8 @@ public class DesignPresenter extends AbstractEditorGridPresenter<ModelData> impl
         public MenuItem getNewIndicator();
 
         public void showForm(ModelData model);
+
+        AsyncMonitor getLoadingMonitor();
     }
 
     private final EventBus eventBus;
@@ -160,7 +163,7 @@ public class DesignPresenter extends AbstractEditorGridPresenter<ModelData> impl
     }
 
     public void refresh() {
-        service.execute(new GetSchema(), new MaskingAsyncMonitor((ContentPanel)view, I18N.CONSTANTS.loading()),
+        service.execute(new GetSchema(), view.getLoadingMonitor(),
                 new AsyncCallback<SchemaDTO>() {
                     @Override
                     public void onFailure(Throwable caught) {
@@ -267,16 +270,23 @@ public class DesignPresenter extends AbstractEditorGridPresenter<ModelData> impl
                 }
             });
         } else if(UIActions.EDIT.equals(actionId)) {
-            ResourceId formClassId = getSelectedActivity(view.getSelection()).getFormClassId();
             eventBus.fireEvent(new NavigationEvent(
                     NavigationHandler.NAVIGATION_REQUESTED,
-                    new InstancePlace(formClassId, InstancePage.DESIGN_PAGE_ID)));
+                    new InstancePlace(getSelectedFormClassId(), InstancePage.DESIGN_PAGE_ID)));
 
         } else if(UIActions.OPEN_TABLE.equals(actionId)) {
-            IsFormClass formClass = (IsFormClass) view.getSelection();
             eventBus.fireEvent(new NavigationEvent(
                     NavigationHandler.NAVIGATION_REQUESTED,
-                    new InstancePlace(formClass.getResourceId(), InstancePage.TABLE_PAGE_ID)));
+                    new InstancePlace(getSelectedFormClassId(), InstancePage.TABLE_PAGE_ID)));
+        }
+    }
+
+    public ResourceId getSelectedFormClassId() {
+        if (view.getSelection() instanceof IsFormClass) {
+            IsFormClass formClass = (IsFormClass) view.getSelection();
+            return formClass.getResourceId();
+        } else {
+            return getSelectedActivity(view.getSelection()).getFormClassId();
         }
     }
 
@@ -509,12 +519,16 @@ public class DesignPresenter extends AbstractEditorGridPresenter<ModelData> impl
     public void onSelectionChanged(ModelData selectedItem) {
         view.setActionEnabled(UIActions.EDIT, this.db.isDesignAllowed() && canEditWithFormDesigner(selectedItem));
         view.setActionEnabled(UIActions.DELETE, this.db.isDesignAllowed() && selectedItem instanceof EntityDTO);
-        view.setActionEnabled(UIActions.OPEN_TABLE, getSelectedActivity(selectedItem) != null);
+        view.setActionEnabled(UIActions.OPEN_TABLE, getSelectedActivity(selectedItem) != null || selectedItem instanceof IsFormClass);
     }
 
     private boolean canEditWithFormDesigner(ModelData selectedItem) {
         IsActivityDTO activity = getSelectedActivity(selectedItem);
-        return activity != null && activity.getReportingFrequency() == ActivityFormDTO.REPORT_ONCE;
+        if (activity != null) {
+            return activity.getReportingFrequency() == ActivityFormDTO.REPORT_ONCE;
+        } else {
+            return selectedItem instanceof IsFormClass;
+        }
     }
 
     private IsActivityDTO getSelectedActivity(ModelData selectedItem) {

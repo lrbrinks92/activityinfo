@@ -40,6 +40,7 @@ import org.activityinfo.server.geo.TestGeometry;
 import org.activityinfo.server.report.generator.MapGenerator;
 import org.activityinfo.server.report.renderer.itext.PdfReportRenderer;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,6 +55,12 @@ import java.util.Locale;
 @OnDataSet("/dbunit/polygons.db.xml")
 public class PolygonGeneratorTest extends CommandTestCase2 {
 
+
+    @BeforeClass
+    public static void initLocale() {
+        LocaleProxy.initialize();
+    }
+    
     @Inject
     private MapGenerator generator;
 

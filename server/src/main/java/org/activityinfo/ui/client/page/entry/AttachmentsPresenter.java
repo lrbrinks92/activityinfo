@@ -25,6 +25,9 @@ package org.activityinfo.ui.client.page.entry;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.MessageBoxEvent;
+import com.extjs.gxt.ui.client.widget.Dialog;
+import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.Encoding;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.Method;
 import com.extjs.gxt.ui.client.widget.form.HiddenField;
@@ -36,6 +39,7 @@ import org.activityinfo.legacy.shared.command.DeleteSiteAttachment;
 import org.activityinfo.legacy.shared.command.result.VoidResult;
 import org.activityinfo.legacy.shared.model.SiteDTO;
 import org.activityinfo.legacy.shared.type.UUID;
+import org.activityinfo.ui.client.ClientContext;
 import org.activityinfo.ui.client.page.common.dialog.FormDialogCallback;
 import org.activityinfo.ui.client.page.common.dialog.FormDialogImpl;
 import org.activityinfo.ui.client.page.common.toolbar.ActionListener;
@@ -78,7 +82,16 @@ public class AttachmentsPresenter implements ActionListener {
     @Override
     public void onUIAction(String actionId) {
         if (UIActions.DELETE.equals(actionId)) {
-            onDelete();
+            MessageBox.confirm(ClientContext.getAppTitle(),
+                    I18N.CONSTANTS.confirmDeleteAttachment(),
+                    new Listener<MessageBoxEvent>() {
+                        @Override
+                        public void handleEvent(MessageBoxEvent be) {
+                            if (be.getButtonClicked().getItemId().equals(Dialog.YES)) {
+                                onDelete();
+                            }
+                        }
+                    });
         } else if (UIActions.UPLOAD.equals(actionId)) {
             onUpload();
         }

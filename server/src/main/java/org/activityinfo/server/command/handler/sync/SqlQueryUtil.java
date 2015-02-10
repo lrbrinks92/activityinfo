@@ -70,17 +70,22 @@ public class SqlQueryUtil {
     }
 
     public static long queryLong(EntityManager entityManager, final SqlQuery query) {
+        return queryLongList(entityManager, query).get(0);
+    }
+
+    public static List<Long> queryLongList(EntityManager entityManager, final SqlQuery query) {
         final List<Long> result = Lists.newArrayList();
         ((HibernateEntityManager) entityManager).getSession().doWork(new Work() {
 
             @Override
             public void execute(Connection connection) throws SQLException {
                 ResultSet rs = query(connection, query);
-                rs.next();
-                result.add(rs.getLong(1));
+                while (rs.next()) {
+                    result.add(rs.getLong(1));
+                }
             }
         });
-        return result.get(0);
+        return result;
     }
 
 }

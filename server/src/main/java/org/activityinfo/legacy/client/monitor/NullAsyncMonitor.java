@@ -31,6 +31,8 @@ import org.activityinfo.legacy.client.AsyncMonitor;
  */
 public class NullAsyncMonitor implements AsyncMonitor {
 
+    public static final AsyncMonitor INSTANCE = new NullAsyncMonitor();
+
     @Override
     public void beforeRequest() {
 

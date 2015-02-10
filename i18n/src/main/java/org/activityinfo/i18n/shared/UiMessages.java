@@ -47,14 +47,14 @@ public interface UiMessages extends com.google.gwt.i18n.client.Messages {
     /**
      * Translated "Are you sure you want to delete the database <b>{0}</b>? <br>
      * <br>
-     * You will loose all activities and indicator results.".
+     * You will lose all activities and indicator results.".
      *
      * @return translated "Are you sure you want to delete the database
      * <b>{0}</b>? <br>
      * <br>
-     * You will loose all activities and indicator results."
+     * You will lose all activities and indicator results."
      */
-    @DefaultMessage("Are you sure you want to delete the database <b>{0}</b>? <br><br>You will loose all activities and indicator results.")
+    @DefaultMessage("Are you sure you want to delete the database <b>{0}</b>? <br><br>You will lose all activities and indicator results.")
     String confirmDeleteDb(String arg0);
 
     /**

@@ -23,6 +23,7 @@ package org.activityinfo.server.command.handler.sync;
  */
 
 import com.bedatadriven.rebar.sync.server.JpaUpdateBuilder;
+import com.google.api.client.util.Lists;
 import com.google.inject.Inject;
 import org.activityinfo.legacy.shared.command.GetSyncRegionUpdates;
 import org.activityinfo.legacy.shared.command.result.SyncRegionUpdate;
@@ -281,11 +282,6 @@ public class SchemaUpdateBuilder implements UpdateBuilder {
                 activities.add(activity);
                 for (Indicator indicator : activity.getIndicators()) {
                     indicators.add(indicator);
-
-                    List<IndicatorLinkEntity> links = findIndicatorLinks(indicator);
-                    if (links != null && !links.isEmpty()) {
-                        indicatorLinks.addAll(links);
-                    }
                 }
                 for (AttributeGroup g : activity.getAttributeGroups()) {
                     if (!attributeGroupIds.contains(g.getId())) {
@@ -298,16 +294,30 @@ public class SchemaUpdateBuilder implements UpdateBuilder {
                 }
             }
         }
+
+        findIndicatorLinks();
+
     }
 
-    @SuppressWarnings("unchecked")
-    private List<IndicatorLinkEntity> findIndicatorLinks(Indicator indicator) {
-        return entityManager.createQuery(
-                "select il from IndicatorLinkEntity il where il.id.sourceIndicatorId = ?1 or il.id" +
-                ".destinationIndicatorId = ?2")
-                            .setParameter(1, indicator.getId())
-                            .setParameter(2, indicator.getId())
-                            .getResultList();
+    @SuppressWarnings("unchecked") // query indicator links with one call
+    private void findIndicatorLinks() {
+        if (indicators.isEmpty()) {// nothing to handle
+            return;
+        }
+        List<Integer> indicatorIdList = Lists.newArrayList();
+        for (Indicator indicator : indicators) {
+            indicatorIdList.add(indicator.getId());
+        }
+
+        List<IndicatorLinkEntity> result = entityManager.createQuery(
+                "select il from IndicatorLinkEntity il where il.id.sourceIndicatorId in (:sourceId) or il.id" +
+                        ".destinationIndicatorId in (:destId)")
+                .setParameter("sourceId", indicatorIdList)
+                .setParameter("destId", indicatorIdList)
+                .getResultList();
+        if (result != null && !result.isEmpty()) {
+            indicatorLinks.addAll(result);
+        }
     }
 
     public long getCurrentSchemaVersion() {

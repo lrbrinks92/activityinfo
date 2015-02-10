@@ -663,7 +663,7 @@ public interface UiConstants extends Constants {
 
     @DefaultStringValue("Unfortunately things didn't go as planned and you've encountered a bug. We're going to try " +
             "to send a report to the engineering team, but if you're really stuck and need a quick response, email " +
-            "help@activityinfo.org")
+            "support@activityinfo.org")
     String unexpectedExceptionExplanation();
 
     /**
@@ -3023,6 +3023,10 @@ public interface UiConstants extends Constants {
     @Key("versionChecking")
     String versionChecking();
 
+
+    @DefaultStringValue("Are you sure want to delete attachment(s)?")
+    String confirmDeleteAttachment();
+
     /**
      * Translated "No connection.".
      *
@@ -3625,7 +3629,7 @@ public interface UiConstants extends Constants {
     @DefaultStringValue("Please select the country")
     String selectCountryWelcome();
 
-    @DefaultStringValue("Failed to load country list (please report issue on help@activityinfo.org)")
+    @DefaultStringValue("Failed to load country list")
     String failedToLoadCountries();
 
     @DefaultStringValue("Failed to create database.")
@@ -3668,7 +3672,7 @@ public interface UiConstants extends Constants {
             "make new submissions at this time.")
     String noPartners();
 
-    @DefaultStringValue("Do you really want to delete this field? All dependent data will me removed as well (can't be reverted).")
+    @DefaultStringValue("Do you really want to delete this field? All dependent data will be removed as well (can't be reverted).")
     String deleteFormFieldConfirmation();
 
     @DefaultStringValue("Do you want to retry deletion?")
@@ -3688,5 +3692,7 @@ public interface UiConstants extends Constants {
 
     @DefaultStringValue("Load")
     String load();
-}
 
+    @DefaultStringValue("Please specify 'From' date before 'To' date.")
+    String fromDateIsBeforeToDate();
+}

@@ -94,7 +94,9 @@ public class HostController {
      * is done server-side when the javascript is requested, so all we can do
      * is redirect the user to this page.
      */
-    @GET @Path("/unsupportedBrowser")
+    @GET 
+    @Path("/unsupportedBrowser")
+    @Produces(MediaType.TEXT_HTML)
     public Viewable getUnsupportedBrowserMessage() {
         return new Viewable("/page/UnsupportedBrowser.ftl", new HashMap());
     }

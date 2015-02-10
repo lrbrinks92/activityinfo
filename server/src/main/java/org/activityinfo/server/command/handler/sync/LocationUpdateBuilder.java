@@ -32,8 +32,12 @@ import org.activityinfo.server.database.hibernate.entity.User;
 import org.json.JSONException;
 
 import javax.persistence.EntityManager;
+import java.util.Collections;
+import java.util.List;
 
 public class LocationUpdateBuilder implements UpdateBuilder {
+
+    private static final int DEFAULT_CHUNK_SIZE = 50; // items in chunk
     private static final String REGION_PREFIX = "location/";
 
     private final EntityManager em;
@@ -41,10 +45,16 @@ public class LocationUpdateBuilder implements UpdateBuilder {
     private SqliteBatchBuilder batch;
 
     private int typeId;
+    private int chunkSize;
 
     @Inject
     public LocationUpdateBuilder(EntityManager em) {
+        this(em, DEFAULT_CHUNK_SIZE);
+    }
+
+    public LocationUpdateBuilder(EntityManager em, int chunkSize) {
         this.em = em;
+        this.chunkSize = chunkSize;
     }
 
     @Override
@@ -54,16 +64,15 @@ public class LocationUpdateBuilder implements UpdateBuilder {
         localState = new LocalState(request.getLocalVersion());
         batch = new SqliteBatchBuilder();
 
-        long latestVersion = queryLatestVersion();
+        SyncRegionUpdate update = new SyncRegionUpdate();
+        long latestVersion = queryLatestVersion(update);
         if (latestVersion > localState.lastDate) {
             queryChanged();
             linkAdminEntities();
         }
 
-        SyncRegionUpdate update = new SyncRegionUpdate();
         update.setVersion(Long.toString(latestVersion));
         update.setSql(batch.build());
-        update.setComplete(true);
         return update;
     }
 
@@ -110,17 +119,32 @@ public class LocationUpdateBuilder implements UpdateBuilder {
         batch.insert().into(Tables.LOCATION_ADMIN_LINK).from(query).execute(em);
     }
 
-    private long queryLatestVersion() throws JSONException {
+    private long queryLatestVersion(SyncRegionUpdate update) throws JSONException {
         SqlQuery query = SqlQuery.select()
-                                 .appendColumn("MAX(timeEdited)", "latest")
+                                 .appendColumn("timeEdited", "latest")
                                  .from(Tables.LOCATION)
                                  .where("locationTypeId")
                                  .equalTo(typeId)
                                  .where("timeEdited")
                                  .greaterThan(localState.lastDate);
 
-        return SqlQueryUtil.queryLong(em, query);
+        List<Long> longs = SqlQueryUtil.queryLongList(em, query);
+
+        if (longs.isEmpty()) {
+            update.setComplete(true);
+            return localState.lastDate;
+        }
+
+        // our intention is to reduce batch, so we cut versions into chunks
+        if (longs.size() > chunkSize) {
+            longs = longs.subList(0, chunkSize);
+            update.setComplete(false);
+        } else {
+            update.setComplete(true);
+        }
+        return Collections.max(longs);
     }
+
 
     private class LocalState {
         private long lastDate;

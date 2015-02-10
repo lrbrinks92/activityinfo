@@ -108,6 +108,7 @@ public class LockedPeriodsPresenter extends ListPresenterBase<LockedPeriodDTO, L
 
                 // Tell the view there's a new kid on the block
                 view.create(lockedPeriod);
+                view.getCreatingMonitor().onCompleted();
 
                 // Actually add the lock to it's parent
                 lockedPeriod.getParent().getLockedPeriods().add(lockedPeriod);
@@ -188,8 +189,6 @@ public class LockedPeriodsPresenter extends ListPresenterBase<LockedPeriodDTO, L
 
     @Override
     public void onCancelUpdate(CancelUpdateEvent updateEvent) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -214,7 +213,6 @@ public class LockedPeriodsPresenter extends ListPresenterBase<LockedPeriodDTO, L
 
     @Override
     public void onFilter(FilterEvent filterEvent) {
-
     }
 
     @Override
@@ -222,7 +220,9 @@ public class LockedPeriodsPresenter extends ListPresenterBase<LockedPeriodDTO, L
         service.execute(new GetSchema(), new AsyncCallback<SchemaDTO>() {
             @Override
             public void onFailure(Throwable caught) {
-                // TODO: handle failure
+                MessageBox.alert(I18N.CONSTANTS.error(),
+                        I18N.CONSTANTS.errorOnServer() + "\n\n" + caught.getMessage(),
+                        null);
             }
 
             @Override

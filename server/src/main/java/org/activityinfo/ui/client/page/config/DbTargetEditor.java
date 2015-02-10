@@ -155,6 +155,7 @@ public class DbTargetEditor extends AbstractGridPresenter<TargetDTO> implements 
     @Override
     protected void onAdd() {
         final TargetDTO newTarget = new TargetDTO();
+
         this.view.showAddDialog(newTarget, db, new FormDialogCallback() {
 
             @Override
@@ -170,11 +171,15 @@ public class DbTargetEditor extends AbstractGridPresenter<TargetDTO> implements 
                     public void onSuccess(CreateResult result) {
                         newTarget.setId(result.getNewId());
 
-                        PartnerDTO partner = db.getPartnerById((Integer) newTarget.get("partnerId"));
-                        newTarget.setPartner(partner);
+                        if (newTarget.get("partnerId") != null) {
+                            PartnerDTO partner = db.getPartnerById((Integer) newTarget.get("partnerId"));
+                            newTarget.setPartner(partner);
+                        }
 
-                        ProjectDTO project = db.getProjectById((Integer) newTarget.get("projectId"));
-                        newTarget.setProject(project);
+                        if (newTarget.get("projectId") != null) {
+                            ProjectDTO project = db.getProjectById((Integer) newTarget.get("projectId"));
+                            newTarget.setProject(project);
+                        }
 
                         store.add(newTarget);
                         store.commitChanges();

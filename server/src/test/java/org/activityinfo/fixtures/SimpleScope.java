@@ -27,7 +27,9 @@ import com.google.inject.Key;
 import com.google.inject.OutOfScopeException;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
+import org.activityinfo.server.database.hibernate.EntityManagerProvider;
 
+import javax.persistence.EntityManager;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -95,6 +97,17 @@ public class SimpleScope implements Scope {
     }
 
     public void exit() {
+
+        EntityManager manager = (EntityManager) values.get().get(Key.get(EntityManager.class));
+        if(manager != null) {
+            try {
+                manager.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+        
         checkState(values.get() != null, "No scoping block in progress");
         values.remove();
     }

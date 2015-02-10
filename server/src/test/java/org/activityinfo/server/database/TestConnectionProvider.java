@@ -22,12 +22,23 @@ package org.activityinfo.server.database;
  * #L%
  */
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.inject.Provider;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import liquibase.Liquibase;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
 
+import javax.management.RuntimeErrorException;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -41,35 +52,33 @@ import java.util.logging.Logger;
  * 'testDatabaseUsername' and 'testDatabasePassword' properties to the
  * activityinfo.properties file, or add them as system variables.
  */
-public class TestConnectionProvider implements Provider<Connection> {
+public class TestConnectionProvider implements ConnectionProvider, Provider<Connection> {
 
     private static final Logger LOGGER = Logger.getLogger(TestConnectionProvider.class.getName());
 
     private static final String PASSWORD_PROPERTY = "testDatabasePassword";
     private static final String USERNAME_PROPERTY = "testDatabaseUsername";
-    private static final String URL_PROPERTY = "testDatabaseUrl";
 
     private static final String DEFAULT_PASSWORD = "adminpwd";
     private static final String DEFAULT_USERNAME = "root";
-//    private static final String DEFAULT_URL = "jdbc:mysql://localhost/activityinfo-test?useUnicode=true&characterEncoding=utf8";
-
-    // Use java style encoding name as stated here:
-    //http://dev.mysql.com/doc/connector-j/en/connector-j-reference-charsets.html
-    private static final String DEFAULT_URL = "jdbc:mysql://localhost/activityinfo-test?useUnicode=true&characterEncoding=UTF-8";
-
-    public static String URL, USERNAME, PASSWORD;
+    
+    public static String DATABASE_NAME, USERNAME, PASSWORD;
+    
+    
+    private static ComboPooledDataSource POOL;
+    
 
     static {
         try {
+
+            Class.forName("com.mysql.jdbc.Driver");
+
             Properties activityinfoProperties = new Properties();
             File propertiesFile = new File(System.getProperty("user.home"), "activityinfo.properties");
             if (propertiesFile.exists()) {
                 activityinfoProperties.load(new FileInputStream(propertiesFile));
             }
-
-            String urlProperty = activityinfoProperties.getProperty(URL_PROPERTY);
-            URL = urlProperty != null ? urlProperty : System.getProperty(URL_PROPERTY, DEFAULT_URL);
-
+            
             String usernameProperty = activityinfoProperties.getProperty(USERNAME_PROPERTY);
             USERNAME = usernameProperty != null ? usernameProperty :
                     System.getProperty(USERNAME_PROPERTY, DEFAULT_USERNAME);
@@ -78,19 +87,93 @@ public class TestConnectionProvider implements Provider<Connection> {
             PASSWORD = passwordProperty != null ? passwordProperty :
                     System.getProperty(PASSWORD_PROPERTY, DEFAULT_PASSWORD);
 
+
+            // Surefire is set up to run tests across several forked JVMs
+            // if the forkNumber property is present, then automatically create a fresh
+            // database and run liquibase
+            DATABASE_NAME = System.getProperty("testDatabaseName");
+            if(Strings.isNullOrEmpty(DATABASE_NAME)) {
+                throw new Error("No database name provided");
+            }
+            
         } catch (Exception e) {
-            throw new RuntimeException("Can't initialize TestConnectionProvider, error loading propertyfile", e);
+            e.printStackTrace();
+            throw new RuntimeException("Can't initialize TestConnectionProvider, error loading property file", e);
         }
+    }
+    
+    static synchronized Connection openConnection() throws SQLException {
+        if(POOL == null) {
+            try {
+                initializeDatabase();
+
+                POOL = new ComboPooledDataSource();
+                POOL.setDriverClass("com.mysql.jdbc.Driver");
+                POOL.setJdbcUrl(connectionUrl(DATABASE_NAME));
+                POOL.setUser(USERNAME);
+                POOL.setPassword(PASSWORD);
+                POOL.setMinPoolSize(2);
+                POOL.setAcquireIncrement(1);
+                POOL.setMaxPoolSize(5);
+                POOL.setUnreturnedConnectionTimeout(10);
+                POOL.setDebugUnreturnedConnectionStackTraces(true);
+            } catch (Exception e) {
+                throw new Error("Could not open connection to " + DATABASE_NAME, e);
+            }
+        }
+        return POOL.getConnection();
     }
 
     @Override
     public Connection get() {
         try {
-            LOGGER.info("Opening test database at " + URL);
-            Class.forName("com.mysql.jdbc.Driver");
-            return DriverManager.getConnection(URL, USERNAME, PASSWORD);
-        } catch (Exception e) {
+            return  openConnection();
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    private static String connectionUrl(String dbName) {
+        return String.format("jdbc:mysql://localhost/%s?useUnicode=true&characterEncoding=UTF-8", dbName);
+    }
+
+    private static void initializeDatabase() throws SQLException, LiquibaseException {
+
+        Connection connection = DriverManager.getConnection(connectionUrl(""), USERNAME, PASSWORD);
+        Statement stmt = connection.createStatement();
+        stmt.execute("DROP DATABASE IF EXISTS " + DATABASE_NAME);
+        stmt.execute("CREATE DATABASE " + DATABASE_NAME);
+        stmt.execute("USE " + DATABASE_NAME);
+
+        Liquibase liquibase = new Liquibase("org/activityinfo/database/changelog/db.changelog-master.xml",
+                new ClassLoaderResourceAccessor(),
+                new JdbcConnection(connection));
+        liquibase.update(null);
+        connection.close();
+    }
+
+    @Override
+    public Connection getConnection() throws SQLException {
+        return openConnection();
+    }
+
+    @Override
+    public void closeConnection(Connection connection) throws SQLException {
+        connection.close();
+    }
+
+    @Override
+    public boolean supportsAggressiveRelease() {
+        return false;
+    }
+
+    @Override
+    public boolean isUnwrappableAs(Class aClass) {
+        return false;
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> aClass) {
+        return null;
     }
 }

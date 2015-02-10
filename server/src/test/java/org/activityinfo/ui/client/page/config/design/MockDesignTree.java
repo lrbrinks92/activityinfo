@@ -26,6 +26,7 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
+import org.activityinfo.legacy.client.monitor.NullAsyncMonitor;
 import org.activityinfo.legacy.shared.model.EntityDTO;
 import org.activityinfo.legacy.shared.model.UserDatabaseDTO;
 import org.activityinfo.legacy.client.AsyncMonitor;
@@ -89,6 +90,11 @@ public class MockDesignTree implements DesignPresenter.View {
     @Override
     public void showForm(ModelData model) {
 
+    }
+
+    @Override
+    public AsyncMonitor getLoadingMonitor() {
+        return new NullAsyncMonitor();
     }
 
     protected void mockEditEntity(EntityDTO entity) {

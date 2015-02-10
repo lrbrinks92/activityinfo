@@ -22,52 +22,80 @@ package org.activityinfo.server.command.handler.sync;
  * #L%
  */
 
+import com.google.inject.Inject;
+import org.activityinfo.fixtures.InjectionSupport;
+import org.activityinfo.fixtures.MockHibernateModule;
+import org.activityinfo.fixtures.Modules;
+import org.activityinfo.legacy.shared.command.GetSyncRegionUpdates;
+import org.activityinfo.legacy.shared.command.result.SyncRegionUpdate;
+import org.activityinfo.server.database.OnDataSet;
+import org.activityinfo.server.database.hibernate.entity.User;
+import org.activityinfo.server.util.logging.LoggingModule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+
+@RunWith(InjectionSupport.class)
+@Modules({
+        MockHibernateModule.class,
+        LoggingModule.class
+})
 public class LocationBuilderTest {
 
+    @Inject
+    private EntityManagerFactory emf;
+
     @Test
-    public void test() {
+    @OnDataSet("/dbunit/sites-simple1.db.xml")
+    public void sqlBuilding() throws Exception {
+
+        EntityManager em = emf.createEntityManager();
+
+        int locationType = 3;
+        GetSyncRegionUpdates request = new GetSyncRegionUpdates("location/" + locationType, null);
+
+        LocationUpdateBuilder builder = new LocationUpdateBuilder(em);
+        SyncRegionUpdate update = builder.build(new User(), request);
+
+        System.out.println("sql: " + update.getSql());
+        System.out.println("size: " + update.getSql().length());
+
+        assertThat(update.getSql(), containsString("location"));
+        assertThat(update.getSql(), containsString("locationadminlink"));
+        assertThat(update.getSql(), containsString("Shabunda"));
+        assertThat(update.getSql(), containsString("12,7")); // admin level for Shabunda
 
     }
 
-    //
-    // public static void main(String [] args) throws Exception {
-    // GetSyncRegionUpdates request = new GetSyncRegionUpdates("location/4433",
-    // null);
-    //
-    // LocationUpdateBuilder builder = new LocationUpdateBuilder(new
-    // MyProvider());
-    // SyncRegionUpdate update = builder.build(new User(), request);
-    //
-    // System.out.println("size: " + update.getSql().length());
-    // System.out.println("compressed size: " +
-    // gzippedLength((update.getSql())));
-    //
-    // Files.write(update.getSql(), new File("target/location.sql"),
-    // Charsets.UTF_8);
-    //
-    // }
-    //
-    // private static int gzippedLength(String sql) throws IOException {
-    // ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    // GZIPOutputStream gzos = new GZIPOutputStream(baos);
-    // gzos.write(sql.getBytes(Charsets.UTF_8));
-    // gzos.close();
-    // return baos.size();
-    // }
-    //
-    // private static class MyProvider implements Provider<Connection> {
-    //
-    // @Override
-    // public Connection get() {
-    // try {
-    // Class.forName("com.mysql.jdbc.Driver");
-    // return
-    // DriverManager.getConnection("jdbc:mysql://localhost/activityinfo26?user=alexander");
-    // } catch(Exception e) {
-    // throw new RuntimeException(e);
-    // }
-    // }
-    // }
+    @Test
+    @OnDataSet("/dbunit/sites-simple1.db.xml")
+    public void cutting() throws Exception {
+
+        EntityManager em = emf.createEntityManager();
+
+        int chunkSize = 2;
+        LocationUpdateBuilder builder = new LocationUpdateBuilder(em, chunkSize);
+
+        GetSyncRegionUpdates request = new GetSyncRegionUpdates("location/" + 1, null);
+        SyncRegionUpdate update = builder.build(new User(), request);
+
+        assertThat(update.isComplete(), equalTo(false));
+        assertThat(update.getVersion(), equalTo("2")); // first chunk
+        assertThat(update.getSql(), containsString("Ngshwe"));
+
+        request.setLocalVersion(update.getVersion());
+        update = builder.build(new User(), request);
+
+        assertThat(update.isComplete(), equalTo(true));
+        assertThat(update.getVersion(), equalTo("500")); // second chunk
+        assertThat(update.getSql(), containsString("Boga"));
+
+    }
+
 }

@@ -267,9 +267,6 @@ class IndicatorForm extends AbstractDesignForm {
 
             aggregationCombo.setVisible(selectedType == FieldTypeClass.QUANTITY);
 
-            if (idField.getValue() != null && Strings.isNullOrEmpty(codeField.getValue())) {
-                codeField.setValue(CuidAdapter.indicatorField(idField.getValue().intValue()).asString());
-            }
         }
     }
 

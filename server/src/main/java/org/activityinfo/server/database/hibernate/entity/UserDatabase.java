@@ -22,6 +22,8 @@ package org.activityinfo.server.database.hibernate.entity;
  * #L%
  */
 
+import org.hibernate.annotations.BatchSize;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.HashSet;
@@ -46,6 +48,8 @@ import java.util.Set;
 public class UserDatabase implements java.io.Serializable, Deleteable {
 
     private static final long serialVersionUID = 7405094318163898712L;
+
+    private static final int DEFAULT_BATCH_SIZE = 100;
 
     private int id;
     private Country country;
@@ -155,6 +159,7 @@ public class UserDatabase implements java.io.Serializable, Deleteable {
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinTable(name = "PartnerInDatabase",
             joinColumns = {@JoinColumn(name = "DatabaseId", nullable = false, updatable = false)},
             inverseJoinColumns = {@JoinColumn(name = "PartnerId", nullable = false, updatable = false)})
+    @BatchSize(size = DEFAULT_BATCH_SIZE)
     public Set<Partner> getPartners() {
         return this.partners;
     }
@@ -169,6 +174,7 @@ public class UserDatabase implements java.io.Serializable, Deleteable {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "database")
     @org.hibernate.annotations.OrderBy(clause = "sortOrder")
     @org.hibernate.annotations.Filter(name = "hideDeleted", condition = "DateDeleted is null")
+    @BatchSize(size = DEFAULT_BATCH_SIZE)
     public Set<Activity> getActivities() {
         return this.activities;
     }
@@ -182,6 +188,7 @@ public class UserDatabase implements java.io.Serializable, Deleteable {
      * respective permissions. (Read, write, read all partners)
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "database")
+    @BatchSize(size = DEFAULT_BATCH_SIZE)
     public Set<UserPermission> getUserPermissions() {
         return this.userPermissions;
     }
@@ -266,6 +273,7 @@ public class UserDatabase implements java.io.Serializable, Deleteable {
     }
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userDatabase")
+    @BatchSize(size = DEFAULT_BATCH_SIZE)
     public Set<LockedPeriod> getLockedPeriods() {
         return lockedPeriods;
     }
@@ -275,6 +283,7 @@ public class UserDatabase implements java.io.Serializable, Deleteable {
     }
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "userDatabase")
+    @BatchSize(size = DEFAULT_BATCH_SIZE)
     public Set<Target> getTargets() {
         return targets;
     }

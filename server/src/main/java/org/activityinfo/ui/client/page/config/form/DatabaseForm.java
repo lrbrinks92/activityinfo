@@ -101,7 +101,7 @@ public class DatabaseForm extends FormPanel {
         return binding;
     }
 
-    public void disableCountry() {
-        countryField.setEnabled(false);
+    public void removeCountry() {
+        remove(countryField);
     }
 }

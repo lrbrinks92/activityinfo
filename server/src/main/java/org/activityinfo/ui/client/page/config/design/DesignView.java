@@ -52,7 +52,9 @@ import com.extjs.gxt.ui.client.widget.treegrid.TreeGridCellRenderer;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.inject.Inject;
 import org.activityinfo.i18n.shared.I18N;
+import org.activityinfo.legacy.client.AsyncMonitor;
 import org.activityinfo.legacy.client.Dispatcher;
+import org.activityinfo.legacy.client.monitor.MaskingAsyncMonitor;
 import org.activityinfo.legacy.shared.model.*;
 import org.activityinfo.ui.client.page.common.dialog.FormDialogCallback;
 import org.activityinfo.ui.client.page.common.dialog.FormDialogImpl;
@@ -417,5 +419,10 @@ public class DesignView extends AbstractEditorTreeGridView<ModelData, DesignPres
         dlg.show(callback);
 
         return dlg;
+    }
+
+    @Override
+    public AsyncMonitor getLoadingMonitor() {
+        return new MaskingAsyncMonitor(this, I18N.CONSTANTS.loading());
     }
 }

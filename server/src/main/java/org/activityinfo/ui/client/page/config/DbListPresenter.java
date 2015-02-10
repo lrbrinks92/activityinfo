@@ -165,7 +165,7 @@ public class DbListPresenter implements ActionListener {
     public void onRename() {
         DatabaseForm form = new DatabaseForm(dispatcher);
         form.getBinding().bind(selection);
-        form.disableCountry();
+        form.removeCountry();
         final FormDialogImpl dialog = new FormDialogImpl(form);
         dialog.setWidth(400);
         dialog.setHeight(200);
@@ -183,7 +183,6 @@ public class DbListPresenter implements ActionListener {
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("name", db.getName());
         properties.put("fullName", db.getFullName());
-        properties.put("countryId", db.getCountry().getId());
 
         dispatcher.execute(new UpdateEntity(db.getEntityName(), db.getId(), properties),
                 new SuccessCallback<VoidResult>() {

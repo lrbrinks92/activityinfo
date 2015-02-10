@@ -22,10 +22,7 @@ package org.activityinfo.server.login;
  * #L%
  */
 
-import com.bedatadriven.rebar.appcache.server.DefaultSelectionServlet;
-import com.bedatadriven.rebar.appcache.server.PropertyProvider;
-import com.bedatadriven.rebar.appcache.server.SelectionException;
-import com.bedatadriven.rebar.appcache.server.UnknownUserAgentException;
+import com.bedatadriven.rebar.appcache.server.*;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -53,6 +50,7 @@ public class SelectionServlet extends DefaultSelectionServlet {
 
     @Inject
     public SelectionServlet(Provider<EntityManager> entityManager) {
+        super();
         registerProvider("locale", new LocaleProvider(entityManager));
         registerProvider("gwt.logging.logLevel", new LogLevelProvider());
     }

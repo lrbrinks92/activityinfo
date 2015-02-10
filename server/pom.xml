@@ -310,6 +310,7 @@
       <artifactId>gson</artifactId>
     </dependency>
 
+
     <!-- testing framework -->
     <dependency>
       <groupId>org.dbunit</groupId>
@@ -367,6 +368,13 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.mchange</groupId>
+      <artifactId>c3p0</artifactId>
+      <version>0.9.5</version>
       <scope>test</scope>
     </dependency>
 
@@ -503,13 +511,13 @@
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
           <packagingExcludes>ActivityInfo/compile-report,*.log,**/*.symbolMap</packagingExcludes>
-            <webResources>
-              <resource>
-                <directory>${basedir}/src/main/deploy</directory>
-                <filtering>true</filtering>
-              </resource>
-            </webResources>
-          </configuration>
+          <webResources>
+            <resource>
+              <directory>${basedir}/src/main/deploy</directory>
+              <filtering>true</filtering>
+            </resource>
+          </webResources>
+        </configuration>
       </plugin>
 
       <!-- configure the GWT-Maven plugin -->
@@ -519,7 +527,6 @@
         <version>${gwtVersion}</version>
         <configuration>
           <runTarget>/</runTarget>
-          <logLevel>TRACE</logLevel>
           <inplace>false</inplace>
           <port>9090</port>
           <extraJvmArgs>-Xmx2048M -Xss1M</extraJvmArgs>
@@ -535,7 +542,6 @@
             </goals>
             <configuration>
               <extraJvmArgs>-Xmx4048M -Xss1024k</extraJvmArgs>
-              <logLevel>INFO</logLevel>
               <compileReport>false</compileReport>
               <modules>
                 <module>org.activityinfo.ui.ActivityInfoCI</module>
@@ -551,11 +557,13 @@
           the gwt-maven plugin -->
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.16</version>
+        <version>2.18.1</version>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemPropertyVariables>
-            <testDatabaseUrl>${testDatabaseUrl}</testDatabaseUrl>
+            <forkCount>1C</forkCount>
+            <reuseForks>true</reuseForks>
+            <testDatabaseName>testDb${surefire.forkNumber}</testDatabaseName>
             <testDatabaseUsername>${testDatabaseUsername}</testDatabaseUsername>
             <testDatabasePassword>${testDatabasePassword}</testDatabasePassword>
           </systemPropertyVariables>
@@ -574,7 +582,6 @@
       <properties>
         <gae.version>1.9.3</gae.version>
         <appengine.target.version>1.9.3</appengine.target.version>
-        <display.version>Build ${BUILD_NUMBER}</display.version>
         <gae.application>ai-dev</gae.application>
         <gae.application.version>ci-dev</gae.application.version>
         <gae.instance.class>F1</gae.instance.class>
@@ -606,11 +613,9 @@
     <profile>
       <id>release</id>
       <properties>
-        <display.version>Build ${BUILD_NUMBER}</display.version>
         <gae.application>activityinfoeu</gae.application>
-        <gae.application.version>build${BUILD_NUMBER}</gae.application.version>
-        <gae.instance.class>F1</gae.instance.class>
-        <gae.min.idle.instances>3</gae.min.idle.instances>
+        <gae.instance.class>F4</gae.instance.class>
+        <gae.min.idle.instances>5</gae.min.idle.instances>
       </properties>
       <build>
         <plugins>
@@ -620,15 +625,14 @@
             <configuration>
               <modules>
                 <module>org.activityinfo.ui.ActivityInfoRelease</module>
-                <module>org.activityinfo.ui.embed.Embed</module>
+                <module>org.activityinfo.ui.Embed</module>
               </modules>
             </configuration>
           </plugin>
         </plugins>
       </build>
     </profile>
-
-
+    
     <profile>
       <id>reset-test-db</id>
 
