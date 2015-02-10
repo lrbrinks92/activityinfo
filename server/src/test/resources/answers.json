@@ -1,0 +1,15 @@
+[
+    {
+        "surveyInstanceId": 0,
+        "questionAnswers": [
+            {
+                "textualQuestionId": "Q0",
+                "value": "That is the question"
+            },
+            {
+                "textualQuestionId": "Q1",
+                "value": "Only if this is a test answer"
+            }
+        ]
+    }
+]

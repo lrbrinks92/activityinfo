@@ -1,0 +1,64 @@
+{
+    "@id": "a0000000001",
+    "@owner": "d0000000000",
+    "_class_label": "Akvo Flow Test Form Class",
+    "classId": "_class",
+    "elements": [
+        {
+            "code": "Q0",
+            "id": "Q0000000000",
+            "label": "To be, or not to be?",
+            "required": true,
+            "type": {
+                "parameters": {
+                    "cardinality": "SINGLE",
+                    "classId": "_type:enum",
+                    "values": [
+                        {
+                            "id": "t0000000000",
+                            "label": "That is the question"
+                        },
+                        {
+                            "id": "t0000000001",
+                            "label": "2B"
+                        },
+                        {
+                            "id": "t0000000002",
+                            "label": "!(2B)"
+                        }
+                    ]
+                },
+                "typeClass": "enumerated"
+            },
+            "visible": true
+        },
+        {
+            "code": "Q1",
+            "id": "Q0000000001",
+            "label": "Is this a test question?",
+            "required": false,
+            "type": {
+                "parameters": {
+                    "cardinality": "SINGLE",
+                    "classId": "_type:enum",
+                    "values": [
+                        {
+                            "id": "t0000000003",
+                            "label": "Yes"
+                        },
+                        {
+                            "id": "t0000000004",
+                            "label": "No"
+                        },
+                        {
+                            "id": "t0000000005",
+                            "label": "Only if this is a test answer"
+                        }
+                    ]
+                },
+                "typeClass": "enumerated"
+            },
+            "visible": true
+        }
+    ]
+}

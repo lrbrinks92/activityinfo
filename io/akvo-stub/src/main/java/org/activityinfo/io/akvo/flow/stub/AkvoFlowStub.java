@@ -7,43 +7,55 @@ import org.activityinfo.io.akvo.flow.QuestionAnswer;
 import org.activityinfo.io.akvo.flow.SurveyInstance;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.SEVERE;
 
-final public class AkvoFlowStub {
+final public class AkvoFlowStub implements Closeable {
     static final private Logger LOGGER = Logger.getLogger(AkvoFlowStub.class.getName());
 
-    public static void main(String... args) {
+    final private Closeable closeable;
+
+    public AkvoFlowStub(final int port, File surveyInstanceFile, File questionAnswerFile) throws IOException {
         final HashMap<Integer, SurveyInstance[]> surveyInstances = new HashMap<>();
         final HashMap<Integer, QuestionAnswer[]> questionAnswers = new HashMap<>();
         final ResourceConfig resourceConfig = new DefaultResourceConfig();
 
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-            if (args.length > 0) {
-                for (SurveyInstancePair pair : objectMapper.readValue(new File(args[0]), SurveyInstancePair[].class)) {
-                    surveyInstances.put(pair.surveyId, pair.surveyInstances);
-                }
+        if (surveyInstanceFile != null) {
+            for (SurveyInstancePair pair : objectMapper.readValue(surveyInstanceFile, SurveyInstancePair[].class)) {
+                surveyInstances.put(pair.surveyId, pair.surveyInstances);
             }
+        }
 
-            if (args.length > 1) {
-                for (QuestionAnswerPair pair : objectMapper.readValue(new File(args[1]), QuestionAnswerPair[].class)) {
-                    questionAnswers.put(pair.surveyInstanceId, pair.questionAnswers);
-                }
+        if (questionAnswerFile != null) {
+            for (QuestionAnswerPair pair : objectMapper.readValue(questionAnswerFile, QuestionAnswerPair[].class)) {
+                questionAnswers.put(pair.surveyInstanceId, pair.questionAnswers);
             }
-        } catch (Throwable throwable) {
-            LOGGER.log(SEVERE, "A fatal error occurred inside the Akvo Flow stub web server – exiting now.", throwable);
-            System.exit(2);
-            return;
         }
 
         resourceConfig.getSingletons().add(new AkvoFlowStubResource(surveyInstances, questionAnswers));
 
-        try (AutoCloseable autoCloseable = SimpleServerFactory.create("http://localhost:7357/", resourceConfig)) {
+        closeable = SimpleServerFactory.create(String.format("http://localhost:%d/", port), resourceConfig);
+    }
+
+    @Override
+    public void close() throws IOException {
+        closeable.close();
+    }
+
+    public static void main(String... args) {
+        final File surveyInstanceFile, questionAnswerFile;
+
+        surveyInstanceFile = args.length > 0 ? new File(args[0]) : null;
+        questionAnswerFile = args.length > 1 ? new File(args[1]) : null;
+
+        try (AkvoFlowStub akvoFlowStub = new AkvoFlowStub(7357, surveyInstanceFile, questionAnswerFile)) {
             System.in.read();
         } catch (Throwable throwable) {
             LOGGER.log(SEVERE, "A fatal error occurred inside the Akvo Flow stub web server – exiting now.", throwable);

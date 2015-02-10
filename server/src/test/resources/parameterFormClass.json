@@ -1,0 +1,63 @@
+{
+    "@id": "a0000000000",
+    "@owner": "d0000000000",
+    "_class_label": "Akvo Flow parameter form",
+    "classId": "_class",
+    "elements": [
+        {
+            "code": "access",
+            "description": "Enter the Akvo Flow access key here",
+            "id": "i0000000000",
+            "label": "Access key",
+            "required": true,
+            "type": {
+                "typeClass": "FREE_TEXT"
+            },
+            "visible": true
+        },
+        {
+            "code": "secret",
+            "description": "Enter the Akvo Flow secret key that corresponds to the access key here",
+            "id": "i0000000001",
+            "label": "Secret key",
+            "required": true,
+            "type": {
+                "typeClass": "FREE_TEXT"
+            },
+            "visible": true
+        },
+        {
+            "code": "server",
+            "description": "Enter the URL of the Akvo Flow server here",
+            "id": "i0000000002",
+            "label": "Server URL",
+            "required": true,
+            "type": {
+                "typeClass": "FREE_TEXT"
+            },
+            "visible": true
+        },
+        {
+            "code": "survey",
+            "description": "Enter the survey ID (as it appears in Akvo Flow) here",
+            "id": "i0000000003",
+            "label": "Survey ID",
+            "required": true,
+            "type": {
+                "typeClass": "FREE_TEXT"
+            },
+            "visible": true
+        },
+        {
+            "code": "timestamp",
+            "description": "This field contains the timestamp at which the last update was performed",
+            "id": "i0000000004",
+            "label": "Timestamp",
+            "required": true,
+            "type": {
+                "typeClass": "FREE_TEXT"
+            },
+            "visible": true
+        }
+    ]
+}

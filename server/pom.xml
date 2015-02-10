@@ -35,6 +35,13 @@
 
     <dependency>
       <groupId>org.activityinfo.io</groupId>
+      <artifactId>akvo-stub</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.activityinfo.io</groupId>
       <artifactId>activityinfo-xform</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -326,6 +333,12 @@
     <dependency>
       <groupId>com.google.appengine</groupId>
       <artifactId>appengine-testing</artifactId>
+      <version>${gae.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.appengine</groupId>
+      <artifactId>appengine-tools-sdk</artifactId>
       <version>${gae.version}</version>
       <scope>test</scope>
     </dependency>
