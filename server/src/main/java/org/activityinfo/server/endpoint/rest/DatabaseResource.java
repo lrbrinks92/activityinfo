@@ -1,6 +1,7 @@
 package org.activityinfo.server.endpoint.rest;
 
 import org.activityinfo.io.xform.XFormReader;
+import org.activityinfo.io.xform.form.XForm;
 import org.activityinfo.legacy.shared.command.CreateEntity;
 import org.activityinfo.legacy.shared.command.GetSchema;
 import org.activityinfo.legacy.shared.command.UpdateFormClass;
@@ -10,12 +11,15 @@ import org.activityinfo.legacy.shared.model.DTOViews;
 import org.activityinfo.legacy.shared.model.LocationTypeDTO;
 import org.activityinfo.legacy.shared.model.UserDatabaseDTO;
 import org.activityinfo.model.form.FormClass;
-import org.activityinfo.model.legacy.CuidAdapter;
 import org.activityinfo.server.command.DispatcherSync;
-import org.activityinfo.io.xform.form.XForm;
 import org.codehaus.jackson.map.annotate.JsonView;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -79,9 +83,9 @@ public class DatabaseResource {
         int activityId = createResult.getNewId();
 
         XFormReader builder = new XFormReader(xForm);
+        builder.setActivityId(activityId);
+        builder.setDatabaseId(databaseId);
         FormClass formClass = builder.build();
-        formClass.setId(CuidAdapter.activityFormClass(activityId));
-        formClass.setOwnerId(CuidAdapter.databaseId(databaseId));
 
         dispatcher.execute(new UpdateFormClass(formClass));
 
