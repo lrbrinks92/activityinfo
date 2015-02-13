@@ -113,7 +113,7 @@ public class ActivityTest extends CommandTestCase2 {
 
 
     @Test
-    @OnDataSet("/dbunit/schema2.db.xml")
+    @OnDataSet("/dbunit/schema-lt-type.db.xml")
     public void testActivityFormWithAdminLocationType() throws CommandException {
 
 
