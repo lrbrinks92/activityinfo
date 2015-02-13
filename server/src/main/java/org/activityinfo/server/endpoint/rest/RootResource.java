@@ -29,11 +29,12 @@ import org.activityinfo.legacy.shared.command.GetSchema;
 import org.activityinfo.legacy.shared.model.CountryDTO;
 import org.activityinfo.legacy.shared.model.DTOViews;
 import org.activityinfo.legacy.shared.model.UserDatabaseDTO;
+import org.activityinfo.server.authentication.ServerSideAuthProvider;
 import org.activityinfo.server.command.DispatcherSync;
+import org.activityinfo.server.command.ResourceLocatorSyncImpl;
 import org.activityinfo.server.database.hibernate.entity.AdminEntity;
 import org.activityinfo.server.database.hibernate.entity.AdminLevel;
 import org.activityinfo.server.database.hibernate.entity.Country;
-import org.activityinfo.server.endpoint.odk.InstanceIdService;
 import org.activityinfo.service.DeploymentConfiguration;
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -49,22 +50,20 @@ import java.util.List;
 
 @Path("/resources")
 public class RootResource {
-
+    private ServerSideAuthProvider serverSideAuthProvider;
     private Provider<EntityManager> entityManager;
     private DispatcherSync dispatcher;
     private DeploymentConfiguration config;
-    private InstanceIdService instanceIdService;
 
     @Inject
-    public RootResource(Provider<EntityManager> entityManager,
+    public RootResource(ServerSideAuthProvider serverSideAuthProvider,
+                        Provider<EntityManager> entityManager,
                         DispatcherSync dispatcher,
-                        DeploymentConfiguration config,
-                        InstanceIdService instanceIdService) {
-        super();
+                        DeploymentConfiguration config) {
+        this.serverSideAuthProvider = serverSideAuthProvider;
         this.entityManager = entityManager;
         this.dispatcher = dispatcher;
         this.config = config;
-        this.instanceIdService = instanceIdService;
     }
 
     @Path("/adminEntity/{id}")
@@ -135,6 +134,6 @@ public class RootResource {
 
     @Path("/form/{id}")
     public FormResource getForm(@PathParam("id") int id) {
-        return new FormResource(dispatcher, id, instanceIdService);
+        return new FormResource(serverSideAuthProvider, new ResourceLocatorSyncImpl(dispatcher), id);
     }
 }

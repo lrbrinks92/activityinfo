@@ -12,4 +12,11 @@
     <bucket-size>40</bucket-size>
     <max-concurrent-requests>5</max-concurrent-requests>
   </queue>
+
+  <queue>
+    <name>ona</name>
+    <rate>20/s</rate>
+    <bucket-size>40</bucket-size>
+    <max-concurrent-requests>1</max-concurrent-requests>
+  </queue>
 </queue-entries>

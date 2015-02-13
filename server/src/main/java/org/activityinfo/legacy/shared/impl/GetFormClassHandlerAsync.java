@@ -50,7 +50,7 @@ public class GetFormClassHandlerAsync implements CommandHandlerAsync<GetFormClas
                 try {
                     ActivityFormClassBuilder builder = new ActivityFormClassBuilder(result);
                     FormClass formClass = builder.build();
-                    json = Resources.toJson(formClass.asResource());
+                    json = Resources.toJson(formClass);
                 } catch (Exception e) {
                     callback.onFailure(e);
                     return;

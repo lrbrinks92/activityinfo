@@ -79,6 +79,6 @@ public class GetFormClassHandler implements CommandHandler<GetFormClass> {
         ActivityFormDTO activityDTO = dispatcherSync.execute(new GetActivityForm(activityId));
         ActivityFormClassBuilder builder = new ActivityFormClassBuilder(activityDTO);
         FormClass formClass = builder.build();
-        return Resources.toJson(formClass.asResource());
+        return Resources.toJson(formClass);
     }
 }
