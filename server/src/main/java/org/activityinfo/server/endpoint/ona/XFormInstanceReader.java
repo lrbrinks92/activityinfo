@@ -5,7 +5,6 @@ import org.activityinfo.legacy.shared.command.CreateLocation;
 import org.activityinfo.model.form.FormClass;
 import org.activityinfo.model.form.FormField;
 import org.activityinfo.model.form.FormInstance;
-import org.activityinfo.model.legacy.CuidAdapter;
 import org.activityinfo.model.legacy.KeyGenerator;
 import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.model.type.FieldValue;
@@ -15,7 +14,7 @@ import org.activityinfo.model.type.time.LocalDate;
 import org.activityinfo.server.command.DispatcherSync;
 import org.activityinfo.server.command.ResourceLocatorSync;
 import org.activityinfo.server.endpoint.odk.FieldValueParser;
-import org.activityinfo.server.endpoint.odk.InstanceIdService;
+import org.activityinfo.service.guid.SiteIdGuidService;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -23,8 +22,10 @@ import java.util.Map;
 
 import static org.activityinfo.model.legacy.CuidAdapter.END_DATE_FIELD;
 import static org.activityinfo.model.legacy.CuidAdapter.LOCATION_FIELD;
+import static org.activityinfo.model.legacy.CuidAdapter.SITE_DOMAIN;
 import static org.activityinfo.model.legacy.CuidAdapter.START_DATE_FIELD;
 import static org.activityinfo.model.legacy.CuidAdapter.activityFormClass;
+import static org.activityinfo.model.legacy.CuidAdapter.cuid;
 import static org.activityinfo.model.legacy.CuidAdapter.field;
 import static org.activityinfo.model.legacy.CuidAdapter.locationInstanceId;
 import static org.activityinfo.server.endpoint.odk.FieldValueParserFactory.fromFieldType;
@@ -36,30 +37,30 @@ public class XFormInstanceReader {
 
     private final DispatcherSync dispatcher;
     private final ResourceLocatorSync locator;
-    private final InstanceIdService idService;
+    private final SiteIdGuidService siteIdGuidService;
 
-    public XFormInstanceReader(DispatcherSync dispatcher, ResourceLocatorSync locator, InstanceIdService idService) {
+    public XFormInstanceReader(DispatcherSync dispatcher,
+                               ResourceLocatorSync locator,
+                               SiteIdGuidService siteIdGuidService) {
         this.dispatcher = dispatcher;
         this.locator = locator;
-        this.idService = idService;
+        this.siteIdGuidService = siteIdGuidService;
     }
 
     public void build(LinkedHashMap<String, Object> map,
-                             Integer classId,
+                             Integer activityId,
                              Integer locationTypeId) {
-        final ResourceId formClassId = activityFormClass(classId);
+        final ResourceId formClassId = activityFormClass(activityId);
         final FormClass formClass = locator.getFormClass(formClassId);
         final ArrayList<FormField> formFields = new ArrayList<>(formClass.getFields());
         final Object instanceId = map.get(UUID);
         final Object start = map.get(START);
         final Object end = map.get(END);
-        final ResourceId formInstanceId = CuidAdapter.newLegacyFormInstanceId(formClassId);
-        final FormInstance formInstance = new FormInstance(formInstanceId, formClassId);
+        final int siteId = siteIdGuidService.getSiteId(activityId, (String) instanceId);
+        final FormInstance formInstance = new FormInstance(cuid(SITE_DOMAIN, siteId), formClassId);
         Integer locationId = null;
         Double latitude = null;
         Double longitude = null;
-
-        if (!(instanceId instanceof String)) throw new IllegalStateException("Invalid uuid");
 
         if (start instanceof String) {
             String date[] = ((String) start).split("T");
@@ -98,26 +99,22 @@ public class XFormInstanceReader {
             }
         }
 
-        if (!idService.exists((String) instanceId)) {
-            locator.persist(formInstance);
+        locator.persist(formInstance);
 
-            if (locationId != null && locationTypeId != null && latitude != null && longitude != null) {
-                Map<String, Object> properties = Maps.newHashMap();
+        if (locationId != null && locationTypeId != null && latitude != null && longitude != null) {
+            Map<String, Object> properties = Maps.newHashMap();
 
-                properties.put("id", locationId);
-                properties.put("locationTypeId", locationTypeId);
-                properties.put("name", "Custom location");
-                properties.put("latitude", latitude);
-                properties.put("longitude", longitude);
+            properties.put("id", locationId);
+            properties.put("locationTypeId", locationTypeId);
+            properties.put("name", "Custom location");
+            properties.put("latitude", latitude);
+            properties.put("longitude", longitude);
 
-                dispatcher.execute(new CreateLocation(properties));
-            } else {
-                if (formInstance.get(field(formClassId, LOCATION_FIELD)) != null) {
-                    throw new IllegalStateException("No location created, but field was set");
-                }
+            dispatcher.execute(new CreateLocation(properties));
+        } else {
+            if (formInstance.get(field(formClassId, LOCATION_FIELD)) != null) {
+                throw new IllegalStateException("No location created, but field was set");
             }
-
-            idService.submit((String) instanceId);
         }
     }
 }

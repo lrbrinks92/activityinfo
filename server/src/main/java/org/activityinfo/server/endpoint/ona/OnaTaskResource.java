@@ -4,8 +4,8 @@ import com.google.inject.Inject;
 import org.activityinfo.model.auth.AuthenticatedUser;
 import org.activityinfo.server.authentication.ServerSideAuthProvider;
 import org.activityinfo.server.command.DispatcherSync;
-import org.activityinfo.server.command.ResourceLocatorSyncImpl;
-import org.activityinfo.server.endpoint.odk.InstanceIdService;
+import org.activityinfo.server.command.ResourceLocatorSync;
+import org.activityinfo.service.guid.SiteIdGuidService;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.ws.rs.Consumes;
@@ -25,9 +25,10 @@ public class OnaTaskResource {
     @Inject
     public OnaTaskResource(ServerSideAuthProvider serverSideAuthProvider,
                            DispatcherSync dispatcher,
-                           InstanceIdService idService) {
+                           ResourceLocatorSync locator,
+                           SiteIdGuidService siteIdGuidService) {
         authProvider = serverSideAuthProvider;
-        xFormInstanceReader = new XFormInstanceReader(dispatcher, new ResourceLocatorSyncImpl(dispatcher), idService);
+        xFormInstanceReader = new XFormInstanceReader(dispatcher, locator, siteIdGuidService);
     }
 
     @POST

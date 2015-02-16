@@ -2,6 +2,7 @@ package org.activityinfo.server.endpoint.odk;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -15,12 +16,14 @@ import org.activityinfo.model.auth.AuthenticatedUser;
 import org.activityinfo.model.form.FormClass;
 import org.activityinfo.model.form.FormField;
 import org.activityinfo.model.legacy.CuidAdapter;
+import org.activityinfo.model.legacy.KeyGenerator;
 import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.model.type.number.QuantityType;
 import org.activityinfo.server.command.CommandTestCase2;
 import org.activityinfo.server.command.ResourceLocatorSyncImpl;
 import org.activityinfo.server.database.OnDataSet;
 import org.activityinfo.service.DeploymentConfiguration;
+import org.activityinfo.service.guid.SiteIdGuidService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,6 +46,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -77,13 +81,13 @@ public class FormResourceTest extends CommandTestCase2 {
         AuthTokenProvider tokenService = new AuthTokenProvider();
 
         TestBlobstoreService blobstore = new TestBlobstoreService();
-        TestInstanceIdService idService = new TestInstanceIdService();
         SubmissionArchiver backupService = new SubmissionArchiver(
                 new DeploymentConfiguration(new Properties()));
+        SiteIdGuidService guidService = new TestSiteIdGuidService();
 
         formResource = new FormResource(resourceLocator, authProvider, fieldFactory, tokenService);
         formSubmissionResource = new FormSubmissionResource(
-                getDispatcherSync(), resourceLocator, tokenService, null, null, blobstore, idService, backupService);
+                getDispatcherSync(), resourceLocator, tokenService, null, null, blobstore, backupService, guidService);
     }
 
     @Test
@@ -240,17 +244,16 @@ public class FormResourceTest extends CommandTestCase2 {
         }
     }
 
-    private static class TestInstanceIdService implements InstanceIdService {
-        final private Set<String> set = Sets.newHashSet();
+    private static class TestSiteIdGuidService implements SiteIdGuidService {
+        final private Map<String, Integer> map = Maps.newHashMap();
 
         @Override
-        public boolean exists(String instanceId) {
-            return set.contains(instanceId);
-        }
-
-        @Override
-        public void submit(String instanceId) {
-            set.add(instanceId);
+        public int getSiteId(int activityId, String guid) {
+            if (map.containsKey(guid)) {
+                return map.get(guid);
+            } else {
+                return new KeyGenerator().generateInt();
+            }
         }
     }
 }
