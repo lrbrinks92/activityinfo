@@ -64,6 +64,7 @@ public class CuidAdapter {
     public static final int COMMENT_FIELD = 14;
     public static final int LOCATION_NAME_FIELD = 15;
     public static final int GPS_FIELD = 16;
+    public static final int GUID_FIELD = 17;
 
     public static final int BLOCK_SIZE = 10;
     public static final String CLASS_FIELD = "_class";

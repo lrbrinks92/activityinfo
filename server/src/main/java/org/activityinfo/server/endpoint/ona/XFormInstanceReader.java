@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.activityinfo.model.legacy.CuidAdapter.END_DATE_FIELD;
+import static org.activityinfo.model.legacy.CuidAdapter.GUID_FIELD;
 import static org.activityinfo.model.legacy.CuidAdapter.LOCATION_FIELD;
 import static org.activityinfo.model.legacy.CuidAdapter.SITE_DOMAIN;
 import static org.activityinfo.model.legacy.CuidAdapter.START_DATE_FIELD;
@@ -99,6 +100,7 @@ public class XFormInstanceReader {
             }
         }
 
+        formInstance.set(field(formClassId, GUID_FIELD), instanceId);
         locator.persist(formInstance);
 
         if (locationId != null && locationTypeId != null && latitude != null && longitude != null) {

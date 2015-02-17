@@ -87,6 +87,7 @@ public class CreateSiteHandler implements CommandHandlerAsync<CreateSite, Create
                  .value("Comments", properties.get("comments"))
                  .value("PartnerId", properties.get("partnerId"))
                  .value("ProjectId", properties.get("projectId"))
+                 .value("SiteGuid", properties.get("siteGuid"))
                  .value("DateCreated", new Date())
                  .value("DateEdited", new Date())
                  .value("timeEdited", new Date().getTime())

@@ -35,6 +35,7 @@ public class SiteBindingFactory implements Function<ActivityFormDTO, SiteBinding
 
         binding.addField(field(formClassId, START_DATE_FIELD), "date1");
         binding.addField(field(formClassId, END_DATE_FIELD), "date2");
+        binding.addField(field(formClassId, GUID_FIELD), "siteGuid");
 
         if (activity.getLocationType().isAdminLevel()) {
             binding.addField(new AdminLevelLocationBinding(formClassId, activity.getLocationType().getBoundAdminLevelId()));
