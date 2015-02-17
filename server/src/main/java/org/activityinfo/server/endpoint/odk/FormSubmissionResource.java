@@ -36,7 +36,6 @@ import org.activityinfo.server.endpoint.odk.xform.XFormInstance;
 import org.activityinfo.server.endpoint.odk.xform.XFormInstanceImpl;
 import org.activityinfo.service.blob.BlobFieldStorageService;
 import org.activityinfo.service.blob.BlobId;
-import org.activityinfo.service.guid.SiteIdGuidService;
 import org.w3c.dom.Element;
 
 import javax.mail.BodyPart;
@@ -62,11 +61,10 @@ import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 import static org.activityinfo.model.legacy.CuidAdapter.GPS_FIELD;
 import static org.activityinfo.model.legacy.CuidAdapter.LOCATION_FIELD;
 import static org.activityinfo.model.legacy.CuidAdapter.LOCATION_NAME_FIELD;
-import static org.activityinfo.model.legacy.CuidAdapter.SITE_DOMAIN;
-import static org.activityinfo.model.legacy.CuidAdapter.cuid;
 import static org.activityinfo.model.legacy.CuidAdapter.field;
 import static org.activityinfo.model.legacy.CuidAdapter.getLegacyIdFromCuid;
 import static org.activityinfo.model.legacy.CuidAdapter.locationInstanceId;
+import static org.activityinfo.model.legacy.CuidAdapter.newLegacyFormInstanceId;
 import static org.activityinfo.server.endpoint.odk.OdkFieldValueParserFactory.fromFieldType;
 import static org.activityinfo.server.endpoint.odk.OdkHelper.isLocation;
 
@@ -80,8 +78,8 @@ public class FormSubmissionResource {
     final private ServerSideAuthProvider authProvider;                  // Necessary for 2.8 XForms, remove afterwards
     final private EntityManagerProvider entityManager;                  // Necessary for 2.8 XForms, remove afterwards
     final private BlobFieldStorageService blobFieldStorageService;
+    final private InstanceIdService instanceIdService;
     final private SubmissionArchiver submissionArchiver;
-    private final SiteIdGuidService siteIdGuidService;
 
     @Inject
     public FormSubmissionResource(DispatcherSync dispatcher,
@@ -90,16 +88,16 @@ public class FormSubmissionResource {
                                   ServerSideAuthProvider authProvider,  // Necessary for 2.8 XForms, remove afterwards
                                   EntityManagerProvider entityManager,  // Necessary for 2.8 XForms, remove afterwards
                                   BlobFieldStorageService blobFieldStorageService,
-                                  SubmissionArchiver submissionArchiver,
-                                  SiteIdGuidService siteIdGuidService) {
+                                  InstanceIdService instanceIdService,
+                                  SubmissionArchiver submissionArchiver) {
         this.dispatcher = dispatcher;
         this.locator = locator;
         this.authenticationTokenService = authenticationTokenService;
         this.authProvider = authProvider;                               // Necessary for 2.8 XForms, remove afterwards
         this.entityManager = entityManager;                             // Necessary for 2.8 XForms, remove afterwards
         this.blobFieldStorageService = blobFieldStorageService;
+        this.instanceIdService = instanceIdService;
         this.submissionArchiver = submissionArchiver;
-        this.siteIdGuidService = siteIdGuidService;
     }
 
     @POST
@@ -110,18 +108,16 @@ public class FormSubmissionResource {
         AuthenticatedUser user;
         XFormInstance instance;
         FormClass formClass;
-        int formClassId;
 
         try {
             instance = new XFormInstanceImpl(bytes);
             user = authenticationTokenService.authenticate(instance.getAuthenticationToken());
             formClass = locator.getFormClass(instance.getFormClassId());
-            formClassId = getLegacyIdFromCuid(instance.getFormClassId());
         } catch (IllegalStateException illegalStateException) {         // Necessary for 2.8 XForms, remove afterwards
             if ("Cannot find element userID".equals(illegalStateException.getMessage())) {
                 LOGGER.log(Level.INFO, "User ID not found, trying to parse submission as legacy form instance");
                 instance = new LegacyXFormInstance(bytes);
-                formClassId = getLegacyIdFromCuid(instance.getFormClassId());
+                int formClassId = getLegacyIdFromCuid(instance.getFormClassId());
                 User owner = entityManager.get().find(Activity.class, formClassId).getDatabase().getOwner();
                 authProvider.set(owner);
                 user = new AuthenticatedUser("", (int) owner.getId(), "@");
@@ -131,11 +127,11 @@ public class FormSubmissionResource {
 
         legacy = instance instanceof LegacyXFormInstance;               // Necessary for 2.8 XForms, remove afterwards
 
-        ResourceId formInstanceId =
-                cuid(SITE_DOMAIN, siteIdGuidService.getSiteId(formClassId, instance.getId()));
-        FormInstance formInstance = new FormInstance(formInstanceId, formClass.getId());
+        ResourceId formId = newLegacyFormInstanceId(formClass.getId());
+        FormInstance formInstance = new FormInstance(formId, formClass.getId());
+        String instanceId = instance.getId();
 
-        LOGGER.log(Level.INFO, "Saving XForm " + instance.getId() + " as " + formInstanceId);
+        LOGGER.log(Level.INFO, "Saving XForm " + instance.getId() + " as " + formId);
 
         for (FormField formField : formClass.getFields()) {
             Optional<Element> element = instance.getFieldContent(formField.getId());
@@ -161,16 +157,19 @@ public class FormSubmissionResource {
             }
         }
 
-        for (FieldValue fieldValue : formInstance.getFieldValueMap().values()) {
-            if (fieldValue instanceof ImageValue) {
-                persistImageData(user, instance, (ImageValue) fieldValue);
+        if (!instanceIdService.exists(instanceId)) {
+            for (FieldValue fieldValue : formInstance.getFieldValueMap().values()) {
+                if (fieldValue instanceof ImageValue) {
+                    persistImageData(user, instance, (ImageValue) fieldValue);
+                }
             }
+
+            locator.persist(formInstance);
+            instanceIdService.submit(instanceId);
         }
 
-        locator.persist(formInstance);
-
         // Backup the original XForm in case something went wrong with processing
-        submissionArchiver.backup(formClass.getId(), formInstanceId, ByteSource.wrap(bytes));
+        submissionArchiver.backup(formClass.getId(), formId, ByteSource.wrap(bytes));
 
         return Response.status(CREATED).build();
     }
