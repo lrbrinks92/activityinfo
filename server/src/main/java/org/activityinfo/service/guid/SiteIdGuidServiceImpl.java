@@ -52,6 +52,8 @@ public class SiteIdGuidServiceImpl implements SiteIdGuidService {
             } else {
                 entityTransaction.rollback();
             }
+
+            entityManager.close();
         }
     }
 }

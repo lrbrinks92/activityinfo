@@ -2,17 +2,22 @@ package org.activityinfo.legacy.shared.adapter;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import org.activityinfo.legacy.shared.model.PartnerDTO;
-import org.activityinfo.model.form.FormInstance;
+import com.google.common.collect.Maps;
 import org.activityinfo.legacy.client.Dispatcher;
 import org.activityinfo.legacy.shared.adapter.bindings.SiteBinding;
 import org.activityinfo.legacy.shared.adapter.bindings.SiteBindingFactory;
-import org.activityinfo.legacy.shared.command.*;
+import org.activityinfo.legacy.shared.command.BatchCommand;
+import org.activityinfo.legacy.shared.command.Command;
+import org.activityinfo.legacy.shared.command.CreateLocation;
+import org.activityinfo.legacy.shared.command.CreateSite;
+import org.activityinfo.legacy.shared.command.GetActivityForm;
+import org.activityinfo.legacy.shared.command.GetAdminEntities;
 import org.activityinfo.legacy.shared.command.result.BatchResult;
 import org.activityinfo.legacy.shared.command.result.CommandResult;
 import org.activityinfo.legacy.shared.model.AdminEntityDTO;
 import org.activityinfo.legacy.shared.model.AdminLevelDTO;
 import org.activityinfo.legacy.shared.model.LocationTypeDTO;
+import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.legacy.CuidAdapter;
 import org.activityinfo.model.legacy.KeyGenerator;
 import org.activityinfo.promise.Promise;
@@ -34,6 +39,28 @@ public class SitePersister {
         this.dispatcher = dispatcher;
     }
 
+    public Promise<Void> persist(final FormInstance siteInstance,
+                                 int locationId, int locationTypeId,
+                                 double latitude, double longitude) {
+        final Map<String, Object> properties = Maps.newHashMap();
+        int activityId = CuidAdapter.getLegacyIdFromCuid(siteInstance.getClassId());
+
+        properties.put("id", locationId);
+        properties.put("locationTypeId", locationTypeId);
+        properties.put("name", "Custom location");
+        properties.put("latitude", latitude);
+        properties.put("longitude", longitude);
+
+        return dispatcher.execute(new GetActivityForm(activityId))
+                .then(new SiteBindingFactory())
+                .join(new Function<SiteBinding, Promise<Void>>() {
+                    @Nullable @Override
+                    public Promise<Void> apply(@Nullable SiteBinding binding) {
+                        return persist(binding, siteInstance, new CreateLocation(properties)).thenDiscardResult();
+                    }
+                });
+    }
+
     public Promise<Void> persist(final FormInstance siteInstance) {
 
         int activityId = CuidAdapter.getLegacyIdFromCuid(siteInstance.getClassId());
@@ -42,12 +69,14 @@ public class SitePersister {
                          .join(new Function<SiteBinding, Promise<Void>>() {
                              @Nullable @Override
                              public Promise<Void> apply(@Nullable SiteBinding binding) {
-                                 return persist(binding, siteInstance).thenDiscardResult();
+                                 return persist(binding, siteInstance, null).thenDiscardResult();
                              }
                          });
     }
 
-    private Promise<? extends CommandResult> persist(SiteBinding siteBinding, FormInstance instance) {
+    private Promise<? extends CommandResult> persist(SiteBinding siteBinding,
+                                                     FormInstance instance,
+                                                     CreateLocation createLocation) {
 
         Map<String, Object> siteProperties = siteBinding.toChangePropertyMap(instance);
         siteProperties.put("activityId", siteBinding.getActivity().getId());
@@ -63,16 +92,19 @@ public class SitePersister {
             siteProperties.put("locationId", siteBinding.getLocationType().getId());
         }
 
-        final CreateSite createSite = new CreateSite(siteProperties);
+        if (createLocation != null) {
+            siteProperties.put("locationId", createLocation.getLocationId());
+            return dispatcher.execute(new BatchCommand(createLocation, new CreateSite(siteProperties)));
+        } else if (siteBinding.getLocationType().isAdminLevel()) {
+            final CreateSite createSite = new CreateSite(siteProperties);
 
-        if (siteBinding.getLocationType().isAdminLevel()) {
             // we need to create the dummy location as well
-            Promise<Command> createLocation = Promise.resolved(siteBinding.getAdminEntityId(instance))
+            Promise<Command> promise = Promise.resolved(siteBinding.getAdminEntityId(instance))
                                                      .join(new FetchEntityFunction())
                                                      .then(new CreateDummyLocation(createSite.getLocationId(),
                                                              siteBinding.getLocationType()));
 
-            return createLocation.join(new Function<Command, Promise<BatchResult>>() {
+            return promise.join(new Function<Command, Promise<BatchResult>>() {
                 @Nullable @Override
                 public Promise<BatchResult> apply(@Nullable Command createLocation) {
                     return dispatcher.execute(new BatchCommand(createLocation, createSite));
@@ -80,7 +112,7 @@ public class SitePersister {
             });
 
         } else {
-            return dispatcher.execute(createSite);
+            return dispatcher.execute(new CreateSite(siteProperties));
         }
     }
 

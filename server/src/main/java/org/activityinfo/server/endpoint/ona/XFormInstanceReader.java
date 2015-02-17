@@ -1,34 +1,27 @@
 package org.activityinfo.server.endpoint.ona;
 
-import com.google.api.client.util.Maps;
-import org.activityinfo.legacy.shared.command.CreateLocation;
 import org.activityinfo.model.form.FormClass;
 import org.activityinfo.model.form.FormField;
 import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.legacy.KeyGenerator;
 import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.model.type.FieldValue;
-import org.activityinfo.model.type.ReferenceValue;
 import org.activityinfo.model.type.geo.GeoPoint;
 import org.activityinfo.model.type.time.LocalDate;
-import org.activityinfo.server.command.DispatcherSync;
 import org.activityinfo.server.command.ResourceLocatorSync;
 import org.activityinfo.server.endpoint.odk.FieldValueParser;
 import org.activityinfo.service.guid.SiteIdGuidService;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static org.activityinfo.model.legacy.CuidAdapter.END_DATE_FIELD;
 import static org.activityinfo.model.legacy.CuidAdapter.GUID_FIELD;
-import static org.activityinfo.model.legacy.CuidAdapter.LOCATION_FIELD;
 import static org.activityinfo.model.legacy.CuidAdapter.SITE_DOMAIN;
 import static org.activityinfo.model.legacy.CuidAdapter.START_DATE_FIELD;
 import static org.activityinfo.model.legacy.CuidAdapter.activityFormClass;
 import static org.activityinfo.model.legacy.CuidAdapter.cuid;
 import static org.activityinfo.model.legacy.CuidAdapter.field;
-import static org.activityinfo.model.legacy.CuidAdapter.locationInstanceId;
 import static org.activityinfo.server.endpoint.odk.FieldValueParserFactory.fromFieldType;
 
 public class XFormInstanceReader {
@@ -36,14 +29,11 @@ public class XFormInstanceReader {
     static final private String START = "start";
     static final private String END = "end";
 
-    private final DispatcherSync dispatcher;
     private final ResourceLocatorSync locator;
     private final SiteIdGuidService siteIdGuidService;
 
-    public XFormInstanceReader(DispatcherSync dispatcher,
-                               ResourceLocatorSync locator,
+    public XFormInstanceReader(ResourceLocatorSync locator,
                                SiteIdGuidService siteIdGuidService) {
-        this.dispatcher = dispatcher;
         this.locator = locator;
         this.siteIdGuidService = siteIdGuidService;
     }
@@ -86,14 +76,10 @@ public class XFormInstanceReader {
                 final FieldValue fieldValue = fieldValueParser.parse((String) value);
 
                 if (fieldValue instanceof GeoPoint) {
-                    locationId = new KeyGenerator().generateInt();
-                    ReferenceValue referenceValue = new ReferenceValue(locationInstanceId(locationId));
-                    ResourceId locationFieldId = field(formClassId, LOCATION_FIELD);
                     GeoPoint geoPoint = (GeoPoint) fieldValue;
-
+                    locationId = new KeyGenerator().generateInt();
                     latitude = geoPoint.getLatitude();
                     longitude = geoPoint.getLongitude();
-                    formInstance.set(locationFieldId, referenceValue);
                 } else {
                     formInstance.set(formField.getId(), fieldValue);
                 }
@@ -101,22 +87,11 @@ public class XFormInstanceReader {
         }
 
         formInstance.set(field(formClassId, GUID_FIELD), instanceId);
-        locator.persist(formInstance);
 
         if (locationId != null && locationTypeId != null && latitude != null && longitude != null) {
-            Map<String, Object> properties = Maps.newHashMap();
-
-            properties.put("id", locationId);
-            properties.put("locationTypeId", locationTypeId);
-            properties.put("name", "Custom location");
-            properties.put("latitude", latitude);
-            properties.put("longitude", longitude);
-
-            dispatcher.execute(new CreateLocation(properties));
+            locator.persist(formInstance, locationId, locationTypeId, latitude, longitude);
         } else {
-            if (formInstance.get(field(formClassId, LOCATION_FIELD)) != null) {
-                throw new IllegalStateException("No location created, but field was set");
-            }
+            locator.persist(formInstance);
         }
     }
 }

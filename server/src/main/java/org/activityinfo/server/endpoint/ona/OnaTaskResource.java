@@ -3,7 +3,6 @@ package org.activityinfo.server.endpoint.ona;
 import com.google.inject.Inject;
 import org.activityinfo.model.auth.AuthenticatedUser;
 import org.activityinfo.server.authentication.ServerSideAuthProvider;
-import org.activityinfo.server.command.DispatcherSync;
 import org.activityinfo.server.command.ResourceLocatorSync;
 import org.activityinfo.service.guid.SiteIdGuidService;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -24,11 +23,10 @@ public class OnaTaskResource {
 
     @Inject
     public OnaTaskResource(ServerSideAuthProvider serverSideAuthProvider,
-                           DispatcherSync dispatcher,
                            ResourceLocatorSync locator,
                            SiteIdGuidService siteIdGuidService) {
         authProvider = serverSideAuthProvider;
-        xFormInstanceReader = new XFormInstanceReader(dispatcher, locator, siteIdGuidService);
+        xFormInstanceReader = new XFormInstanceReader(locator, siteIdGuidService);
     }
 
     @POST

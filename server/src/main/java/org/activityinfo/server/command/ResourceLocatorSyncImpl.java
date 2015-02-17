@@ -9,11 +9,9 @@ import org.activityinfo.legacy.client.remote.AbstractDispatcher;
 import org.activityinfo.legacy.shared.adapter.ResourceLocatorAdaptor;
 import org.activityinfo.legacy.shared.command.Command;
 import org.activityinfo.legacy.shared.command.result.CommandResult;
-import org.activityinfo.model.auth.AuthenticatedUser;
 import org.activityinfo.model.form.FormClass;
 import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.form.FormInstanceLabeler;
-import org.activityinfo.model.resource.Resource;
 import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.promise.Promise;
 import org.activityinfo.service.lookup.ReferenceChoice;
@@ -68,6 +66,14 @@ public class ResourceLocatorSyncImpl implements ResourceLocatorSync {
     public void persist(FormInstance formInstance) {
         Promise<Void> result = locatorAsync.persist(formInstance);
         assertResolved(result, formInstance.toString());
+    }
+
+    @Override
+    public void persist(FormInstance formInstance,
+                        int locationId, int locationTypeId,
+                        double latitude, double longitude) {
+        Promise<Void> result = locatorAsync.persist(formInstance, locationId, locationTypeId, latitude, longitude);
+        assertResolved(result, String.format("%s [%f,%f]", formInstance, latitude, longitude));
     }
 
     private <T> T assertResolved(Promise<T> result, String message) {

@@ -117,6 +117,17 @@ public class ResourceLocatorAdaptor implements ResourceLocator {
     }
 
     @Override
+    public Promise<Void> persist(FormInstance formInstance,
+                                 int locationId, int locationTypeId,
+                                 double latitude, double longitude) {
+        if (formInstance.getId().getDomain() == CuidAdapter.SITE_DOMAIN) {
+            return new SitePersister(dispatcher).persist(formInstance, locationId, locationTypeId, latitude, longitude);
+        } else {
+            throw new IllegalArgumentException("FormInstance must represent a Site");
+        }
+    }
+
+    @Override
     public Promise<Void> persist(List<? extends IsResource> resources) {
         final List<Promise<Void>> promises = Lists.newArrayList();
         if (resources != null && !resources.isEmpty()) {
