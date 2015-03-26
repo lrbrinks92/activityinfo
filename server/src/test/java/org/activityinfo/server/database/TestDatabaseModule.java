@@ -25,7 +25,6 @@ package org.activityinfo.server.database;
 import com.bedatadriven.rebar.sql.client.query.MySqlDialect;
 import com.bedatadriven.rebar.sql.client.query.SqlDialect;
 import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
 
 import java.sql.Connection;
 

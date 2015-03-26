@@ -4,10 +4,10 @@ import com.google.common.base.Function;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import org.activityinfo.core.client.ResourceLocator;
-import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.form.FormClass;
+import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.promise.Promise;
-import org.activityinfo.ui.client.component.formdesigner.FormDesignerPanel;
+import org.activityinfo.ui.client.component.formdesigner.FormDesigner;
 import org.activityinfo.ui.client.widget.DisplayWidget;
 
 import javax.annotation.Nullable;
@@ -32,7 +32,7 @@ public class DesignTab implements DisplayWidget<FormInstance> {
                     @Nullable
                     @Override
                     public Void apply(FormClass formClass) {
-                        panel.add(new FormDesignerPanel(resourceLocator, formClass));
+                        panel.add(new FormDesigner(resourceLocator, formClass).getFormDesignerPanel());
                         return null;
                     }
                 });

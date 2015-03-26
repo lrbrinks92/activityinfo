@@ -22,6 +22,7 @@ package org.activityinfo.ui.client.component.formdesigner;
  */
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
@@ -34,7 +35,6 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
-import org.activityinfo.core.client.ResourceLocator;
 import org.activityinfo.model.form.*;
 import org.activityinfo.model.legacy.CuidAdapter;
 import org.activityinfo.model.resource.ResourceId;
@@ -65,12 +65,12 @@ import java.util.Set;
  */
 public class FormDesignerPanel extends Composite implements ScrollHandler, HasNavigationCallback, FormSavedGuard.HasSavedGuard {
 
-    private final static OurUiBinder uiBinder = GWT
-            .create(OurUiBinder.class);
+    private final static OurUiBinder uiBinder = GWT.create(OurUiBinder.class);
 
     interface OurUiBinder extends UiBinder<Widget, FormDesignerPanel> {
     }
 
+    private final FormDesigner formDesigner;
     private final Map<ResourceId, WidgetContainer> containerMap = Maps.newHashMap();
     private ScrollPanel scrollAncestor;
     private WidgetContainer selectedWidgetContainer;
@@ -95,7 +95,11 @@ public class FormDesignerPanel extends Composite implements ScrollHandler, HasNa
     @UiField
     HTML paletteSpacer;
 
-    public FormDesignerPanel(final ResourceLocator resourceLocator, @Nonnull final FormClass formClass) {
+    public FormDesignerPanel(@Nonnull final FormDesigner formDesigner) {
+        Preconditions.checkNotNull(formDesigner);
+
+        this.formDesigner = formDesigner;
+
         FormDesignerStyles.INSTANCE.ensureInjected();
         initWidget(uiBinder.createAndBindUi(this));
         propertiesPanel.setVisible(false);
@@ -110,20 +114,21 @@ public class FormDesignerPanel extends Composite implements ScrollHandler, HasNa
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
             public void execute() {
-                final FormDesigner formDesigner = new FormDesigner(FormDesignerPanel.this, resourceLocator, formClass);
+
                 savedGuard = formDesigner.getSavedGuard();
                 List<Promise<Void>> promises = Lists.newArrayList();
-                buildWidgetContainers(formDesigner, formClass, 0, promises);
+
+                buildWidgetContainers(formDesigner.getModel().getRootFormClass(), 0, promises);
                 Promise.waitAll(promises).then(new AsyncCallback<Void>() {
                     @Override
                     public void onFailure(Throwable caught) {
                         // ugly but we still have exception like: unsupportedoperationexception: domain is not supported.
-                        fillPanel(formClass, formDesigner);
+                        fillPanel();
                     }
 
                     @Override
                     public void onSuccess(Void result) {
-                        fillPanel(formClass, formDesigner);
+                        fillPanel();
                     }
                 });
 
@@ -141,7 +146,8 @@ public class FormDesignerPanel extends Composite implements ScrollHandler, HasNa
         });
     }
 
-    private void fillPanel(final FormClass formClass, final FormDesigner formDesigner) {
+    private void fillPanel() {
+        final FormClass formClass = formDesigner.getModel().getRootFormClass();
 
         // Exclude legacy builtin fields that the user won't be able to remove or reorder
         final Set<ResourceId> builtinFields = builtinFields(formClass.getId());
@@ -183,12 +189,12 @@ public class FormDesignerPanel extends Composite implements ScrollHandler, HasNa
         return fieldIds;
     }
 
-    private void buildWidgetContainers(final FormDesigner formDesigner, FormElementContainer container, int depth, List<Promise<Void>> promises) {
+    public void buildWidgetContainers(FormElementContainer container, int depth, List<Promise<Void>> promises) {
         for (FormElement element : container.getElements()) {
             if (element instanceof FormSection) {
                 FormSection formSection = (FormSection) element;
                 containerMap.put(formSection.getId(), new SectionWidgetContainer(formDesigner, formSection));
-                buildWidgetContainers(formDesigner, formSection, depth + 1, promises);
+                buildWidgetContainers(formSection, depth + 1, promises);
             } else if (element instanceof FormField) {
                 final FormField formField = (FormField) element;
                 Promise<Void> promise = formDesigner.getFormFieldWidgetFactory().createWidget(formDesigner.getFormClass(), formField, NullValueUpdater.INSTANCE).then(new Function<FormFieldWidget, Void>() {
