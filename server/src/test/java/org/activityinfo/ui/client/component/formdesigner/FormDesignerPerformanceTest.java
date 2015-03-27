@@ -58,30 +58,22 @@ public class FormDesignerPerformanceTest extends GWTTestCase {
 
     // we are forced to use JUnit3 because of GWTTestCase
     public void testTimeOfFormDesignerPanelBuild() {
+
         FormClass formClass = new FormClass(ResourceId.generateId());
 
         FormField textField = formClass.addField(ResourceId.generateId());
         textField.setType(TextType.INSTANCE);
         textField.setLabel("Text field");
 
-        List<Promise<Void>> promises = Lists.newArrayList();
-
         final Stopwatch stopwatch = Stopwatch.createStarted();
         FormDesigner formDesigner = new FormDesigner(new ResourceLocatorStub(), formClass);
 
-        formDesigner.getFormDesignerPanel().buildWidgetContainers(formClass, 0, promises);
-        Promise<Boolean> isFailedPromise = Promise.waitAll(promises).then(new Function<Void, Boolean>() {
+        formDesigner.getFormDesignerPanel().buildWidgetContainers(formClass, 0);
 
-            @Nonnull
-            @Override
-            public Boolean apply(Void input) {
-                long buildTime = stopwatch.elapsedMillis();
-                System.out.println("FormDesignerPanel creation takes: " + buildTime + "ms");
-                return buildTime > MAX_ALLOWED_BUILD_TIME_FOR_FORM_DESIGNER_PANEL * 1000;
-            }
-        });
+        long buildTime = stopwatch.elapsedMillis();
+        System.out.println("FormDesignerPanel creation takes: " + buildTime + "ms");
 
-        if (GwtPromiseMatchers.assertResolves(isFailedPromise)) {
+        if (buildTime > MAX_ALLOWED_BUILD_TIME_FOR_FORM_DESIGNER_PANEL * 1000) {
             throw new AssertionError("FormDesignerPanel build time takes more then " +
                     MAX_ALLOWED_BUILD_TIME_FOR_FORM_DESIGNER_PANEL + " second(s).");
         }

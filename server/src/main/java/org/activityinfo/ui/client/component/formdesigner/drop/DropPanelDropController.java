@@ -31,6 +31,7 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import org.activityinfo.model.form.FormField;
+import org.activityinfo.promise.Promise;
 import org.activityinfo.ui.client.component.form.field.FormFieldWidget;
 import org.activityinfo.ui.client.component.formdesigner.FormDesigner;
 import org.activityinfo.ui.client.component.formdesigner.container.FieldWidgetContainer;
@@ -83,7 +84,7 @@ public class DropPanelDropController extends FlowPanelDropController implements 
             @Nullable
             @Override
             public Void apply(@Nullable FormFieldWidget formFieldWidget) {
-                final FieldWidgetContainer fieldWidgetContainer = new FieldWidgetContainer(formDesigner, formFieldWidget, formField);
+                final FieldWidgetContainer fieldWidgetContainer = new FieldWidgetContainer(formDesigner, Promise.resolved(formFieldWidget), formField);
                 final Widget containerWidget = fieldWidgetContainer.asWidget();
 
                 drop(containerWidget, context);

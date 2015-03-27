@@ -21,7 +21,6 @@ package org.activityinfo.ui.client.component.formdesigner;
  * #L%
  */
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -33,7 +32,6 @@ import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import org.activityinfo.model.form.*;
 import org.activityinfo.model.legacy.CuidAdapter;
@@ -54,7 +52,6 @@ import org.activityinfo.ui.client.util.GwtUtil;
 import org.activityinfo.ui.client.widget.Button;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -118,20 +115,8 @@ public class FormDesignerPanel extends Composite implements ScrollHandler, HasNa
                 savedGuard = formDesigner.getSavedGuard();
                 List<Promise<Void>> promises = Lists.newArrayList();
 
-                buildWidgetContainers(formDesigner.getModel().getRootFormClass(), 0, promises);
-                Promise.waitAll(promises).then(new AsyncCallback<Void>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        // ugly but we still have exception like: unsupportedoperationexception: domain is not supported.
-                        fillPanel();
-                    }
-
-                    @Override
-                    public void onSuccess(Void result) {
-                        fillPanel();
-                    }
-                });
-
+                buildWidgetContainers(formDesigner.getModel().getRootFormClass(), 0);
+                fillPanel();
             }
         });
     }
@@ -189,23 +174,16 @@ public class FormDesignerPanel extends Composite implements ScrollHandler, HasNa
         return fieldIds;
     }
 
-    public void buildWidgetContainers(FormElementContainer container, int depth, List<Promise<Void>> promises) {
+    public void buildWidgetContainers(FormElementContainer container, int depth) {
         for (FormElement element : container.getElements()) {
             if (element instanceof FormSection) {
                 FormSection formSection = (FormSection) element;
                 containerMap.put(formSection.getId(), new SectionWidgetContainer(formDesigner, formSection));
-                buildWidgetContainers(formSection, depth + 1, promises);
+                buildWidgetContainers(formSection, depth + 1);
             } else if (element instanceof FormField) {
                 final FormField formField = (FormField) element;
-                Promise<Void> promise = formDesigner.getFormFieldWidgetFactory().createWidget(formDesigner.getFormClass(), formField, NullValueUpdater.INSTANCE).then(new Function<FormFieldWidget, Void>() {
-                    @Nullable
-                    @Override
-                    public Void apply(@Nullable FormFieldWidget input) {
-                        containerMap.put(formField.getId(), new FieldWidgetContainer(formDesigner, input, formField));
-                        return null;
-                    }
-                });
-                promises.add(promise);
+                Promise<? extends FormFieldWidget> widget = formDesigner.getFormFieldWidgetFactory().createWidget(formDesigner.getFormClass(), formField, NullValueUpdater.INSTANCE);
+                containerMap.put(formField.getId(), new FieldWidgetContainer(formDesigner, widget, formField));
             }
         }
     }

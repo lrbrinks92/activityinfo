@@ -21,6 +21,8 @@ package org.activityinfo.ui.client.component.formdesigner.container;
  * #L%
  */
 
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -29,11 +31,17 @@ import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Widget;
 import org.activityinfo.model.form.FormField;
+import org.activityinfo.promise.Promise;
 import org.activityinfo.ui.client.component.form.field.FormFieldWidget;
 import org.activityinfo.ui.client.component.formdesigner.FormDesigner;
 import org.activityinfo.ui.client.component.formdesigner.event.WidgetContainerSelectionEvent;
+import org.activityinfo.ui.client.widget.loading.LoadingClientBundle;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author yuriyz on 7/14/14.
@@ -49,17 +57,27 @@ public class FieldWidgetContainer implements WidgetContainer {
 
     private static final LabelTemplate LABEL_TEMPLATE = GWT.create(LabelTemplate.class);
 
-    private FormDesigner formDesigner;
-    private FormFieldWidget formFieldWidget;
-    private FormField formField;
-    private final WidgetContainerPanel widgetContainer;
+    private final Image loadingImage = new Image(LoadingClientBundle.INSTANCE.loadingIcon());
 
-    public FieldWidgetContainer(final FormDesigner formDesigner, FormFieldWidget formFieldWidget, final FormField formField) {
+    private final Promise<? extends FormFieldWidget> formFieldWidget;
+    private final FormDesigner formDesigner;
+    private final FormField formField;
+
+    private final WidgetContainerPanel widgetContainer;
+    private boolean loading = true;
+
+    public FieldWidgetContainer(@Nonnull final FormDesigner formDesigner, @Nonnull final Promise<? extends FormFieldWidget> formFieldWidget, @Nonnull final FormField formField) {
+        Preconditions.checkNotNull(formDesigner);
+        Preconditions.checkNotNull(formFieldWidget);
+        Preconditions.checkNotNull(formField);
+
         this.formDesigner = formDesigner;
-        this.formFieldWidget = formFieldWidget;
         this.formField = formField;
+        this.formFieldWidget = formFieldWidget;
+
         widgetContainer = new WidgetContainerPanel(formDesigner);
-        widgetContainer.getWidgetContainer().add(formFieldWidget);
+
+        widgetContainer.getWidgetContainer().add(loadingImage);
         widgetContainer.getRemoveButton().addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -72,13 +90,38 @@ public class FieldWidgetContainer implements WidgetContainer {
                 formDesigner.getEventBus().fireEvent(new WidgetContainerSelectionEvent(FieldWidgetContainer.this));
             }
         });
+
         // Workaround(alex): store field id with widget so we can update model order after
         // drag and drop
         widgetContainer.asWidget().getElement().setAttribute(DATA_FIELD_ID, formField.getId().asString());
+
+        if (formFieldWidget.isSettled()) {
+            widgetLoaded();
+        } else {
+            formFieldWidget.then(new Function<FormFieldWidget, Object>() {
+                @Nullable
+                @Override
+                public Object apply(FormFieldWidget input) {
+                    widgetLoaded();
+                    return null;
+                }
+            });
+        }
+    }
+
+    private void widgetLoaded() {
+        Preconditions.checkState(formFieldWidget.getState() == Promise.State.FULFILLED);
+        loading = false;
+        widgetContainer.getWidgetContainer().remove(loadingImage);
+        widgetContainer.getWidgetContainer().add(formFieldWidget.get());
         syncWithModel();
     }
 
     public void syncWithModel() {
+        if (loading) { // it's not allowed to sync with model if widget is not loaded yet
+            throw new RuntimeException("Widget is not loaded yet. Sync is forbidden.");
+        }
+
         final SafeHtmlBuilder label = new SafeHtmlBuilder();
 
         if (!Strings.isNullOrEmpty(formField.getCode())) { // append code
@@ -89,14 +132,14 @@ public class FieldWidgetContainer implements WidgetContainer {
         if (formField.isRequired()) {
             label.append(LABEL_TEMPLATE.mandatoryMarker());
         }
-        formFieldWidget.setReadOnly(formField.isReadOnly());
+        formFieldWidget.get().setReadOnly(formField.isReadOnly());
 
         String labelHtml = label.toSafeHtml().asString();
         if (!formField.isVisible()) {
             labelHtml = "<del>" + labelHtml + "</del>";
         }
         widgetContainer.getLabel().setHTML(labelHtml);
-        formFieldWidget.setType(formField.getType());
+        formFieldWidget.get().setType(formField.getType());
     }
 
     public Widget asWidget() {
@@ -107,16 +150,15 @@ public class FieldWidgetContainer implements WidgetContainer {
         return widgetContainer.getDragHandle();
     }
 
-
-    public FormFieldWidget getFormFieldWidget() {
-        return formFieldWidget;
-    }
-
     public FormField getFormField() {
         return formField;
     }
 
     public FormDesigner getFormDesigner() {
         return formDesigner;
+    }
+
+    public boolean isLoading() {
+        return loading;
     }
 }
