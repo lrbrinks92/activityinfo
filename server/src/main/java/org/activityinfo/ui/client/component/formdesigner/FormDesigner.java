@@ -56,7 +56,7 @@ public class FormDesigner {
     private final FormDesignerModel model;
     private final PropertiesPresenter propertiesPresenter;
     private final HeaderPresenter headerPresenter;
-    private final FormDesignerPanel formDesignerPanel;
+    private final FormDesignerPanelPresenter formDesignerPanelPresenter;
     private final FormFieldWidgetFactory formFieldWidgetFactory;
     private final FormSavedGuard savedGuard;
     private final FormDesignerActions formDesignerActions;
@@ -66,26 +66,23 @@ public class FormDesigner {
         Preconditions.checkNotNull(formClass);
 
         this.resourceLocator = resourceLocator;
-
+        this.formFieldWidgetFactory = new FormFieldWidgetFactory(resourceLocator, FieldWidgetMode.DESIGN);
         this.model = new FormDesignerModel(formClass);
-        this.formDesignerPanel = new FormDesignerPanel(this);
+        this.formDesignerPanelPresenter = new FormDesignerPanelPresenter(this, FormDesignerPanelProvider.getCleanPanel());
+        this.propertiesPresenter = new PropertiesPresenter(formDesignerPanelPresenter.getPanel().getPropertiesPanel(), this);
 
-        propertiesPresenter = new PropertiesPresenter(formDesignerPanel.getPropertiesPanel(), this);
 
-        formFieldWidgetFactory = new FormFieldWidgetFactory(resourceLocator, FieldWidgetMode.DESIGN);
+        ForwardDropController forwardDropController = new ForwardDropController(formDesignerPanelPresenter.getPanel().getDropPanel());
+        forwardDropController.add(new DropPanelDropController(formDesignerPanelPresenter.getPanel().getDropPanel(), this));
 
-        ForwardDropController forwardDropController = new ForwardDropController(formDesignerPanel.getDropPanel());
-        forwardDropController.add(new DropPanelDropController(formDesignerPanel.getDropPanel(), this));
-
-        formDesignerPanel.getFieldPalette().bind(eventBus, forwardDropController);
-        formDesignerPanel.bind(eventBus);
+        formDesignerPanelPresenter.getPanel().getFieldPalette().bind(eventBus, forwardDropController);
+        formDesignerPanelPresenter.bind(eventBus);
         model.bind(eventBus);
 
         headerPresenter = new HeaderPresenter(this);
         headerPresenter.show();
 
         savedGuard = new FormSavedGuard(this);
-
         formDesignerActions = new FormDesignerActions(this);
     }
 
@@ -97,8 +94,8 @@ public class FormDesigner {
         return savedGuard;
     }
 
-    public FormDesignerPanel getFormDesignerPanel() {
-        return formDesignerPanel;
+    public FormDesignerPanelPresenter getFormDesignerPanelPresenter() {
+        return formDesignerPanelPresenter;
     }
 
     public EventBus getEventBus() {
@@ -122,7 +119,7 @@ public class FormDesigner {
     }
 
     public DragController getDragController() {
-        return formDesignerPanel.getFieldPalette().getDragController();
+        return formDesignerPanelPresenter.getPanel().getFieldPalette().getDragController();
     }
 
     public void updateFieldOrder() {
@@ -134,7 +131,7 @@ public class FormDesigner {
 
         // update the order of the model
         List<FormElement> elements = Lists.newArrayList();
-        FlowPanel panel = formDesignerPanel.getDropPanel();
+        FlowPanel panel = formDesignerPanelPresenter.getPanel().getDropPanel();
         for (int i = 0; i != panel.getWidgetCount(); ++i) {
             Widget widget = panel.getWidget(i);
             String fieldId = widget.getElement().getAttribute(FieldWidgetContainer.DATA_FIELD_ID);

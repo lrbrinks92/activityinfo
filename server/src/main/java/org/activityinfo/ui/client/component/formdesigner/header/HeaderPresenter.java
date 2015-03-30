@@ -44,7 +44,7 @@ public class HeaderPresenter {
 
     public HeaderPresenter(FormDesigner formDesigner) {
         this.formDesigner = formDesigner;
-        this.headerPanel = formDesigner.getFormDesignerPanel().getHeaderPanel();
+        this.headerPanel = formDesigner.getFormDesignerPanelPresenter().getPanel().getHeaderPanel();
         this.formClass = formDesigner.getFormClass();
         formDesigner.getEventBus().addHandler(WidgetContainerSelectionEvent.TYPE, new WidgetContainerSelectionEvent.Handler() {
             @Override

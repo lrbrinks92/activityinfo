@@ -37,7 +37,6 @@
       </div>
 
       <div class="col-xs-2">
-        <g:HTMLPanel>
           <g:HTML ui:field="paletteSpacer" width="100%" height="0px"/>
 
           <div class="row">
@@ -59,7 +58,6 @@
               <palette:FieldPalette ui:field="fieldPalette" width="350px"/>
             </div>
           </div>
-        </g:HTMLPanel>
       </div>
     </div>
   </g:HTMLPanel>

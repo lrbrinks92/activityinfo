@@ -80,15 +80,15 @@ public class FormFieldWidgetFactory {
         this.fieldWidgetMode = fieldWidgetMode;
     }
 
-    public Promise<? extends FormFieldWidget> createWidget(FormClass formClass, FormField field, ValueUpdater valueUpdater) {
-        return createWidget(null, formClass, field, valueUpdater, null, null);
+    public Promise<? extends FormFieldWidget> createWidget(FormField field, ValueUpdater valueUpdater) {
+        return createWidget(null, field, valueUpdater, null, null);
     }
 
-    public Promise<? extends FormFieldWidget> createWidget(FormClass formClass, FormField field, ValueUpdater valueUpdater, @Nullable EventBus eventBus) {
-        return createWidget(null, formClass, field, valueUpdater, null, eventBus);
+    public Promise<? extends FormFieldWidget> createWidget(FormField field, ValueUpdater valueUpdater, @Nullable EventBus eventBus) {
+        return createWidget(null, field, valueUpdater, null, eventBus);
     }
 
-    public Promise<? extends FormFieldWidget> createWidget(String resourceId, FormClass formClass, FormField field,
+    public Promise<? extends FormFieldWidget> createWidget(String resourceId, FormField field,
                                                            ValueUpdater valueUpdater, FormClass validationFormClass, @Nullable EventBus eventBus) {
         FieldType type = field.getType();
 

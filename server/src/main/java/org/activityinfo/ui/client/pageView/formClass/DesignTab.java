@@ -32,7 +32,7 @@ public class DesignTab implements DisplayWidget<FormInstance> {
                     @Nullable
                     @Override
                     public Void apply(FormClass formClass) {
-                        panel.add(new FormDesigner(resourceLocator, formClass).getFormDesignerPanel());
+                        panel.add(new FormDesigner(resourceLocator, formClass).getFormDesignerPanelPresenter().getPanel());
                         return null;
                     }
                 });

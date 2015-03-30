@@ -156,7 +156,7 @@ public class SimpleFormPanel implements DisplayWidget<FormInstance> {
                 if (!field.isVisible()) {
                     return Promise.resolved(null); // we have join inside forEach, must return promise
                 } else {
-                    return widgetFactory.createWidget(resourceId, formClass, field, new ValueUpdater<FieldValue>() {
+                    return widgetFactory.createWidget(resourceId, field, new ValueUpdater<FieldValue>() {
                         @Override
                         public void update(FieldValue value) {
                             onFieldUpdated(field, value);

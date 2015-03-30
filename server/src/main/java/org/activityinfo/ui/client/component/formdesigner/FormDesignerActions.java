@@ -38,7 +38,7 @@ public class FormDesignerActions {
 
     public FormDesignerActions(FormDesigner formDesigner) {
         this.formDesigner = formDesigner;
-        formDesignerPanel = formDesigner.getFormDesignerPanel();
+        formDesignerPanel = formDesigner.getFormDesignerPanelPresenter().getPanel();
         formDesignerPanel.getSaveButton().addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
