@@ -1,6 +1,7 @@
 package org.activityinfo.ui.client.pageView.formClass;
 
 import com.google.common.base.Function;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import org.activityinfo.core.client.ResourceLocator;
@@ -8,6 +9,8 @@ import org.activityinfo.model.form.FormClass;
 import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.promise.Promise;
 import org.activityinfo.ui.client.component.formdesigner.FormDesigner;
+import org.activityinfo.ui.client.component.formdesigner.FormDesignerPanel;
+import org.activityinfo.ui.client.component.formdesigner.FormDesignerPanelProvider;
 import org.activityinfo.ui.client.widget.DisplayWidget;
 
 import javax.annotation.Nullable;
@@ -31,8 +34,16 @@ public class DesignTab implements DisplayWidget<FormInstance> {
                 .then(new Function<FormClass, Void>() {
                     @Nullable
                     @Override
-                    public Void apply(FormClass formClass) {
-                        panel.add(new FormDesigner(resourceLocator, formClass).getFormDesignerPanelPresenter().getPanel());
+                    public Void apply(final FormClass formClass) {
+                        final FormDesignerPanel formDesignerPanel = FormDesignerPanelProvider.getCleanPanel();
+                        panel.add(formDesignerPanel);
+
+                        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                            @Override
+                            public void execute() {
+                                new FormDesigner(resourceLocator, formClass, formDesignerPanel);
+                            }
+                        });
                         return null;
                     }
                 });

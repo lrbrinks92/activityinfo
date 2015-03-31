@@ -50,7 +50,7 @@ public class FormDesignerPerformanceTest extends GWTTestCase {
 
     private static final FormClass DUMMY_FORM_CLASS = new FormClass(ResourceId.generateId());
     private static final int MAX_ALLOWED_BUILD_TIME_FOR_FORM_DESIGNER_PANEL_MS = 2000; // in milliseconds
-    private static final int MAX_ALLOWED_BUILD_TIME_FOR_FORM_FIELD_WIDGET_MS = 50; // in milliseconds
+    private static final int MAX_ALLOWED_BUILD_TIME_FOR_FORM_FIELD_WIDGET_MS = 30; // in milliseconds
 
     private static FormDesigner formDesigner;
 

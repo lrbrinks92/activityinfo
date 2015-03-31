@@ -68,7 +68,7 @@ public class FormDesignerPanel extends Composite implements ScrollHandler, HasNa
     @UiField
     HTML paletteSpacer;
 
-    public FormDesignerPanel() {
+    FormDesignerPanel() {
 
         // todo(yuriy) injecting resources takes too much time (~1 second), we have to improve it
         FormDesignerStyles.INSTANCE.ensureInjected();

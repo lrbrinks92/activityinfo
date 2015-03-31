@@ -62,13 +62,18 @@ public class FormDesigner {
     private final FormDesignerActions formDesignerActions;
 
     public FormDesigner(@Nonnull ResourceLocator resourceLocator, @Nonnull FormClass formClass) {
+        this(resourceLocator, formClass, FormDesignerPanelProvider.getCleanPanel());
+    }
+
+    public FormDesigner(@Nonnull ResourceLocator resourceLocator, @Nonnull FormClass formClass, @Nonnull FormDesignerPanel formDesignerPanel) {
         Preconditions.checkNotNull(resourceLocator);
         Preconditions.checkNotNull(formClass);
+        Preconditions.checkNotNull(formDesignerPanel);
 
         this.resourceLocator = resourceLocator;
         this.formFieldWidgetFactory = new FormFieldWidgetFactory(resourceLocator, FieldWidgetMode.DESIGN);
         this.model = new FormDesignerModel(formClass);
-        this.formDesignerPanelPresenter = new FormDesignerPanelPresenter(this, FormDesignerPanelProvider.getCleanPanel());
+        this.formDesignerPanelPresenter = new FormDesignerPanelPresenter(this, formDesignerPanel);
         this.propertiesPresenter = new PropertiesPresenter(formDesignerPanelPresenter.getPanel().getPropertiesPanel(), this);
 
 
