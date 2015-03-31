@@ -21,6 +21,8 @@ package org.activityinfo.ui.client.component.formdesigner;
  * #L%
  */
 
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.gwt.junit.client.GWTTestCase;
@@ -35,12 +37,18 @@ import org.activityinfo.model.type.number.QuantityType;
 import org.activityinfo.model.type.primitive.TextType;
 import org.activityinfo.ui.client.component.form.field.FormFieldWidget;
 import org.activityinfo.ui.client.component.formdesigner.drop.NullValueUpdater;
+import org.activityinfo.ui.client.widget.CheckBox;
+import org.activityinfo.ui.client.widget.RadioButton;
+import org.activityinfo.ui.client.widget.TextBox;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 import static org.activityinfo.core.client.GwtPromiseMatchers.assertResolves;
 
 /**
  * Main goal is to check time of creation of FormDesignerPanel.
- *
+ * <p/>
  * As reported by AI-1006, sometimes it takes more than 10 seconds which is not acceptable.
  * The goal is to keep FormDesignerPanel time less then 2 seconds.
  *
@@ -49,7 +57,7 @@ import static org.activityinfo.core.client.GwtPromiseMatchers.assertResolves;
 public class FormDesignerPerformanceTest extends GWTTestCase {
 
     private static final FormClass DUMMY_FORM_CLASS = new FormClass(ResourceId.generateId());
-    private static final int MAX_ALLOWED_BUILD_TIME_FOR_FORM_DESIGNER_PANEL_MS = 2000; // in milliseconds
+    private static final int MAX_ALLOWED_BUILD_TIME_FOR_FORM_DESIGNER_PANEL_MS = 1000; // in milliseconds
     private static final int MAX_ALLOWED_BUILD_TIME_FOR_FORM_FIELD_WIDGET_MS = 30; // in milliseconds
 
     private static FormDesigner formDesigner;
@@ -64,20 +72,73 @@ public class FormDesignerPerformanceTest extends GWTTestCase {
         return "org.activityinfo.ui.ActivityInfoSafariTest";
     }
 
+    public void testShowWidgetCreationTime() {
+        // TextBox
+        show(new Function<Void, String>() {
+            @Nullable
+            @Override
+            public String apply(@Nullable Void input) {
+                new TextBox();
+                return "TextBox";
+            }
+        });
+
+        // RadioButton
+        show(new Function<Void, String>() {
+            @Nullable
+            @Override
+            public String apply(@Nullable Void input) {
+                new RadioButton("test");
+                return "RadioButton";
+            }
+        });
+
+        // CheckBox
+        show(new Function<Void, String>() {
+            @Nullable
+            @Override
+            public String apply(@Nullable Void input) {
+                new CheckBox("test");
+                return "CheckBox";
+            }
+        });
+
+    }
+
     public void testTextFieldCreation() {
-        FormField textField = new FormField(ResourceId.generateId())
+        FormField field = new FormField(ResourceId.generateId())
                 .setType(TextType.INSTANCE)
                 .setLabel("Text field");
 
-        assertWidgetBuildtime(textField);
+        assertWidgetBuildtime(field);
     }
 
     public void testQuantityFieldCreation() {
-        FormField textField = new FormField(ResourceId.generateId())
+        FormField field = new FormField(ResourceId.generateId())
                 .setType(new QuantityType())
                 .setLabel("Quantity field");
 
-        assertWidgetBuildtime(textField);
+        assertWidgetBuildtime(field);
+    }
+
+    public void testEnumSingleFieldCreation() {
+        int count = 5;
+        FormField field = new FormField(ResourceId.generateId())
+                .setType(new EnumType(Cardinality.SINGLE, generateEnumItems(count)))
+                .setLabel("Enum single field");
+
+        // on each enumItem we spend ~6-7ms, please check testShowWidgetCreationTime() to see time of single widget creation
+        assertWidgetBuildtime(field, MAX_ALLOWED_BUILD_TIME_FOR_FORM_FIELD_WIDGET_MS + count * 6);
+    }
+
+    public void testEnumMultipleFieldCreation() {
+        int count = 5;
+        FormField field = new FormField(ResourceId.generateId())
+                .setType(new EnumType(Cardinality.MULTIPLE, generateEnumItems(count)))
+                .setLabel("Enum single field");
+
+        // on each enumItem we spend ~6-7ms, please check testShowWidgetCreationTime() to see time of single widget creation
+        assertWidgetBuildtime(field, MAX_ALLOWED_BUILD_TIME_FOR_FORM_FIELD_WIDGET_MS + count * 6);
     }
 
 
@@ -125,15 +186,19 @@ public class FormDesignerPerformanceTest extends GWTTestCase {
     }
 
     private static void assertWidgetBuildtime(FormField formField) {
+        assertWidgetBuildtime(formField, MAX_ALLOWED_BUILD_TIME_FOR_FORM_FIELD_WIDGET_MS);
+    }
+
+    private static void assertWidgetBuildtime(FormField formField, int maxTime) {
         final Stopwatch stopwatch = Stopwatch.createStarted();
         createWidget(formField);
 
         long elapsed = stopwatch.elapsedMillis();
         System.out.println("creation field, type: " + formField.getType().getTypeClass().getId() + " takes: " + elapsed + "ms");
 
-        if (elapsed > MAX_ALLOWED_BUILD_TIME_FOR_FORM_FIELD_WIDGET_MS) {
+        if (elapsed > maxTime) {
             throw new AssertionError("FormFieldWidget build time takes more then " +
-                    MAX_ALLOWED_BUILD_TIME_FOR_FORM_FIELD_WIDGET_MS + " second(s).");
+                    maxTime + " second(s).");
         }
     }
 
@@ -143,6 +208,22 @@ public class FormDesignerPerformanceTest extends GWTTestCase {
 
     private static FormDesigner getFormDesigner(FormClass formClass) {
         return new FormDesigner(new ResourceLocatorStub(), formClass);
+    }
+
+    private static List<EnumItem> generateEnumItems(int count) {
+        Preconditions.checkState(count > 0);
+
+        List<EnumItem> list = Lists.newArrayList();
+        for (int i = 0; i < count; i++) {
+            list.add(new EnumItem(ResourceId.valueOf("_enum_item_" + i), "Value " + i));
+        }
+        return list;
+    }
+
+    private static void show(Function<Void, String> createWidgetFunction) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        String textToShow = createWidgetFunction.apply(null);
+        System.out.println("'new " + textToShow + "()' takes " + stopwatch.elapsedMillis() + "ms");
     }
 
 }
