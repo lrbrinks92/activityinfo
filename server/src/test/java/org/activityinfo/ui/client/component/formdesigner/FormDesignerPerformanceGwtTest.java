@@ -54,7 +54,7 @@ import static org.activityinfo.core.client.GwtPromiseMatchers.assertResolves;
  *
  * @author yuriyz on 03/26/2015.
  */
-public class FormDesignerPerformanceTest extends GWTTestCase {
+public class FormDesignerPerformanceGwtTest extends GWTTestCase {
 
     private static final FormClass DUMMY_FORM_CLASS = new FormClass(ResourceId.generateId());
     private static final int MAX_ALLOWED_BUILD_TIME_FOR_FORM_DESIGNER_PANEL_MS = 1000; // in milliseconds

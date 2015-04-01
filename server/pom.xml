@@ -549,6 +549,11 @@
               </modules>
             </configuration>
           </execution>
+          <execution>
+            <goals>
+              <goal>test</goal>
+            </goals>
+          </execution>
         </executions>
       </plugin>
 
@@ -567,6 +572,9 @@
             <testDatabaseUsername>${testDatabaseUsername}</testDatabaseUsername>
             <testDatabasePassword>${testDatabasePassword}</testDatabasePassword>
           </systemPropertyVariables>
+          <excludes> <!-- do not run gwt test, run them with gwt-maven-plugin -->
+            <exclude>**/*GwtTest.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
     </plugins>
