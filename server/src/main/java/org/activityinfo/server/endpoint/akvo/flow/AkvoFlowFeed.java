@@ -106,6 +106,9 @@ public class AkvoFlowFeed implements FeedService {
 
                 if (formField == null) {
                     LOGGER.severe("Can't get " + questionId);
+                } else if(!(formField.getType() instanceof EnumType)) {
+                    LOGGER.severe("Field " + formField.getCode() + " is not an EnumField");
+                    
                 } else {
                     for (EnumItem enumItem : ((EnumType) formField.getType()).getValues()) {
                         if (enumItem.getLabel().equals(questionAnswer.value)) {
