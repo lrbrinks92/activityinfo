@@ -25,6 +25,7 @@ package org.activityinfo.legacy.shared.model;
 import com.bedatadriven.rebar.time.calendar.LocalDate;
 import com.extjs.gxt.ui.client.data.BaseModelData;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonMethod;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -73,6 +74,7 @@ public class LockedPeriodDTO extends BaseModelData implements EntityDTO {
         return (Integer) get("id");
     }
 
+    @JsonIgnore
     public void setToDate(Date toDate) {
         set("toDate", new LocalDate(toDate));
     }
@@ -90,6 +92,7 @@ public class LockedPeriodDTO extends BaseModelData implements EntityDTO {
         return get("toDate");
     }
 
+    @JsonIgnore
     public void setFromDate(Date fromDate) {
         if (fromDate == null) {
             set("fromDate", null);

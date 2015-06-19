@@ -23,15 +23,12 @@ package org.activityinfo.legacy.shared.command;
  */
 
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.Modules;
 import org.activityinfo.server.command.CommandTestCase2;
 import org.activityinfo.server.database.OnDataSet;
-import org.activityinfo.server.database.TestDatabaseModule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(InjectionSupport.class)
-@Modules({TestDatabaseModule.class})
 @OnDataSet("/dbunit/sites-linked.db.xml")
 public class IndicatorLinksTest extends CommandTestCase2 {
 

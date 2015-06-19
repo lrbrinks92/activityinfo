@@ -98,7 +98,7 @@ public class DateUtilCalendarImpl extends DateUtil {
     }
 
     @Override
-    public Date floor(Date date, DateUnit dateUnit) {
+    public Date floorMonth(Date date) {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -106,55 +106,16 @@ public class DateUtilCalendarImpl extends DateUtil {
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-
-        if (dateUnit == DateUnit.YEAR) {
-            calendar.set(Calendar.MONTH, calendar.getActualMinimum(Calendar.MONTH));
-            calendar.set(Calendar.DATE, calendar.getActualMinimum(Calendar.MONTH));
-
-        } else if (dateUnit == DateUnit.QUARTER) {
-
-            // TODO
-            throw new Error("not implemented");
-
-        } else if (dateUnit == DateUnit.MONTH) {
-
-            calendar.set(Calendar.DATE, calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
-
-        } else if (dateUnit == DateUnit.WEEK_MON) {
-
-            // TODO
-            throw new Error("not implemented");
-
-        }
+        calendar.set(Calendar.DATE, calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
         return calendar.getTime();
     }
 
     @Override
-    public Date ceil(Date date, DateUnit dateUnit) {
+    public Date ceilMonth(Date date) {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-
-        if (dateUnit == DateUnit.YEAR) {
-            calendar.set(Calendar.MONTH, calendar.getActualMaximum(Calendar.MONTH));
-            calendar.set(Calendar.DATE, calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
-
-        } else if (dateUnit == DateUnit.QUARTER) {
-
-            // TODO
-            throw new Error("not implemented");
-
-        } else if (dateUnit == DateUnit.MONTH) {
-
-            calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
-
-        } else if (dateUnit == DateUnit.WEEK_MON) {
-
-            // TODO
-            throw new Error("not implemented");
-
-        }
-
+        calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
         return calendar.getTime();
     }
 

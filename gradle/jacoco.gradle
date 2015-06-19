@@ -1,0 +1,32 @@
+
+/**
+ * Configures Jacoco to support measurement of test coverage
+ * 
+ * We're avoiding the built-in Gradle Jacoco plugin because it doesn't play well with
+ * tasks like AppEngine Run, which doesn't implement JavaFork whatever
+ */
+
+
+
+
+subprojects {
+    apply plugin: 'jacoco'
+
+    tasks.withType(Test) {
+        jacoco {
+            // Turn off test coverage generation by default
+            enabled = false
+        }
+    }
+}
+
+// ONLY when sonar is enabled, ignore test failures when they occur 
+// and turn on instrumentation of tests
+project.gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.allTasks.find { it.name == "sonarRunner" }) {
+        project.getTasksByName("test", true).each { Test test ->
+            test.ignoreFailures = true
+            test.jacoco.enabled = true
+        }
+    }
+}

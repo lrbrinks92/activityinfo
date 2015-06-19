@@ -13,7 +13,6 @@ import org.activityinfo.legacy.shared.reports.model.layers.IconMapLayer;
 import org.activityinfo.legacy.shared.reports.model.layers.MapLayer;
 import org.activityinfo.server.command.CommandTestCase2;
 import org.activityinfo.server.database.OnDataSet;
-import org.activityinfo.server.database.TestDatabaseModule;
 import org.activityinfo.server.report.renderer.image.ImageMapRenderer;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 
 @RunWith(InjectionSupport.class)
-@Modules({TestDatabaseModule.class, ReportModule.class})
+@Modules(ReportModule.class)
 @OnDataSet("/dbunit/mg-mapping.db.xml")
 public class MgMapIntegrationTest extends CommandTestCase2 {
 

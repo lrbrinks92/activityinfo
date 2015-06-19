@@ -80,7 +80,7 @@ public class FormDesigner {
 
         savedGuard = new FormSavedGuard(this);
 
-        formDesignerActions = new FormDesignerActions(this);
+        formDesignerActions = FormDesignerActions.create(this);
     }
 
     public FormDesignerActions getFormDesignerActions() {

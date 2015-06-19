@@ -29,7 +29,7 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.TreeStore;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.google.common.base.Function;
@@ -45,7 +45,6 @@ import org.activityinfo.i18n.shared.UiConstants;
 import org.activityinfo.legacy.client.AsyncMonitor;
 import org.activityinfo.legacy.client.Dispatcher;
 import org.activityinfo.legacy.client.callback.SuccessCallback;
-import org.activityinfo.legacy.client.monitor.MaskingAsyncMonitor;
 import org.activityinfo.legacy.client.state.StateProvider;
 import org.activityinfo.legacy.shared.command.*;
 import org.activityinfo.legacy.shared.command.result.CreateResult;
@@ -228,8 +227,8 @@ public class DesignPresenter extends AbstractEditorGridPresenter<ModelData> impl
 
         }
 
-        for(LocationTypeDTO locationType : db.getCountry().getLocationTypes()) {
-            if(Objects.equals(locationType.getDatabaseId(), db.getId())) {
+        for (LocationTypeDTO locationType : db.getCountry().getLocationTypes()) {
+            if (Objects.equals(locationType.getDatabaseId(), db.getId()) && !locationType.isDeleted()) {
                 treeStore.add(locationType, false);
             }
         }
@@ -407,9 +406,9 @@ public class DesignPresenter extends AbstractEditorGridPresenter<ModelData> impl
                 return dto;
             }
         }
-//        throw new RuntimeException("Failed to find nationwide location type, db:" + db + ", country:" + db.getCountry());
-        // return first location, test db doesn't have nationwide location type for country
-        return db.getCountry().getLocationTypes().get(0);
+
+        MessageBox.info(I18N.CONSTANTS.alert(), I18N.MESSAGES.noNationWideLocationType(db.getName(), db.getCountry().getName()), null);
+        throw new RuntimeException("Failed to find nationwide location type, db:" + db.getName() + ", country:" + db.getCountry().getName());
     }
 
     private void createEntity(final ModelData parent, final EntityDTO newEntity) {

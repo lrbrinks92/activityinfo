@@ -120,7 +120,7 @@
 
                     <p>
 
-                    <p><a href="mailto:activityinfo@bedatadriven.com">Contact us</a>
+                    <p><a href="mailto:support@activityinfo.org">Contact us</a>
                         for more information.</p>
 
                     <p>In any case, you're welcome to evaluate the system without

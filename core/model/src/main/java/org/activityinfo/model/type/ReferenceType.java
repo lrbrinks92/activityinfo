@@ -85,8 +85,9 @@ public class ReferenceType implements ParametrizedFieldType {
     }
 
 
-    public void setRange(ResourceId formClassId) {
+    public ReferenceType setRange(ResourceId formClassId) {
         this.range = Collections.singleton(formClassId);
+        return this;
     }
 
     private void setRange(List<String> range) {

@@ -95,12 +95,12 @@ public class DateUtilGWTImpl extends DateUtil {
     }
 
     @Override
-    public Date floor(Date date, DateUnit dateUnit) {
+    public Date floorMonth(Date date) {
         throw new RuntimeException("not implemented");
     }
 
     @Override
-    public Date ceil(Date date, DateUnit dateUnit) {
+    public Date ceilMonth(Date date) {
         throw new RuntimeException("not implemented");
     }
 

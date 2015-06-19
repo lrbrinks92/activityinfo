@@ -27,7 +27,6 @@ import com.google.inject.Inject;
 import net.lightoze.gwt.i18n.server.LocaleProxy;
 import org.activityinfo.model.type.geo.AiLatLng;
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.Modules;
 import org.activityinfo.legacy.shared.command.GenerateElement;
 import org.activityinfo.legacy.shared.model.IndicatorDTO;
 import org.activityinfo.legacy.shared.reports.content.*;
@@ -35,11 +34,11 @@ import org.activityinfo.legacy.shared.reports.model.MapReportElement;
 import org.activityinfo.legacy.shared.reports.model.layers.PolygonMapLayer;
 import org.activityinfo.server.command.CommandTestCase2;
 import org.activityinfo.server.database.OnDataSet;
-import org.activityinfo.server.database.TestDatabaseModule;
 import org.activityinfo.server.geo.TestGeometry;
 import org.activityinfo.server.report.generator.MapGenerator;
 import org.activityinfo.server.report.renderer.itext.PdfReportRenderer;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,10 +49,15 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 @RunWith(InjectionSupport.class)
-@Modules({TestDatabaseModule.class})
 @OnDataSet("/dbunit/polygons.db.xml")
 public class PolygonGeneratorTest extends CommandTestCase2 {
 
+
+    @BeforeClass
+    public static void initLocale() {
+        LocaleProxy.initialize();
+    }
+    
     @Inject
     private MapGenerator generator;
 

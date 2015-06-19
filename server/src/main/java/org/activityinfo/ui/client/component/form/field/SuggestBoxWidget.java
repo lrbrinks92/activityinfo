@@ -27,6 +27,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.Widget;
+import org.activityinfo.i18n.shared.I18N;
 import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.form.FormInstanceLabeler;
 import org.activityinfo.model.resource.ResourceId;
@@ -50,9 +51,10 @@ public class SuggestBoxWidget implements ReferenceFieldWidget {
     private ResourceId value;
     private List<FormInstance> range;
 
-    public SuggestBoxWidget(List<FormInstance> range, final ValueUpdater<ReferenceValue> valueUpdater) {
-        this.range = range;
-        this.suggestBox = new SuggestBox(new InstanceSuggestOracle(range));
+    public SuggestBoxWidget(List<FormInstance> instances, final ValueUpdater<ReferenceValue> valueUpdater) {
+        this.range = instances;
+        this.suggestBox = new SuggestBox(new InstanceSuggestOracle(instances));
+        this.suggestBox.setPlaceholder(I18N.CONSTANTS.suggestBoxPlaceholder());
         this.suggestBox.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
             @Override
             public void onSelection(SelectionEvent<SuggestOracle.Suggestion> event) {

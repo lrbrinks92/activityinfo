@@ -57,7 +57,7 @@ import java.io.IOException;
 @Singleton
 public class MapIconServlet extends HttpServlet {
 
-    private ImageMapRenderer renderer;
+    private final ImageMapRenderer renderer;
 
     @Inject
     public MapIconServlet(ImageMapRenderer renderer) {

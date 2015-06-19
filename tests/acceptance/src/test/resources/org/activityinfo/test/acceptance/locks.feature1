@@ -1,0 +1,33 @@
+@web
+Feature: Locks
+
+  Background:
+    Given I have created a database "Hospital Activities"
+    And I have created the project "Project1"
+    And I have created the project "Project2"
+    And I have created a form named "Patient Registration" with the submissions:
+      | Name of patient | sex of patient | start date | end date   | Project  |
+      | text            | enum           | date       | date       | enum     |
+      | J. Smith        | M              | 05/01/2015 | 15/01/2015 | Project1 |
+      | L. Johnson      | F              | 25/01/2015 | 05/02/2015 | Project2 |
+    And I have created a form named "Staff training" with the submissions:
+      | # of students | start date | end date   | Project  |
+      | quantity      | date       | date       | enum     |
+      | 25            | 20/12/2014 | 25/12/2014 | Project1 |
+      | 3             | 29/12/2015 | 05/01/2015 | Project2 |
+
+  Scenario: Lock on a database
+    When I add a lock "lock1" on the database "Hospital Activities" from 01/01/2015 to 31/01/2015
+    Then database entry with end date "15/01/2015" appears with lock in Data Entry and cannot be modified nor deleted
+    Then database entry with end date "05/01/2015" appears with lock in Data Entry and cannot be modified nor deleted
+    Then new entries with end dates comprised between 01/01/2015 and 31/01/2015 cannot be submitted in that database
+
+  Scenario: Lock on a form
+    When I add a lock "lock2" on the form "Staff training" from 01/01/2015 to 31/01/2015
+    Then "Staff training" form entry with end date "05/01/2015" appear with lock in Data Entry and cannot be modified nor deleted
+    And new entries with end dates comprised between 01/01/2015 and 31/01/2015 cannot be submitted in that form.
+
+  Scenario: Lock on a project
+    When I add a lock "lock3" on the project "Project1" from 01/01/2015 to 31/01/2015
+    Then database entry with end date "15/01/2015" appears with a lock in Data Entry and cannot be modified nor deleted
+    Then new entries with end dates comprised between 01/01/2015 and 31/01/2015 and belonging to Project1 cannot be submitted.

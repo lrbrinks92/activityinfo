@@ -58,7 +58,6 @@ public class ValidationResultCell extends AbstractCell<ValidatedRow> {
     public void render(Context context, ValidatedRow data, SafeHtmlBuilder sb) {
         final SafeHtml safeHtml = Templates.INSTANCE.html(style(data.getResult(columnIndex).getState()), accessor.getValue(data.getSourceRow()));
         sb.append(safeHtml);
-//        return state + " - " + accessor.getValue(row.getSourceRow());
     }
 
     private static String style(ValidationResult.State state) {

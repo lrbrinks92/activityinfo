@@ -31,10 +31,10 @@ import com.google.inject.Inject;
 import com.lowagie.text.*;
 import com.lowagie.text.html.HtmlWriter;
 import org.activityinfo.legacy.shared.reports.model.ReportElement;
+import org.activityinfo.server.generated.GeneratedResource;
+import org.activityinfo.server.generated.StorageProvider;
 import org.activityinfo.server.geo.AdminGeometryProvider;
 import org.activityinfo.server.report.generator.MapIconPath;
-import org.activityinfo.server.report.output.StorageProvider;
-import org.activityinfo.server.report.output.TempStorage;
 import org.activityinfo.server.report.renderer.image.ImageCreator;
 import org.activityinfo.server.report.renderer.image.ItextGraphic;
 
@@ -167,11 +167,11 @@ public class HtmlReportRenderer extends ItextReportRenderer {
         @Override
         public Image toItextImage() throws BadElementException {
             try {
-                TempStorage storage = imageStorageProvider.allocateTemporaryFile("image/png", "activityinfo.png");
-                ImageIO.write(image, "PNG", storage.getOutputStream());
-                storage.getOutputStream().close();
+                GeneratedResource storage = imageStorageProvider.create("image/png", "activityinfo.png");
+                ImageIO.write(image, "PNG", storage.openOutputStream());
+                storage.openOutputStream().close();
 
-                return new MyImage(new URL(storage.getUrl()), image.getWidth(), image.getHeight());
+                return new MyImage(new URL(storage.getDownloadUri()), image.getWidth(), image.getHeight());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

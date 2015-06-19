@@ -33,6 +33,35 @@ public class ActivityFormClassBuilder {
         this.activity = activity;
     }
 
+    public static FormField createPartnerField(ResourceId classId, ActivityFormDTO activity) {
+        return new FormField(CuidAdapter.field(classId, CuidAdapter.PARTNER_FIELD))
+                .setLabel(I18N.CONSTANTS.partner())
+                .setType(ReferenceType.single(CuidAdapter.partnerFormClass(activity.getDatabaseId())))
+                .setVisible(activity.isEditAllAllowed() && activity.getPartnerRange().size() > 1)
+                .setRequired(true);
+    }
+
+    public static FormField createStartDateField(ResourceId classId) {
+        return new FormField(CuidAdapter.field(classId, CuidAdapter.START_DATE_FIELD))
+                .setLabel(I18N.CONSTANTS.startDate())
+                .setType(LocalDateType.INSTANCE)
+                .setRequired(true);
+    }
+
+    public static FormField createEndDateField(ResourceId classId) {
+        return new FormField(CuidAdapter.field(classId, CuidAdapter.END_DATE_FIELD))
+                .setLabel(I18N.CONSTANTS.endDate())
+                .setType(LocalDateType.INSTANCE)
+                .setRequired(true);
+    }
+
+    public static FormField createProjectField(ResourceId classId, ActivityFormDTO activity) {
+        return new FormField(CuidAdapter.field(classId, CuidAdapter.PROJECT_FIELD))
+                .setLabel(I18N.CONSTANTS.project())
+                .setType(ReferenceType.single(CuidAdapter.projectFormClass(activity.getDatabaseId())))
+                .setVisible(activity.getProjects().size() > 0);
+    }
+
     public FormClass build() {
         ResourceId classId = CuidAdapter.activityFormClass(activity.getId());
 
@@ -45,30 +74,11 @@ public class ActivityFormClassBuilder {
             siteForm.setParentId(CuidAdapter.databaseId(activity.getDatabaseId()));
         }
 
-        FormField partnerField = new FormField(CuidAdapter.field(classId, CuidAdapter.PARTNER_FIELD))
-                .setLabel(I18N.CONSTANTS.partner())
-                .setType(ReferenceType.single(CuidAdapter.partnerFormClass(activity.getDatabaseId())))
-                .setVisible(activity.isEditAllAllowed() && activity.getPartnerRange().size() > 1)
-                .setRequired(true);
-        siteForm.addElement(partnerField);
+        siteForm.addElement(createPartnerField(classId, activity));
+        siteForm.addElement(createProjectField(classId, activity));
 
-        FormField projectField = new FormField(CuidAdapter.field(classId, CuidAdapter.PROJECT_FIELD))
-        .setLabel(I18N.CONSTANTS.project())
-        .setType(ReferenceType.single(CuidAdapter.projectFormClass(activity.getDatabaseId())))
-        .setVisible(activity.getProjects().size() > 0);
-        siteForm.addElement(projectField);
-
-        FormField startDateField = new FormField(CuidAdapter.field(classId, CuidAdapter.START_DATE_FIELD))
-        .setLabel(I18N.CONSTANTS.startDate())
-        .setType(LocalDateType.INSTANCE)
-        .setRequired(true);
-        siteForm.addElement(startDateField);
-
-        FormField endDateField = new FormField(CuidAdapter.field(classId, CuidAdapter.END_DATE_FIELD))
-                .setLabel(I18N.CONSTANTS.endDate())
-                .setType(LocalDateType.INSTANCE)
-                .setRequired(true);
-        siteForm.addElement(endDateField);
+        siteForm.addElement(createStartDateField(classId));
+        siteForm.addElement(createEndDateField(classId));
 
         if(!activity.getLocationType().isNationwide()) {
             FormField locationField = new FormField(CuidAdapter.locationField(activity.getId()))

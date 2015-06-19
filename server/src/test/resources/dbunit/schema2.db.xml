@@ -7,15 +7,15 @@
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as
-  published by the Free Software Foundation, either version 3 of the 
+  published by the Free Software Foundation, either version 3 of the
   License, or (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
-  You should have received a copy of the GNU General Public 
+
+  You should have received a copy of the GNU General Public
   License along with this program.  If not, see
   <http://www.gnu.org/licenses/gpl-3.0.html>.
   #L%
@@ -24,91 +24,275 @@
 
 <dataset>
 
-  <!--  This is test data used for the SchemaBuilderTest cases -->
+  <!--  This is test data used for the SchemaUpdateBuilderTest cases -->
 
   <country countryId="1" name="Rdc" x1="0" y1="0" x2="0" y2="0"/>
+  <country countryId="2" name="Rdc2" x1="0" y1="0" x2="0" y2="0"/>
+  <country countryId="3" name="Rdc3" x1="0" y1="0" x2="0" y2="0"/>
+  <country countryId="4" name="Rdc4" x1="0" y1="0" x2="0" y2="0"/>
+  <country countryId="5" name="Rdc5" x1="0" y1="0" x2="0" y2="0"/>
+  <country countryId="6" name="Rdc6" x1="0" y1="0" x2="0" y2="0"/>
+  <country countryId="7" name="Rdc7" x1="0" y1="0" x2="0" y2="0"/>
+  <country countryId="8" name="Rdc8" x1="0" y1="0" x2="0" y2="0"/>
+  <country countryId="9" name="Rdc9" x1="0" y1="0" x2="0" y2="0"/>
+  <country countryId="10" name="Rdc10" x1="0" y1="0" x2="0" y2="0"/>
 
   <adminLevel countryId="1" adminLevelId="1" name="Province"/>
+  <adminLevel countryId="1" adminLevelId="2" name="Territoire"
+              ParentId="1"/>
 
-  <locationType locationTypeId="1" countryId="1" name="Province"  boundAdminLevelId="1" reuse="1"/>
+  <locationType locationTypeId="1" countryId="1" name="localite"
+                reuse="1"/>
+  <locationType locationTypeId="2" countryId="1"
+                name="Health Center" reuse="1"/>
+  <locationType locationTypeId="3" countryId="1" name="Territorie"
+                reuse="1" BoundAdminLevelId="2"/>
 
-  <!-- Indicators -->
+  <adminEntity adminLevelId="1" adminEntityId="1" name="Kinshasa"
+               code="10" x1="0" y1="0" x2="0" y2="0"/>
+  <adminEntity adminLevelId="1" adminEntityId="2" name="Sud Kivu"
+               code="20" x1="0" y1="0" x2="0" y2="0"/>
+  <adminEntity adminLevelId="1" adminEntityId="3" name="Nord Kivu"
+               code="30" x1="0" y1="0" x2="0" y2="0"/>
+  <adminEntity adminLevelId="1" adminEntityId="4" name="Ituri"
+               code="40" x1="0" y1="0" x2="0" y2="0"/>
+
+  <adminEntity adminLevelId="2" adminEntityId="10"
+               adminEntityParentId="4" name="Bukavu" code="203" x1="0" y1="0" x2="0"
+               y2="0"/>
+  <adminEntity adminLevelId="2" adminEntityId="11"
+               adminEntityParentId="2" name="Walungu" code="201" x1="0" y1="0" x2="0"
+               y2="0"/>
+  <adminEntity adminLevelId="2" adminEntityId="12"
+               adminEntityParentId="2" name="Shabunda" code="202" x1="0" y1="0" x2="0"
+               y2="0"/>
+  <adminEntity adminLevelId="2" adminEntityId="13"
+               adminEntityParentId="2" name="Kalehe" code="203" x1="-44" y1="-22"
+               x2="33.5" y2="40"/>
+  <adminEntity adminLevelId="2" adminEntityId="21"
+               adminEntityParentId="4" name="Irumu" code="203" x1="0" y1="0" x2="0"
+               y2="0"/>
 
 
-  <attributeGroup attributeGroupId="1" sortOrder="1"
-                  multipleAllowed="1" name="Cause" mandatory="0"/>
+  <!-- USER -->
+  <userLogin userId="1" name="User1" email="user1@user.com" locale="fr" emailnotification="1" organization="" jobtitle=""/>
+  <userLogin userId="2" name="User2" email="user2@user.com" locale="fr" emailnotification="1" organization="" jobtitle=""/>
 
+  <!-- ATTRIBUTE GROUPS -->
 
-  <attribute attributeId="1" attributeGroupId="1" name="Retour"
-             sortOrder="2"/>
+  <attributeGroup attributeGroupId="1" name="cause"
+                  multipleAllowed="1" sortOrder="2" mandatory="0"/>
 
+  <attribute attributeGroupId="1" attributeId="1" sortOrder="2"
+             name="Catastrophe Naturelle"/>
+  <attribute attributeGroupId="1" attributeId="2" sortOrder="1"
+             name="Deplacement"/>
 
-  <attribute attributeId="2" attributeGroupId="1" name="Deplacement"
+  <attributeGroup attributeGroupId="2" name="contenu du kit"
+                  multipleAllowed="1" sortOrder="1" mandatory="0"/>
+
+  <attribute attributeGroupId="2" attributeId="3" name="Casserole"
              sortOrder="1"/>
 
+  <attribute attributeGroupId="2" attributeId="4" name="Soap"
+             sortOrder="2"/>
 
-  <userLogin userId="1" name="Alex" email="user1@user.com"
-             locale="fr" emailnotification="1" organization="" jobtitle=""/>
+  <attributeGroup attributeGroupId="3" name="Something about Kivu"
+                  multipleAllowed="1" sortOrder="1" mandatory="0"/>
+
+  <attributeGroup attributeGroupId="991" name="Deleted"
+                  dateDeleted="2011-1-1" multipleAllowed="1" sortOrder="1" mandatory="0"/>
+
+  <!-- Database: PEAR -->
 
   <userDatabase databaseId="1" name="PEAR" countryId="1"
                 ownerUserId="1" lastSchemaUpdate="2009-01-01"/>
 
-  <activity activityId="1" databaseId="1" name="NFI"
-            reportingFrequency="0" allowEdit="1" sortOrder="1" locationTypeId="1"/>
 
-  <activity activityId="2" databaseId="1" name="empty activity"
-            reportingFrequency="0" allowEdit="1" sortOrder="2" locationTypeId="1"/>
+  <!-- PEAR Activity 1 : NFI Distribution -->
 
-  <indicator indicatorId="1" activityId="1" name="beneficiaries"
-             units="menages^2" aggregation="0" category="inputs" description="falling in lve"
+  <activity activityId="1" databaseId="1" name="NFI" category="NFI Cluster"
+            reportingFrequency="0" allowEdit="1" sortOrder="1" locationTypeId="1"
+            published="0"/>
+
+
+  <attributeGroupInActivity activityId="1"
+                            attributeGroupId="1"/>
+  <attributeGroupInActivity activityId="1"
+                            attributeGroupId="2"/>
+  <attributeGroupInActivity activityId="1"
+                            attributeGroupId="3"/>
+  <attributeGroupInActivity activityId="1"
+                            attributeGroupId="991"/>
+
+  <!-- NFI Indicator 1: Beneficiaries -->
+
+  <indicator indicatorId="1" activityId="1" name="beneficiaries" nameInExpression="BENE"
+             calculatedAutomatically="0"
+             units="menages" aggregation="0" category="inputs" description="falling in lve"
              listHeader="no header really" sortOrder="2" mandatory="0"/>
 
-  <indicator indicatorId="2" activityId="1" name="kits" units="menages"
-             aggregation="0" category="outputs" listHeader="header" description="desc"
-             sortOrder="1" mandatory="0"/>
+  <!-- NFI Indicator 2: Bache -->
 
-  <attributeGroupInActivity attributeGroupId="1"
-                            activityId="1"/>
+  <indicator indicatorId="2" activityId="1" name="baches" nameInExpression="BACHE"
+             calculatedAutomatically="0"
+             units="menages" aggregation="0" category="outputs" listHeader="header"
+             description="desc" sortOrder="1" mandatory="0"/>
 
+  <!-- NFI Indicator 3: Number of Distributions -->
 
-  <partner partnerId="1" name="NRC"/>
+  <indicator indicatorId="103" activityId="1"
+             calculatedAutomatically="0"
+             name="Nb. of distributions" units="distributions" aggregation="2"
+             category="outputs" listHeader="distribs" description="Nomber of distributions effectuees"
+             sortOrder="3" mandatory="0"/>
 
-  <partnerInDatabase databaseId="1" partnerId="1"/>
+  <indicator indicatorId="675" activityId="1" name="A kivu thing"
+             calculatedAutomatically="0"
+             units="distributions" aggregation="2" category="outputs" listHeader="distribs"
+             description="Kivu description" sortOrder="3" mandatory="0"/>
 
-  <target targetId="1" databaseId="1" name="target1" date1="2011-11-29 00:00:00"
-          date2="2011-11-29 00:00:00"/>
+  <!-- PEAR Activity 2 : Kits Scolaire -->
 
+  <activity activityId="2" databaseId="1"
+            name="Distribution de Kits Scolaire" reportingFrequency="0"
+            allowEdit="1" sortOrder="1" locationTypeId="1" published="0"/>
 
-  <userLogin userId="2" name="Bavon" email="bavon@nrcdrc.org"
-             locale="fr" emailnotification="0"/>
-  <userPermission userPermissionId="1" databaseId="1"
-                  partnerId="1" userId="2" allowView="1" allowViewAll="0" allowEdit="1"
-                  allowEditAll="0" allowManageUsers="1" allowManageAllUsers="0"
-                  allowDesign="0" lastSchemaUpdate="2009-01-02"/>
+  <attributeGroupInActivity activityId="2"
+                            attributeGroupId="1"/>
 
-
-  <userLogin userId="3" name="Stefan" email="stefan@irc.org"
-             locale="fr" emailnotification="0"/>
-
-  <userDatabase databaseId="2" name="RRM" countryId="1"
+  <userDatabase databaseId="2" name="PEAR Plus" countryId="1"
                 ownerUserId="1" lastSchemaUpdate="2009-01-01"/>
 
-  <reportTemplate reportTemplateId="1" ownerUserId="1"
-                  visibility="1" title="Report 1"
-                  XML="
-        &lt;report frequency=&quot;Monthly&quot; day=&quot;28&quot;&gt;
-            &lt;title&gt;Report 1&lt;/title&gt;
-        &lt;/report&gt;"/>
+  <userDatabase databaseId="3" name="Alpha" countryId="1"
+                ownerUserId="1" lastSchemaUpdate="2009-01-01"/>
 
-  <reportTemplate reportTemplateId="2" ownerUserId="2"
-                  visibility="1" title="Report 1"
-                  XML="
-        &lt;report frequency=&quot;Monthly&quot; day=&quot;28&quot;&gt;
-            &lt;title&gt;Report 1&lt;/title&gt;
-        &lt;/report&gt;"/>
+  <userDatabase databaseId="4" name="Public" countryId="1"
+                ownerUserId="1" lastSchemaUpdate="2009-01-01"/>
 
-  <reportSubscription userId="1" reportId="1"
-                      subscribed="1"/>
+  <userDatabase databaseId="5" name="Public" countryId="2"
+                ownerUserId="2" lastSchemaUpdate="2009-01-01"/>
 
+  <activity activityId="41" databaseId="4" name="Public Activity"
+            reportingFrequency="1" allowEdit="1" sortOrder="1" locationTypeId="3"
+            published="2"/>
+
+
+  <project projectId="1" name="Project X" description="A project"
+           databaseId="3"/>
+
+  <!-- PEAR PLUS Activity #1 - Support to health centers (monthly reporting) -->
+
+  <activity activityId="3" databaseId="2"
+            name="Appui aux centres de santé" reportingFrequency="1" allowEdit="1"
+            sortOrder="1" locationTypeId="1" published="0"/>
+
+
+  <!-- Appui CS Indicator 1: Utilisation Rate -->
+
+  <indicator indicatorId="5" activityId="3" name="Utilisaton rate"
+             calculatedAutomatically="0"
+             units="nc/hab/month" aggregation="1" category="outputs" listHeader="header"
+             description="desc" sortOrder="1" mandatory="0"/>
+
+  <activity activityId="4" databaseId="2"
+            name="Reunification of child soliders" reportingFrequency="1"
+            allowEdit="1" sortOrder="1" locationTypeId="3" published="0"/>
+
+  <indicator indicatorId="6" activityId="4" name="Number of children"
+             calculatedAutomatically="0"
+             units="children" aggregation="1" listHeader="kids" description="desc"
+             sortOrder="1" mandatory="0"/>
+  <indicator indicatorId="7" activityId="4" name="Number of children2"
+             calculatedAutomatically="0"
+             units="children" aggregation="1" listHeader="kids" description="desc"
+             sortOrder="1" mandatory="0"/>
+  <indicator indicatorId="8" activityId="4" name="Number of children3"
+             calculatedAutomatically="0"
+             units="children" aggregation="1" listHeader="kids" description="desc"
+             sortOrder="1" mandatory="0"/>
+  <indicator indicatorId="9" activityId="4" name="Number of children4"
+             calculatedAutomatically="0"
+             units="children" aggregation="1" listHeader="kids" description="desc"
+             sortOrder="1" mandatory="0"/>
+
+  <indicatorLink sourceIndicatorId="6" destinationIndicatorId="7"/>
+  <indicatorLink sourceIndicatorId="8" destinationIndicatorId="9"/>
+
+  <activity activityId="5" databaseId="2" name="Kivu water distribution"
+            reportingFrequency="1" allowEdit="1" sortOrder="1" locationTypeId="3"
+            published="0"/>
+
+  <lockedPeriod LockedPeriodId="1" enabled="true" toDate="2009-01-02"
+                fromDate="2009-01-01" name="woei" UserDatabaseId="1"/>
+  <lockedPeriod LockedPeriodId="3" enabled="true" toDate="2009-01-22"
+                fromDate="2009-01-01" name="whoa" ActivityId="1"/>
+  <lockedPeriod LockedPeriodId="4" enabled="true" toDate="2009-01-24"
+                fromDate="2009-01-01" name="yey" UserDatabaseId="2"/>
+  <project projectId="2" databaseId="1" name="RRMP"/>
+  <project projectId="3" databaseId="1" name="USAID"/>
+  <project projectId="4" databaseId="1" name="Kivu water"/>
+  <lockedPeriod LockedPeriodId="2" enabled="true" toDate="2009-01-12"
+                fromDate="2009-01-01" name="lala" ProjectId="1"/>
+
+  <activity activityId="42" databaseId="1" name="Deleted Activity"
+            reportingFrequency="1" allowEdit="1" sortOrder="1" locationTypeId="3"
+            published="2" dateDeleted="2009-01-01"/>
+
+
+  <indicator indicatorId="42" activityId="42" name="Number of children"
+             calculatedAutomatically="0"
+             units="children" aggregation="1" listHeader="kids" description="desc"
+             sortOrder="1" mandatory="0"/>
+
+  <site siteId="42" activityId="42" locationId="1" partnerId="1"
+        Date1="2009-01-01" Date2="2009-01-02" DateCreated="2009-02-01"
+        DateEdited="2009-02-01" timeEdited="3" ProjectId="1" Comments="He said 'booyah'"/>
+  <attributeValue siteId="42" attributeId="43" value="0"/>
+  <attributeValue siteId="42" attributeId="44" value="0"/>
+
+  <reportingPeriod reportingPeriodId="42" siteId="42"
+                   date1="2009-01-01" date2="2009-01-02" DateCreated="2009-02-01"
+                   DateEdited="2009-02-01"/>
+  <indicatorValue reportingPeriodId="42" indicatorId="42"
+                  value="1500"/>
+  <indicatorValue reportingPeriodId="43" indicatorId="42"
+                  value="500"/>
+
+  <!-- PEAR Partners -->
+
+  <partner partnerId="1" name="NRC"/>
+  <partnerInDatabase partnerId="1" databaseId="1"/>
+
+  <partner partnerId="2" name="Solidarites"/>
+  <partnerInDatabase partnerId="2" databaseId="1"/>
+
+  <partner partnerId="3" name="Kivu Help"/>
+  <partnerInDatabase partnerId="3" databaseId="1"/>
+
+  <!-- PEAR Plus Partners -->
+  <partnerInDatabase partnerId="1" databaseId="2"/>
+
+  <!-- ACCESS -->
+  <userPermission userPermissionId="1" databaseId="1"
+                  userId="1" partnerId="1" allowView="1" allowViewAll="1" allowEdit="1"
+                  allowEditAll="1" allowManageUsers="1" allowManageAllUsers="1"
+                  allowDesign="1" lastSchemaUpdate="2009-01-01"/>
+  <userPermission userPermissionId="2" databaseId="2"
+                  userId="1" partnerId="1" allowView="1" allowViewAll="1" allowEdit="1"
+                  allowEditAll="1" allowManageUsers="1" allowManageAllUsers="1"
+                  allowDesign="1" lastSchemaUpdate="2009-01-01"/>
+  <userPermission userPermissionId="3" databaseId="3"
+                  userId="1" partnerId="1" allowView="1" allowViewAll="1" allowEdit="1"
+                  allowEditAll="1" allowManageUsers="1" allowManageAllUsers="1"
+                  allowDesign="1" lastSchemaUpdate="2009-01-01"/>
+  <userPermission userPermissionId="4" databaseId="4"
+                  userId="1" partnerId="1" allowView="1" allowViewAll="1" allowEdit="1"
+                  allowEditAll="1" allowManageUsers="1" allowManageAllUsers="1"
+                  allowDesign="1" lastSchemaUpdate="2009-01-01"/>
+  <userPermission userPermissionId="5" databaseId="5"
+                  userId="1" partnerId="1" allowView="1" allowViewAll="1" allowEdit="1"
+                  allowEditAll="1" allowManageUsers="1" allowManageAllUsers="1"
+                  allowDesign="1" lastSchemaUpdate="2009-01-01"/>
 
 </dataset>

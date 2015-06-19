@@ -1,0 +1,14 @@
+import org.activityinfo.store.mysql.MySqlServer
+
+def localMySqlServer = new MySqlServer(
+        host: 'localhost',
+        username: localMySqlUsername,
+        password: localMySqlPassword)
+
+ext {
+    mysql = [ 
+        localDev: localMySqlServer.database('activityinfo_dev'),
+        localAT:  localMySqlServer.database('activityinfo_at')
+    ]
+    
+}

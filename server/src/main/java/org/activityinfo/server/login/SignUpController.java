@@ -35,7 +35,7 @@ import org.activityinfo.server.login.model.SignUpAddressExistsPageModel;
 import org.activityinfo.server.login.model.SignUpPageModel;
 import org.activityinfo.server.mail.MailSender;
 import org.activityinfo.server.mail.SignUpConfirmationMessage;
-import org.activityinfo.server.util.logging.LogException;
+import org.activityinfo.server.util.monitoring.Count;
 
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
@@ -71,17 +71,24 @@ public class SignUpController {
     @Inject
     private Provider<Domain> domainProvider;
 
-    @GET @Produces(MediaType.TEXT_HTML) @LogException(emailAlert = true)
+    @GET 
+    @Produces(MediaType.TEXT_HTML)
+    @Count("sign_up.submitted")
     public Viewable getPage(@Context HttpServletRequest req) throws ServletException, IOException {
         return new SignUpPageModel().asViewable();
     }
 
-    @GET @Path("/sent") @Produces(MediaType.TEXT_HTML)
+    @GET 
+    @Path("/sent")
+    @Produces(MediaType.TEXT_HTML)
     public Viewable getPage() {
         return new Viewable("/page/SignUpEmailSent.ftl", Maps.newHashMap());
     }
 
-    @POST @Produces(MediaType.TEXT_HTML) @LogException(emailAlert = true) @Transactional
+    @POST 
+    @Produces(MediaType.TEXT_HTML) 
+    @Transactional
+    @Count("sign_up.submitted")
     public Response signUp(@FormParam("name") String name,
                            @FormParam("organization") String organization,
                            @FormParam("jobtitle") String jobtitle,

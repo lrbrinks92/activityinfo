@@ -27,15 +27,14 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import net.lightoze.gwt.i18n.server.LocaleProxy;
 import net.lightoze.gwt.i18n.server.ThreadLocalLocaleProvider;
-import org.activityinfo.fixtures.MockHibernateModule;
 import org.activityinfo.fixtures.Modules;
+import org.activityinfo.fixtures.TestHibernateModule;
 import org.activityinfo.legacy.client.Dispatcher;
 import org.activityinfo.legacy.client.remote.AbstractDispatcher;
 import org.activityinfo.legacy.shared.command.Command;
 import org.activityinfo.legacy.shared.command.result.CommandResult;
 import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.server.authentication.AuthenticationModuleStub;
-import org.activityinfo.server.database.TestDatabaseModule;
 import org.activityinfo.server.database.hibernate.entity.User;
 import org.activityinfo.server.endpoint.gwtrpc.CommandServlet2;
 import org.activityinfo.server.endpoint.gwtrpc.GwtRpcModule;
@@ -44,6 +43,7 @@ import org.activityinfo.server.util.TemplateModule;
 import org.activityinfo.server.util.blob.BlobServiceModuleStub;
 import org.activityinfo.server.util.config.ConfigModuleStub;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 import javax.persistence.EntityManager;
 
@@ -53,8 +53,7 @@ import javax.persistence.EntityManager;
  * The future.
  */
 @Modules({
-        TestDatabaseModule.class,
-        MockHibernateModule.class,
+        TestHibernateModule.class,
         TemplateModule.class,
         GwtRpcModule.class,
         AuthenticationModuleStub.class,
@@ -62,6 +61,12 @@ import javax.persistence.EntityManager;
         ConfigModuleStub.class
 })
 public class CommandTestCase2 {
+
+
+    @BeforeClass
+    public static void setupI18N() {
+        LocaleProxy.initialize();
+    }
 
     @Inject
     protected CommandServlet2 servlet;
@@ -74,11 +79,6 @@ public class CommandTestCase2 {
     }
 
     @Before
-    public final void setupLocaleProxy() {
-        LocaleProxy.initialize();
-    }
-
-    @Before
     public final void setDefaultUser() {
         setUser(1);
     }
@@ -86,7 +86,7 @@ public class CommandTestCase2 {
     protected <T extends CommandResult> T execute(Command<T> command)
             throws CommandException {
 
-        User user = null;
+        User user;
         if (AuthenticationModuleStub.getCurrentUser().getUserId() == 0) {
             user = new User();
             user.setName("Anonymous");
@@ -99,7 +99,6 @@ public class CommandTestCase2 {
             user.setLocale("en");
         }
 
-        assert user != null;
         ThreadLocalLocaleProvider.pushLocale(user.getLocaleObject());
 
         try {

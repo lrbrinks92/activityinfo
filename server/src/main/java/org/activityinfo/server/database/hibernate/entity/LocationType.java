@@ -45,6 +45,8 @@ public class LocationType implements Serializable, Deleteable {
     private Set<Location> locations = new HashSet<Location>(0);
     private Set<Activity> activities = new HashSet<Activity>(0);
     private String workflowId;
+    private long version;
+    private long locationVersion;
 
     private UserDatabase database;
 
@@ -157,5 +159,26 @@ public class LocationType implements Serializable, Deleteable {
     @Override @Transient
     public boolean isDeleted() {
         return getDateDeleted() != null;
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+    }
+
+    public long getLocationVersion() {
+        return locationVersion;
+    }
+
+    public void setLocationVersion(long locationVersion) {
+        this.locationVersion = locationVersion;
+    }
+
+    public long incrementVersion() {
+        version++;
+        return version;
     }
 }

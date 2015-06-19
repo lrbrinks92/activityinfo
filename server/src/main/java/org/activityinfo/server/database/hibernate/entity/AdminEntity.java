@@ -63,7 +63,9 @@ public class AdminEntity implements java.io.Serializable {
         this.name = name;
     }
 
-    @Id @JsonProperty @JsonView(AdminEntityViews.GeocodeView.class) @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id @JsonProperty 
+    @JsonView(AdminEntityViews.GeocodeView.class) 
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "AdminEntityId", unique = true, nullable = false)
     public int getId() {
         return this.id;
@@ -78,7 +80,8 @@ public class AdminEntity implements java.io.Serializable {
         return this.level;
     }
 
-    @Transient @JsonView(AdminEntityViews.GeocodeView.class)
+    @Transient 
+    @JsonView(AdminEntityViews.GeocodeView.class)
     public int getLevelId() {
         return getLevel().getId();
     }
@@ -108,12 +111,14 @@ public class AdminEntity implements java.io.Serializable {
         this.parent = parent;
     }
 
-    @JsonProperty @Transient
+    @JsonProperty 
+    @Transient
     public Integer getParentId() {
         return parent == null ? null : parent.getId();
     }
 
-    @JsonProperty @Column(name = "Name", nullable = false, length = 50)
+    @JsonProperty 
+    @Column(name = "Name", nullable = false, length = 50)
     public String getName() {
         return this.name;
     }
@@ -123,6 +128,7 @@ public class AdminEntity implements java.io.Serializable {
     }
 
     @Column(name = "Soundex", length = 50)
+    @Offline(sync = false)
     public String getSoundex() {
         return this.soundex;
     }
@@ -131,7 +137,8 @@ public class AdminEntity implements java.io.Serializable {
         this.soundex = soundex;
     }
 
-    @JsonProperty @Column(name = "Code", length = 15)
+    @JsonProperty 
+    @Column(name = "Code", length = 15)
     public String getCode() {
         return this.code;
     }
@@ -140,7 +147,8 @@ public class AdminEntity implements java.io.Serializable {
         this.code = code;
     }
 
-    @Embedded @JsonProperty
+    @Embedded 
+    @JsonProperty
     public Bounds getBounds() {
         return bounds;
     }
@@ -177,6 +185,7 @@ public class AdminEntity implements java.io.Serializable {
 
 
     @Basic(fetch = FetchType.LAZY) @Type(type = "org.hibernate.spatial.GeometryType")
+    @Offline(sync = false)
     public Geometry getGeometry() {
         return geometry;
     }

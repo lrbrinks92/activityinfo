@@ -65,16 +65,18 @@ public class GetMonthlyReportsHandler implements CommandHandler<GetMonthlyReport
             throw new IllegalAccessCommandException();
         }
 
+        List<ReportingPeriod> periods = em.createQuery(
+            "SELECT p from ReportingPeriod p WHERE p.site.id = :siteId", ReportingPeriod.class)
+            .setParameter("siteId", cmd.getSiteId())
+            .getResultList();
 
-        List<ReportingPeriod> periods = em.createQuery("select p from ReportingPeriod p where p.site.id = ?1")
-                                          .setParameter(1, cmd.getSiteId())
-                                          .getResultList();
-
-        List<Indicator> indicators = em.createQuery("select i from Indicator i where i.activity.id =" +
-                                                    "(select s.activity.id from Site s where s.id = ?1) order by i" +
-                                                    ".sortOrder")
-                                       .setParameter(1, cmd.getSiteId())
-                                       .getResultList();
+        List<Indicator> indicators = em.createQuery(
+            "SELECT i from Indicator i " +
+             "WHERE i.activity.id IN (SELECT s.activity.id FROM Site s WHERE s.id = :siteId) " + 
+               "AND i.dateDeleted IS NULL " +
+          "ORDER BY i.sortOrder", Indicator.class) 
+           .setParameter("siteId", cmd.getSiteId())
+           .getResultList();
 
         List<IndicatorRowDTO> list = new ArrayList<IndicatorRowDTO>();
 

@@ -24,6 +24,8 @@ package org.activityinfo.legacy.shared.command;
 
 import org.activityinfo.legacy.shared.command.result.VoidResult;
 import org.activityinfo.legacy.shared.model.EntityDTO;
+import org.activityinfo.server.endpoint.jsonrpc.Required;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Deletes a database entity.
@@ -40,7 +42,6 @@ public class Delete implements MutatingCommand<VoidResult> {
     private int id;
 
     protected Delete() {
-
     }
 
     public Delete(EntityDTO entity) {
@@ -53,6 +54,8 @@ public class Delete implements MutatingCommand<VoidResult> {
         this.id = id;
     }
 
+    @Required
+    @JsonProperty
     public String getEntityName() {
         return entityName;
     }
@@ -61,6 +64,8 @@ public class Delete implements MutatingCommand<VoidResult> {
         this.entityName = entityName;
     }
 
+    @Required
+    @JsonProperty
     public int getId() {
         return id;
     }

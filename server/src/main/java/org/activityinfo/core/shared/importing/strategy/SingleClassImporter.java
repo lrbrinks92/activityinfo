@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.activityinfo.core.client.InstanceQuery;
 import org.activityinfo.core.client.ResourceLocator;
-import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.core.shared.Projection;
 import org.activityinfo.core.shared.criteria.ClassCriteria;
 import org.activityinfo.model.form.FormInstance;
@@ -13,6 +12,8 @@ import org.activityinfo.core.shared.importing.source.SourceRow;
 import org.activityinfo.core.shared.importing.validation.ValidationResult;
 import org.activityinfo.model.type.FieldValue;
 import org.activityinfo.model.type.primitive.TextValue;
+import org.activityinfo.model.formTree.FieldPath;
+import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.promise.Promise;
 
 import javax.annotation.Nullable;
@@ -56,6 +57,7 @@ public class SingleClassImporter implements FieldImporter {
         this.fieldId = fieldId;
     }
 
+    @Override
     public Promise<Void> prepare(ResourceLocator locator, List<? extends SourceRow> batch) {
 
         InstanceQuery query = new InstanceQuery(

@@ -1,0 +1,19 @@
+
+description = 'ActivityInfo Promise Implementation'
+
+apply plugin: 'gwt-base'
+
+gwt {
+    gwtVersion = project.gwtVersion
+}
+
+dependencies {
+    compile libraries.guava
+    gwt     libraries.gwt.guava
+}
+
+
+jar {
+    from project.sourceSets.main.allSource
+    from project.sourceSets.main.output
+}

@@ -94,6 +94,7 @@ public class BubbleMapMarker extends MapMarker {
         return radius;
     }
 
+    @Override
     public Set<Integer> getIndicatorIds() {
         return indicatorIds;
     }

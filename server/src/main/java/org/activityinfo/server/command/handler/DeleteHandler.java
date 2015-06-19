@@ -25,33 +25,46 @@ package org.activityinfo.server.command.handler;
 import com.google.inject.Inject;
 import org.activityinfo.legacy.shared.command.Delete;
 import org.activityinfo.legacy.shared.command.result.CommandResult;
-import org.activityinfo.server.database.hibernate.entity.*;
+import org.activityinfo.legacy.shared.exception.CommandException;
+import org.activityinfo.server.database.hibernate.entity.Deleteable;
+import org.activityinfo.server.database.hibernate.entity.ReallyDeleteable;
+import org.activityinfo.server.database.hibernate.entity.User;
+import org.activityinfo.server.database.hibernate.entity.UserDatabase;
 
 import javax.persistence.EntityManager;
-import java.util.Date;
+import java.util.logging.Logger;
 
 public class DeleteHandler implements CommandHandler<Delete> {
+    
+    private static final Logger LOGGER = Logger.getLogger(DeleteHandler.class.getName());
+    
     private EntityManager em;
+    private PermissionOracle permissionOracle;
 
     @Inject
-    public DeleteHandler(EntityManager em) {
+    public DeleteHandler(EntityManager em, PermissionOracle permissionOracle) {
         this.em = em;
+        this.permissionOracle = permissionOracle;
     }
 
     @Override
     public CommandResult execute(Delete cmd, User user) {
-        // TODO check permissions for delete!
-        // These handler should redirect to one of the Entity policy classes.
+
+        
         Class entityClass = entityClassForEntityName(cmd.getEntityName());
         Object entity = em.find(entityClass, cmd.getId());
+        
+        if(entity == null) {
+            throw new CommandException(String.format("%s with id %d does not exist.", 
+                    cmd.getEntityName(), cmd.getId()));
+        }
+
+        // Ensure that the user is authorized to perform deletion
+        permissionOracle.assertDeletionAuthorized(entity, user);
 
         if (entity instanceof Deleteable) {
             Deleteable deleteable = (Deleteable) entity;
             deleteable.delete();
-
-            if (entity instanceof Site) {
-                ((Site) entity).setDateEdited(new Date());
-            }
         }
 
         if (entity instanceof ReallyDeleteable) {
@@ -62,6 +75,7 @@ public class DeleteHandler implements CommandHandler<Delete> {
 
         return null;
     }
+
 
     private Class<Deleteable> entityClassForEntityName(String entityName) {
         try {

@@ -22,7 +22,6 @@ package org.activityinfo.server.command.handler;
  * #L%
  */
 
-import com.google.api.services.storage.Storage;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import org.activityinfo.model.legacy.KeyGenerator;
@@ -32,7 +31,6 @@ import org.activityinfo.legacy.shared.command.result.CommandResult;
 import org.activityinfo.legacy.shared.command.result.VoidResult;
 import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.exception.IllegalAccessCommandException;
-import org.activityinfo.legacy.shared.model.IndicatorDTO;
 import org.activityinfo.server.database.hibernate.entity.*;
 import org.activityinfo.server.event.sitehistory.ChangeType;
 import org.activityinfo.server.event.sitehistory.SiteHistoryProcessor;
@@ -125,7 +123,7 @@ public class UpdateMonthlyReportsHandler implements CommandHandler<UpdateMonthly
 
         // finally update the timestamp on the site entity so changes get picked up
         // by the synchro mechanism
-        site.setDateEdited(new Date());
+        site.setVersion(site.getActivity().incrementSiteVersion());
 
         siteHistoryProcessor.persistHistory(site, user, ChangeType.UPDATE, siteHistoryChangeMap);
 

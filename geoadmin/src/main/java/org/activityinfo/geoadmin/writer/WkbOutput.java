@@ -1,17 +1,12 @@
 package org.activityinfo.geoadmin.writer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.zip.GZIPOutputStream;
-
-import org.geotools.feature.FeatureCollection;
-
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.OutputStreamOutStream;
 import com.vividsolutions.jts.io.WKBWriter;
+import org.geotools.feature.FeatureCollection;
+
+import java.io.*;
+import java.util.zip.GZIPOutputStream;
 
 public class WkbOutput implements OutputWriter {
 
@@ -27,10 +22,12 @@ public class WkbOutput implements OutputWriter {
         dataOut = new DataOutputStream(baos);
     }
 
+    @Override
     public void start(FeatureCollection features) throws IOException {
 
     }
 
+    @Override
     public void write(int adminEntityId, Geometry geometry) throws IOException {
         if (!geometry.isValid()) {
             throw new IllegalStateException(adminEntityId + " has invalid geometry");
@@ -40,6 +37,7 @@ public class WkbOutput implements OutputWriter {
         numFeatures++;
     }
 
+    @Override
     public void close() throws IOException {
         DataOutputStream out = new DataOutputStream(
             new GZIPOutputStream(

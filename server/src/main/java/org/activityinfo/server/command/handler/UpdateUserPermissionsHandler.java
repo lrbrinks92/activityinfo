@@ -177,6 +177,9 @@ public class UpdateUserPermissionsHandler implements CommandHandler<UpdateUserPe
                             UserPermission executingUserPermissions) {
 
         perm.setPartner(partnerDAO.findById(dto.getPartner().getId()));
+        if(perm.getPartner() == null) {
+            throw new CommandException("Partner with id " + dto.getPartner().getId() + " does not exist");
+        }
         perm.setAllowView(dto.getAllowView());
         perm.setAllowEdit(dto.getAllowEdit());
         perm.setAllowManageUsers(dto.getAllowManageUsers());

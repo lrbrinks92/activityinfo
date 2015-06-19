@@ -41,7 +41,7 @@ import java.util.Date;
 @Singleton
 public class ReportMailerServlet extends HttpServlet {
 
-    private Provider<ReportMailer> mailerJob;
+    private final Provider<ReportMailer> mailerJob;
 
     @Inject
     public ReportMailerServlet(Provider<ReportMailer> mailerJob) {

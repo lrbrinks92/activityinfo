@@ -22,11 +22,15 @@ package org.activityinfo.legacy.shared.command.result;
  * #L%
  */
 
+import javax.ws.rs.core.Response;
+
 /**
  * Empty result type.
  *
- * @author Alex Bertram
  */
+@HttpStatusCode(Response.Status.NO_CONTENT)
 public class VoidResult implements CommandResult {
+
+    public static final VoidResult EMPTY = null;
     public static VoidResult INSTANCE = new VoidResult();
 }

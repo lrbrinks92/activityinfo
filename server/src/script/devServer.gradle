@@ -1,0 +1,98 @@
+import com.google.appengine.task.RunTask
+import org.activityinfo.store.mysql.MySqlDatabase
+
+
+ext {
+    configFile = project.file("$buildDir/config.properties")
+}
+
+// Generate the server's configuration on-the-fly based on this build's properties
+def writeConfiguration(MySqlDatabase database) {
+    Properties config = new Properties()
+    config.setProperty("hibernate.connection.pool_size", "0")
+    config.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver")
+    config.setProperty("hibernate.connection.username", database.server.username)
+    config.setProperty("hibernate.connection.password", database.server.password)
+    config.setProperty("hibernate.connection.url", database.url)
+    
+    // Point to the postmark stub service
+    config.setProperty("postmark.url", "http://localhost:${postmarkStubPort}/email")
+    config.setProperty("postmark.key", "POSTMARK_API_TEST")
+
+    configFile.withOutputStream { OutputStream out ->
+        config.store(out, "Acceptance Test Configuration")
+    }
+}
+
+def healthCheck() {
+    // Verify that the server actually started
+    try {
+        URL url = new URL("http://localhost:${devServerPort}/login")
+        def connection = url.openConnection() as HttpURLConnection
+
+        println("DevServer started successfully: ${connection.responseCode}")
+
+    } catch(IOException e) {
+        throw new RuntimeException("AppEngine DevServer failed to start: ${e.message}", e)
+    }
+}
+
+appengineRun {
+    ext.database = mysql.localDev
+}
+
+task appengineStartAT(type: RunTask) {
+    group = "Google App Engine"
+    description = "Starts a local AppEngine Development Server for Acceptance Testing in the background"
+
+    dependsOn 'appengineExplodeApp', 'setupDatabaseAT'
+
+    daemon = true
+    ext.database = mysql.localAT
+}
+
+task appengineRunAT(type: RunTask) {
+    group = "Google App Engine"
+    description = "Runs a local AppEngine Development Server for Acceptance Testing"
+
+    dependsOn 'appengineExplodeApp', 'setupDatabaseAT'
+    ext.database = mysql.localAT
+}
+
+task appengineStartInstrumentedAT(type: RunTask) {
+    group = "Google App Engine"
+    description = "Starts a local AppEngine Dev Server instrumented for measuring test coverage"
+
+    dependsOn 'setupDatabaseAT'
+    dependsOn 'appengineExplodeInstrumentedApp'
+
+    daemon = true
+    explodedAppDirectory = appengineExplodeInstrumentedApp.warDir
+    ext.database = mysql.localAT
+
+    doFirst {
+        def jacocoAgent = project.zipTree(configurations.jacocoAgent.singleFile)
+        def jacocoAgentJar = jacocoAgent.filter { it.name == 'jacocoagent.jar' }.singleFile.absolutePath
+
+        logger.info("Starting DevServer with jacoco agent path: ${jacocoAgentJar}.")
+
+        jvmFlags.add("-javaagent:${jacocoAgentJar}=destfile=${jacocoAcceptanceDataFile}")
+    }
+}
+
+tasks.withType(RunTask) {
+
+    // Provide a configuration for the server
+    jvmFlags = ["-Dactivityinfo.config=${configFile}"]
+
+    doFirst {
+        writeConfiguration ext.database
+    }
+    
+    doLast {
+        if(daemon) {
+            // Make sure the server successfully started
+            healthCheck()    
+        }
+    }
+}

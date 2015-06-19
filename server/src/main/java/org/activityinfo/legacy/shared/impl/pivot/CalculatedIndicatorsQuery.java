@@ -19,6 +19,7 @@ import org.activityinfo.legacy.shared.model.SiteDTO;
 import org.activityinfo.legacy.shared.reports.content.DimensionCategory;
 import org.activityinfo.legacy.shared.reports.content.EntityCategory;
 import org.activityinfo.legacy.shared.reports.content.SimpleCategory;
+import org.activityinfo.legacy.shared.reports.content.TargetCategory;
 import org.activityinfo.legacy.shared.reports.model.AdminDimension;
 import org.activityinfo.legacy.shared.reports.model.AttributeGroupDimension;
 import org.activityinfo.legacy.shared.reports.model.DateDimension;
@@ -48,6 +49,7 @@ public class CalculatedIndicatorsQuery implements WorkItem {
     private Map<Integer, DimensionCategory> activityCategoryMap = Maps.newHashMap();
     private Map<Integer, DimensionCategory> activityToDatabaseMap = Maps.newHashMap();
     private Map<Integer, EntityCategory> indicatorMap = Maps.newHashMap();
+    private Map<Integer, Integer> indicatorAggregationMap = Maps.newHashMap();
 
     private Multimap<Integer, EntityCategory> attributes = HashMultimap.create();
 
@@ -68,6 +70,7 @@ public class CalculatedIndicatorsQuery implements WorkItem {
                 .appendColumn("i.name", "indicatorName")
                 .appendColumn("i.activityId", "activityId")
                 .appendColumn("i.sortOrder", "indicatorOrder")
+                .appendColumn("i.aggregation", "aggregation")
                 .appendColumn("a.name", "activityName")
                 .appendColumn("a.category", "activityCategory")
                 .appendColumn("a.sortOrder", "activityOrder")
@@ -108,6 +111,7 @@ public class CalculatedIndicatorsQuery implements WorkItem {
 
                 } else {
 
+                    boolean hasSumAggregation = false;
                     for (SqlResultSetRow row : results.getRows()) {
 
                         LOGGER.info("row = " + row);
@@ -130,6 +134,18 @@ public class CalculatedIndicatorsQuery implements WorkItem {
                             new EntityCategory(indicatorId,
                                 row.getString("indicatorName"),
                                 row.getInt("indicatorOrder")));
+                        indicatorAggregationMap.put(indicatorId, row.getInt("aggregation"));
+
+                        if (!hasSumAggregation) {
+                            hasSumAggregation = row.getInt("aggregation") == 0;
+                        }
+                    }
+
+                    // set aggregation to Sum for all indicators if at least one indicator has different aggregation
+                    if (hasSumAggregation) {
+                        for (Map.Entry<Integer, Integer> entry : indicatorAggregationMap.entrySet()) {
+                            entry.setValue(0); // set to Sum
+                        }
                     }
 
                     if (queryContext.getCommand().isPivotedBy(DimensionType.AttributeGroup)) {
@@ -249,12 +265,14 @@ public class CalculatedIndicatorsQuery implements WorkItem {
     private Filter composeSiteFilter() {
         Filter siteFilter = new Filter();
         siteFilter.addRestriction(DimensionType.Activity, activityIds);
+        siteFilter.setDateRange(query.getFilter().getDateRange());
 
         for(DimensionType type : query.getFilter().getRestrictedDimensions()) {
             if(type != DimensionType.Activity && type != DimensionType.Database && type != DimensionType.Indicator) {
                 siteFilter.addRestriction(type, query.getFilter().getRestrictions(type));
             }
         }
+
         return siteFilter;
     }
 
@@ -296,39 +314,29 @@ public class CalculatedIndicatorsQuery implements WorkItem {
 
     private void aggregateSites(SiteResult result) {
 
-
-        Map<BucketKey, Bucket> buckets = Maps.newHashMap();
-
-        for(int i=0;i!=result.getTotalLength();++i) {
+        for (int i = 0; i != result.getTotalLength(); ++i) {
             SiteDTO site = result.getData().get(i);
 
-            // These dimensions apply to the site as a whole
-            DimensionCategory siteDims[] = new DimensionCategory[dimAccessors.size()];
-            for (int j = 0; j != dimAccessors.size(); ++j) {
-                siteDims[j] = dimAccessors.get(j).getCategory(site);
-            }
-
             // Now loop over each value
-            for(EntityCategory indicator : indicatorMap.values()) {
+            for (EntityCategory indicator : indicatorMap.values()) {
                 Double value = site.getIndicatorDoubleValue(indicator.getId());
 
-                if(value != null) {
-                    BucketKey key = new BucketKey(indicator, siteDims);
-                    Bucket bucket = buckets.get(key);
-                    if (bucket == null) {
-                        bucket = new Bucket();
-                        bucket.setCategory(INDICATOR_DIM, indicator);
-                        for (int j = 0; j != dimAccessors.size(); ++j) {
-                            bucket.setCategory(dimAccessors.get(j).getDimension(), siteDims[j]);
-                        }
-                        buckets.put(key, bucket);
-                        queryContext.addBucket(bucket);
+                if (value != null) {
+
+                    Bucket bucket = new Bucket(value);
+                    bucket.setAggregationMethod(indicatorAggregationMap.get(indicator.getId()));
+
+                    bucket.setCategory(new Dimension(DimensionType.Target), TargetCategory.REALIZED);
+                    if (query.isPivotedBy(DimensionType.Indicator)) {
+                        bucket.setCategory(new Dimension(DimensionType.Indicator), indicator);
                     }
-                    bucket.appendValue(value);
+                    for (int j = 0; j != dimAccessors.size(); ++j) {
+                        bucket.setCategory(dimAccessors.get(j).getDimension(), dimAccessors.get(j).getCategory(site));
+                    }
+                    queryContext.addBucket(bucket);
                 }
             }
         }
-
     }
 
 }

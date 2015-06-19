@@ -25,6 +25,7 @@ package org.activityinfo.legacy.shared.command;
 import com.bedatadriven.rebar.time.calendar.LocalDate;
 import com.extjs.gxt.ui.client.data.RpcMap;
 import org.activityinfo.legacy.shared.command.result.CreateResult;
+import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.model.AdminLevelDTO;
 import org.activityinfo.legacy.shared.model.SiteDTO;
 
@@ -70,19 +71,27 @@ public class CreateSite implements MutatingCommand<CreateResult>, SiteCommand {
 
     @Override
     public int getSiteId() {
-        return (Integer) properties.get("id");
+        return getRequiredId("id");
+    }
+
+    private int getRequiredId(String propertyName) {
+        Object id = properties.get(propertyName);
+        if(!(id instanceof Integer)) {
+            throw new CommandException("Site is missing '" + propertyName + "' property of type integer");
+        }
+        return (Integer) properties.get(propertyName);
     }
 
     public int getActivityId() {
-        return (Integer) properties.get("activityId");
+        return getRequiredId("activityId");
     }
 
     public int getPartnerId() {
-        return (Integer) properties.get("partnerId");
+        return getRequiredId("partnerId");
     }
 
     public int getLocationId() {
-        return (Integer) properties.get("locationId");
+        return getRequiredId("locationId");
     }
 
     public Integer getReportingPeriodId() {

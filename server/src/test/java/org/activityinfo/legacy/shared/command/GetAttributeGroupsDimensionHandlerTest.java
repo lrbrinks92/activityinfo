@@ -23,12 +23,10 @@ package org.activityinfo.legacy.shared.command;
  */
 
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.Modules;
 import org.activityinfo.legacy.shared.command.result.AttributeGroupResult;
 import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.server.command.CommandTestCase2;
 import org.activityinfo.server.database.OnDataSet;
-import org.activityinfo.server.database.TestDatabaseModule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,7 +36,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 @RunWith(InjectionSupport.class)
-@Modules({TestDatabaseModule.class})
 public class GetAttributeGroupsDimensionHandlerTest extends CommandTestCase2 {
     // all
     @Test

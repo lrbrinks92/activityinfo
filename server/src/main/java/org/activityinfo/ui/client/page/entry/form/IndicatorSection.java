@@ -33,14 +33,16 @@ import com.extjs.gxt.ui.client.widget.layout.TableData;
 import com.extjs.gxt.ui.client.widget.layout.TableLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.common.collect.Lists;
-import org.activityinfo.legacy.shared.model.ActivityFormDTO;
-import org.activityinfo.model.type.FieldTypeClass;
+import com.google.common.collect.Sets;
 import org.activityinfo.legacy.client.type.IndicatorNumberFormat;
+import org.activityinfo.legacy.shared.model.ActivityFormDTO;
 import org.activityinfo.legacy.shared.model.IndicatorDTO;
 import org.activityinfo.legacy.shared.model.IndicatorGroup;
 import org.activityinfo.legacy.shared.model.SiteDTO;
+import org.activityinfo.model.type.FieldTypeClass;
 
 import java.util.List;
+import java.util.Set;
 
 public class IndicatorSection extends LayoutContainer implements FormSection<SiteDTO> {
 
@@ -48,6 +50,7 @@ public class IndicatorSection extends LayoutContainer implements FormSection<Sit
     public static final int TEXT_FIELD_WIDTH = 3 * NUMBER_FIELD_WIDTH;
 
     private List<Field> indicatorFields = Lists.newArrayList();
+    private Set<IndicatorDTO> calculatedIndicators = Sets.newHashSet();
 
     public IndicatorSection(ActivityFormDTO activity) {
 
@@ -66,6 +69,10 @@ public class IndicatorSection extends LayoutContainer implements FormSection<Sit
             }
 
             for (IndicatorDTO indicator : group.getIndicators()) {
+                if (indicator.isCalculated()) {
+                    calculatedIndicators.add(indicator);
+                    continue; // it's not allowed to specify value for calculated indicators
+                }
                 if (indicator.getAggregation() != IndicatorDTO.AGGREGATE_SITE_COUNT) {
                     addIndicator(indicator);
                 }
@@ -87,10 +94,6 @@ public class IndicatorSection extends LayoutContainer implements FormSection<Sit
     }
 
     private void addIndicator(IndicatorDTO indicator) {
-        if (indicator.isCalculated()) {
-            return; // it's not allowed to specify value for calculated indicators
-        }
-
         String name = indicator.getName();
         if (indicator.isMandatory()) {
             name += " *";
@@ -182,6 +185,9 @@ public class IndicatorSection extends LayoutContainer implements FormSection<Sit
     public void updateModel(SiteDTO m) {
         for (Field field : indicatorFields) {
             m.set(field.getName(), field.getValue());
+        }
+        for (IndicatorDTO indicator : calculatedIndicators) {
+            m.remove(indicator.getPropertyName());
         }
     }
 

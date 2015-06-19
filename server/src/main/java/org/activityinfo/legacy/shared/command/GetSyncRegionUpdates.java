@@ -25,30 +25,68 @@ package org.activityinfo.legacy.shared.command;
 import org.activityinfo.legacy.shared.command.result.SyncRegionUpdate;
 
 public class GetSyncRegionUpdates implements Command<SyncRegionUpdate> {
-    private String regionId;
+    private String regionPath;
     private String localVersion;
 
     public GetSyncRegionUpdates() {
     }
 
     public GetSyncRegionUpdates(String regionId, String localVersion) {
-        this.regionId = regionId;
+        this.regionPath = regionId;
         this.localVersion = localVersion;
     }
 
-    public String getRegionId() {
-        return regionId;
+    public String getRegionPath() {
+        return regionPath;
     }
 
-    public void setRegionId(String regionId) {
-        this.regionId = regionId;
+    public void setRegionPath(String regionPath) {
+        this.regionPath = regionPath;
     }
 
     public String getLocalVersion() {
         return localVersion;
     }
 
+    public long getLocalVersionNumber() {
+        if (localVersion == null) {
+            return 0;
+        }
+        int fractionStart = localVersion.indexOf('.');
+        if(fractionStart != -1) {
+            return Long.parseLong(localVersion.substring(0, fractionStart));
+        } else {
+            return Long.parseLong(localVersion);
+        }
+    }
+    
+    public String getRegionType() {
+        int separator = regionPath.indexOf('/');
+        if(separator == -1) {
+            return regionPath;
+        } else {
+            return regionPath.substring(0, separator);
+        }
+    }
+    
+    public int getRegionId() {
+        int separator = regionPath.indexOf('/');
+        if(separator == -1) {
+            throw new UnsupportedOperationException("Region " + regionPath + " has no id component");
+        }
+
+        return Integer.parseInt(regionPath.substring(separator+1));
+    }
+    
     public void setLocalVersion(String localVersion) {
         this.localVersion = localVersion;
+    }
+
+    @Override
+    public String toString() {
+        return "GetSyncRegionUpdates{" +
+                "regionPath='" + regionPath + '\'' +
+                ", localVersion='" + localVersion + '\'' +
+                '}';
     }
 }

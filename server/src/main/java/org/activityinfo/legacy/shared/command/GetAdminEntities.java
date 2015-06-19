@@ -25,7 +25,6 @@ package org.activityinfo.legacy.shared.command;
 import com.google.common.collect.Sets;
 import org.activityinfo.legacy.shared.command.result.AdminEntityResult;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 

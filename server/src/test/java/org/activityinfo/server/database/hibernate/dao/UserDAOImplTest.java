@@ -24,8 +24,8 @@ package org.activityinfo.server.database.hibernate.dao;
 
 import com.google.inject.Inject;
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.MockHibernateModule;
 import org.activityinfo.fixtures.Modules;
+import org.activityinfo.fixtures.TestHibernateModule;
 import org.activityinfo.server.database.OnDataSet;
 import org.activityinfo.server.database.hibernate.entity.User;
 import org.junit.Test;
@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
 
 @RunWith(InjectionSupport.class)
-@Modules({MockHibernateModule.class})
+@Modules({TestHibernateModule.class})
 @OnDataSet("/dbunit/schema1.db.xml")
 public class UserDAOImplTest {
 

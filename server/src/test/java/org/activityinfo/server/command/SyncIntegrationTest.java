@@ -22,9 +22,18 @@ package org.activityinfo.server.command;
  * #L%
  */
 
+import com.bedatadriven.rebar.sql.server.jdbc.JdbcScheduler;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
+import org.activityinfo.fixtures.InjectionSupport;
+import org.activityinfo.fixtures.Modules;
+import org.activityinfo.fixtures.TestHibernateModule;
+import org.activityinfo.legacy.client.Dispatcher;
 import org.activityinfo.legacy.shared.command.*;
 import org.activityinfo.legacy.shared.command.result.MonthlyReportResult;
 import org.activityinfo.legacy.shared.command.result.SiteResult;
@@ -32,38 +41,41 @@ import org.activityinfo.legacy.shared.model.AttributeDTO;
 import org.activityinfo.legacy.shared.model.IndicatorRowDTO;
 import org.activityinfo.legacy.shared.model.SiteDTO;
 import org.activityinfo.legacy.shared.util.Collector;
-import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.MockHibernateModule;
-import org.activityinfo.fixtures.Modules;
-import org.activityinfo.server.command.handler.sync.TimestampHelper;
+import org.activityinfo.model.legacy.KeyGenerator;
+import org.activityinfo.server.authentication.AuthenticationModuleStub;
 import org.activityinfo.server.database.OnDataSet;
+import org.activityinfo.server.database.TestSqliteDatabase;
 import org.activityinfo.server.database.hibernate.entity.AdminEntity;
 import org.activityinfo.server.database.hibernate.entity.Location;
 import org.activityinfo.server.database.hibernate.entity.LocationType;
 import org.activityinfo.server.endpoint.gwtrpc.GwtRpcModule;
-import org.activityinfo.server.util.logging.LoggingModule;
-import org.activityinfo.model.legacy.KeyGenerator;
+import org.activityinfo.ui.client.local.LocalModuleStub;
+import org.activityinfo.ui.client.local.sync.pipeline.InstallPipeline;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.persistence.EntityManager;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.activityinfo.legacy.shared.command.UpdateMonthlyReports.Change;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(InjectionSupport.class)
 @Modules({
-        MockHibernateModule.class,
+        TestHibernateModule.class,
         GwtRpcModule.class,
-        LoggingModule.class
 })
 public class SyncIntegrationTest extends LocalHandlerTestCase {
     @Inject
@@ -74,12 +86,10 @@ public class SyncIntegrationTest extends LocalHandlerTestCase {
         Logger.getLogger("org.hibernate").setLevel(Level.ALL);
     }
 
-    private long nowIsh;
-
     @Test
     @OnDataSet("/dbunit/sites-simple1.db.xml")
     public void run() throws SQLException, InterruptedException {
-        synchronizeFirstTime();
+        synchronize();
 
         Collector<Date> lastUpdate = Collector.newCollector();
         syncHistoryTable.get(lastUpdate);
@@ -165,11 +175,10 @@ public class SyncIntegrationTest extends LocalHandlerTestCase {
     @OnDataSet("/dbunit/locations.db.xml")
     public void locationsAreChunked() throws SQLException, InterruptedException {
         addLocationsToServerDatabase(220);
-        synchronizeFirstTime();
+        synchronize();
 
-        assertThat(
-                Integer.valueOf(queryString("select count(*) from Location")),
-                equalTo(220));
+        assertThat(Integer.valueOf(queryString("select count(*) from Location")),
+                equalTo(221));
 
         // update a location on the server
         serverEm.getTransaction().begin();
@@ -177,15 +186,11 @@ public class SyncIntegrationTest extends LocalHandlerTestCase {
                 "select l from Location l where l.name = 'Penekusu 26'")
                 .getSingleResult();
         location.setAxe("Motown");
-        location.setTimeEdited(new Date().getTime());
+        location.setVersion(location.getLocationType().incrementVersion());
         serverEm.getTransaction().commit();
 
         newRequest();
         synchronize();
-
-        // todo: store milliseconds in mysql rather than as
-        // date time which has resolution limited to 1 second
-        Thread.sleep(1000);
 
         assertThat(
                 queryInt("select count(*) from Location where Name='Penekusu 26'"),
@@ -198,9 +203,9 @@ public class SyncIntegrationTest extends LocalHandlerTestCase {
         Location newLocation = new Location();
         int locationId = keyGenerator.generateInt();
         newLocation.setName("Bukavu");
-        newLocation.setTimeEdited(new Date().getTime());
         newLocation.setId(123456789);
         newLocation.setLocationType(serverEm.find(LocationType.class, 1));
+        newLocation.setVersion(newLocation.getLocationType().incrementVersion());
         newLocation.setId(locationId);
         serverEm.getTransaction().begin();
         serverEm.persist(newLocation);
@@ -211,21 +216,21 @@ public class SyncIntegrationTest extends LocalHandlerTestCase {
         synchronize();
 
         assertThat(queryString("select name from Location where LocationId = "
-                + locationId),
+                        + locationId),
                 equalTo("Bukavu"));
     }
 
     @Test
     @OnDataSet("/dbunit/sites-simple1.db.xml")
     public void testGetAdminEntities() throws SQLException, InterruptedException {
-        synchronizeFirstTime();
+        synchronize();
         executeLocally(new GetAdminEntities(1));
     }
 
     @Test
     @OnDataSet("/dbunit/monthly-calc-indicators.db.xml")
     public void updateMonthlyReports() throws SQLException, InterruptedException {
-        synchronizeFirstTime();
+        synchronize();
 
         int siteId = 1;
 
@@ -243,7 +248,7 @@ public class SyncIntegrationTest extends LocalHandlerTestCase {
         assertThat(men.getActivityId(), equalTo(901));
         assertThat(men.getIndicatorId(), equalTo(7001));
 
-        assertThat(men.getValue(2009, 1), equalTo(200d));
+        assertThat(men.getValue(2009, 1), CoreMatchers.equalTo(200d));
         assertThat(women.getValue(2009, 1), equalTo(300d));
 
         assertThat(men.getValue(2009, 2), equalTo(150d));
@@ -252,10 +257,10 @@ public class SyncIntegrationTest extends LocalHandlerTestCase {
         // Update locally
 
         executeLocally(new UpdateMonthlyReports(siteId, Lists.newArrayList(
-                new Change(men.getIndicatorId(), new Month(2009, 1), 221d),
-                new Change(men.getIndicatorId(), new Month(2009, 3), 444d),
-                new Change(women.getIndicatorId(), new Month(2009, 5), 200d),
-                new Change(men.getIndicatorId(), new Month(2009, 5), 522d))));
+            new Change(men.getIndicatorId(), new Month(2009, 1), 221d),
+            new Change(men.getIndicatorId(), new Month(2009, 3), 444d),
+            new Change(women.getIndicatorId(), new Month(2009, 5), 200d),
+            new Change(men.getIndicatorId(), new Month(2009, 5), 522d))));
 
         result = executeLocally(new GetMonthlyReports(siteId, new Month(2009, 1), 12));
 
@@ -299,8 +304,8 @@ public class SyncIntegrationTest extends LocalHandlerTestCase {
 
         // REmote update
         executeRemotely(new UpdateMonthlyReports(siteId, Lists.newArrayList(
-            new Change(men.getIndicatorId(), new Month(2009, 1), 40d),
-            new Change(women.getIndicatorId(), new Month(2009, 3), 6000d))));
+                new Change(men.getIndicatorId(), new Month(2009, 1), 40d),
+                new Change(women.getIndicatorId(), new Month(2009, 3), 6000d))));
 
         newRequest();
 
@@ -310,74 +315,190 @@ public class SyncIntegrationTest extends LocalHandlerTestCase {
         women = result.getData().get(0);
         men = result.getData().get(1);
 
-        assertThat(men.getValue(2009, 1), equalTo(40d));
-        assertThat(women.getValue(2009, 1), equalTo(300d));  // unchanged
+        assertThat(men.getValue(2009, 1), CoreMatchers.equalTo(40d));
+        assertThat(women.getValue(2009, 1), CoreMatchers.equalTo(300d));  // unchanged
 
         assertThat(women.getValue(2009, 3), equalTo(6000d));
 
 
 
     }
+    
 
+    // AI-864 : we know that
+    // 1) on customer side location is present but locationadminlink entry is absent.
+    // 2) location and locationadminlink are updated with single SyncRegion
+    // Conclusion: the only possible bug is that location was updated but locationadminlink failed to update
+    // due to some weird problem (network connection failure)
+    // Test: in this test we will try to emulate connection failure
     @Test
-    @OnDataSet("/dbunit/locations.db.xml")
-    public void timeStampSurvivesRoundTrip() {
-        EntityManager entityManager = serverEntityManagerFactory
-                .createEntityManager();
-        entityManager.getTransaction().begin();
-        Location loc = new Location();
-        loc.setTimeEdited(nowIsh += 1500);
-        loc.setName("Penekusu");
-        loc.setLocationType(entityManager.find(LocationType.class, 1));
-        entityManager.persist(loc);
-        entityManager.getTransaction().commit();
-        entityManager.clear();
+    @OnDataSet("/dbunit/sites-simple-with-unicode.db.xml")
+    public void failResume() throws SQLException, InterruptedException {
+        String databaseName = "target/localdbtest"
+                + new java.util.Date().getTime();
 
-        entityManager.getTransaction().begin();
-        Location loc2 = entityManager.find(Location.class, loc.getId());
+        final AtomicBoolean forceFail = new AtomicBoolean(true);
 
-        String tsString = TimestampHelper.toString(loc2.getTimeEdited());
-        long ts = TimestampHelper.fromString(tsString);
+        final TestSqliteDatabase localDatabase = new TestSqliteDatabase(databaseName) {
+            @Override
+            public String adjustExecuteUpdates(String json) {
+                JsonParser parser = new JsonParser();
+                JsonArray list = parser.parse(json).getAsJsonArray();
 
-        assertFalse(loc2 == loc);
-        assertThat(loc2.getTimeEdited(), equalTo(ts));
-        entityManager.getTransaction().commit();
-        entityManager.clear();
+                // ugly : better way to identify when to fail ?
+                if (list.size() == 2 && json.contains("location") && json.contains("locationadminlink") && forceFail.get()) {
+                    forceFail.set(false);
+                    throw new RuntimeException("Forced to fail locationadminlink update");
+                }
+                return json;
+            }
+        };
 
-        entityManager.getTransaction().begin();
-        Location loc3 = entityManager.find(Location.class, loc.getId());
+        Dispatcher remoteDispatcher = new RemoteDispatcherStub(servlet);
 
-        assertFalse(ts > loc3.getTimeEdited());
-        assertFalse(ts < loc3.getTimeEdited());
+        Injector clientSideInjector = Guice.createInjector(new LocalModuleStub(
+                AuthenticationModuleStub.getCurrentUser(),
+                localDatabase,
+                remoteDispatcher));
 
-        entityManager.close();
+        final InstallPipeline installer = clientSideInjector.getInstance(InstallPipeline.class);
 
+        // sync with failure
+        newRequest();
+        installer.start();
+        localDatabase.processEventQueue();
+
+        // try again (now without failure)
+        JdbcScheduler.get().forceCleanup();
+        newRequest();
+        installer.start();
+        localDatabase.processEventQueue();
+
+        assertThat(localDatabase.selectString("select Name from Location where LocationId=7"),
+                equalTo("Shabunda"));
+
+        assertThat(localDatabase.selectString(adminEntityBy(7, 1)),
+                equalTo("3"));
+
+        assertThat(localDatabase.selectString(adminEntityBy(7, 2)),
+                equalTo("12"));
     }
 
-    private void addLocationsToServerDatabase(int count) {
+    // AI-864, create 50k locations and try to sync them
+    // Check response time (must be less than 5seconds)
+    @Test
+    @Ignore // we don't want to kill our build time, please run it manually
+    @OnDataSet("/dbunit/sites-simple-with-unicode.db.xml")
+    public void syncWithHugeLocationsCount() throws SQLException, InterruptedException {
 
-        nowIsh = new Date().getTime();
+        final TestSqliteDatabase localDatabase = new TestSqliteDatabase("target/localdbtest"
+                + new java.util.Date().getTime());
 
-        EntityManager entityManager = serverEntityManagerFactory
-                .createEntityManager();
+        // before sync, fill in db with locations
+        int generatedLocationCount = 50000;
+        final List<Integer> locationIds = addLocationsToServerDatabase(generatedLocationCount);
+
+        Dispatcher remoteDispatcher = new RemoteDispatcherStub(servlet);
+
+        Injector clientSideInjector = Guice.createInjector(new LocalModuleStub(
+                AuthenticationModuleStub.getCurrentUser(),
+                localDatabase,
+                remoteDispatcher));
+
+        final InstallPipeline installer = clientSideInjector.getInstance(InstallPipeline.class);
+
+        // sync
+        newRequest();
+        installer.start();
+        localDatabase.processEventQueue();
+
+        int locationCountInDataSet = 7;
+        assertThat(localDatabase.selectInt("select count(*) from Location"),
+                equalTo(generatedLocationCount + locationCountInDataSet));
+
+        assertThat(localDatabase.selectString("select Name from Location where LocationId=7"),
+                equalTo("Shabunda"));
+
+        assertThat(localDatabase.selectString(adminEntityBy(7, 1)),
+                equalTo("3"));
+
+        assertThat(localDatabase.selectString(adminEntityBy(7, 2)),
+                equalTo("12"));
+
+        // assert all locations are persisted
+        for (Integer id : locationIds) {
+            assertThat(localDatabase.selectInt("select LocationId from Location where LocationId=" + id),
+                    equalTo(id));
+        }
+    }
+
+    private String adminEntityBy(int locationId, int adminLevel) {
+        return "SELECT e.AdminEntityId " +
+                "FROM locationadminlink k " +
+                "left join adminentity e on k.AdminEntityId = e.AdminEntityId " +
+                "where e.AdminLevelId=" + adminLevel +
+                " and k.locationId=" + locationId;
+    }
+
+    // AI-864 : check maybe sql fails because of unicode in names (must be properly escaped)
+    @Test
+    @OnDataSet("/dbunit/sites-simple-with-unicode.db.xml")
+    public void syncWithUnicodeInNames() throws SQLException, InterruptedException {
+        synchronize();
+
+        Collector<Date> lastUpdate = Collector.newCollector();
+        syncHistoryTable.get(lastUpdate);
+
+        assertThat(queryString("select Name from Location where LocationId=8"),
+                equalTo("Shabunda_é_'_"));
+
+        assertThat(queryInt("select adminEntityId from locationAdminLink where LocationId=8"),
+                equalTo(3));
+
+        assertThat(lastUpdate.getResult(), is(not(nullValue())));
+
+        assertThat(
+                queryString("select Name from Indicator where IndicatorId=103"),
+                equalTo("Nb. of distributions"));
+        assertThat(
+                queryString("select Name from AdminLevel where AdminLevelId=1"),
+                equalTo("Province"));
+        assertThat(
+                queryString("select Name from AdminEntity where AdminEntityId=21"),
+                equalTo("Irumu"));
+        assertThat(queryString("select Name from Location where LocationId=7"),
+                equalTo("Shabunda"));
+        assertThat(queryInt("select value from IndicatorValue where ReportingPeriodId=601 and IndicatorId=6"),
+                equalTo(35));
+    }
+
+    private List<Integer> addLocationsToServerDatabase(int count) {
+
+        final List<Integer> locationIds = Lists.newArrayList();
+
+        EntityManager entityManager = serverEntityManagerFactory.createEntityManager();
+        LocationType locationType = entityManager.find(LocationType.class, 1);
+
         entityManager.getTransaction().begin();
         for (int i = 1; i <= count; ++i) {
+
             Location loc = new Location();
-            loc.setId(i);
-            loc.setTimeEdited(nowIsh += 15000);
+            loc.setId(i + 10); // first 10 ids are used by data set
+            loc.setVersion(locationType.incrementVersion());
             loc.setName("Penekusu " + i);
-            loc.getAdminEntities().add(
-                    entityManager.getReference(AdminEntity.class, 2));
-            loc.getAdminEntities().add(
-                    entityManager.getReference(AdminEntity.class, 12));
-            loc.setLocationType(entityManager.find(LocationType.class, 1));
+            loc.getAdminEntities().add(entityManager.getReference(AdminEntity.class, 2));
+            loc.getAdminEntities().add(entityManager.getReference(AdminEntity.class, 12));
+            loc.setLocationType(locationType);
             entityManager.persist(loc);
             entityManager.flush();
 
+            locationIds.add(loc.getId());
             assertTrue(loc.getId() != 0);
+            locationIds.add(loc.getId());
         }
         entityManager.getTransaction().commit();
         entityManager.close();
+        return locationIds;
     }
 
     private String queryString(String sql) throws SQLException {

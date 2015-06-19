@@ -18,7 +18,8 @@ public abstract class DigestResource {
 
     private static final Logger LOGGER = Logger.getLogger(DigestResource.class.getName());
 
-    @GET @Produces(MediaType.TEXT_PLAIN)
+    @GET 
+    @Produces(MediaType.TEXT_PLAIN)
     public String createDigests() throws Exception {
 
         List<Integer> userIds = selectUsers();

@@ -25,7 +25,6 @@ package org.activityinfo.legacy.shared.command;
 import com.bedatadriven.rebar.time.calendar.LocalDate;
 import com.google.common.collect.Lists;
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.Modules;
 import org.activityinfo.legacy.shared.command.PivotSites.ValueType;
 import org.activityinfo.legacy.shared.command.result.Bucket;
 import org.activityinfo.legacy.shared.exception.CommandException;
@@ -34,7 +33,6 @@ import org.activityinfo.legacy.shared.reports.content.*;
 import org.activityinfo.legacy.shared.reports.model.*;
 import org.activityinfo.server.command.CommandTestCase2;
 import org.activityinfo.server.database.OnDataSet;
-import org.activityinfo.server.database.TestDatabaseModule;
 import org.activityinfo.server.report.util.DateUtilCalendarImpl;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -49,7 +47,6 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(InjectionSupport.class)
-@Modules({TestDatabaseModule.class})
 @OnDataSet("/dbunit/sites-simple1.db.xml")
 public class PivotSitesHandlerTest extends CommandTestCase2 {
 
@@ -257,11 +254,24 @@ public class PivotSitesHandlerTest extends CommandTestCase2 {
         dimensions.add(new DateDimension(DateUnit.YEAR));
         dimensions.add(new Dimension(DimensionType.Target));
         filter.addRestriction(DimensionType.Indicator, 1);
-        filter.setDateRange(new DateRange(new LocalDate(2008, 1, 1),
-                new LocalDate(2008, 12, 31)));
+        filter.setDateRange(new DateRange(new LocalDate(2008, 1, 1), new LocalDate(2008, 12, 31)));
         execute();
 
         assertThat().thereAre(2).buckets();
+    }
+
+
+    @Test
+    @OnDataSet("/dbunit/sites-simple1.db.xml")
+    public void testNoTargetPivot() {
+        withIndicatorAsDimension();
+        dimensions.add(new DateDimension(DateUnit.YEAR));
+        dimensions.add(new Dimension(DimensionType.Target));
+        filter.addRestriction(DimensionType.Indicator, 1);
+        filter.setDateRange(new DateRange(new LocalDate(2008, 1, 1), new LocalDate(2008, 12, 31)));
+        execute();
+
+        assertThat().thereAre(1).buckets();
     }
 
     @Test

@@ -1,0 +1,89 @@
+
+/**
+ * Define common configuration properties and 
+ * apply cross-project processes.
+ */
+apply from: "./gradle/dependencies.gradle"
+apply from: "./gradle/version.gradle"
+apply from: "./gradle/coverage.gradle"
+apply from: "./gradle/jacoco.gradle"
+apply from: "./gradle/sonar.gradle"
+apply from: './gradle/database.gradle'
+apply from: "./gradle/environment.gradle"
+
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.3'
+}
+
+allprojects  {
+  apply plugin: 'maven'
+  apply plugin: 'idea'
+  group = 'org.activityinfo'
+}
+
+
+subprojects {
+
+  apply plugin: 'java'
+
+
+  sourceCompatibility = 1.7
+  targetCompatibility = 1.7
+
+
+  // This is required to stop javac from attempting to compile
+  // java sources included in .jar files intended for GWT
+  tasks.withType(JavaCompile) {
+    options.compilerArgs += ["-implicit:none", "-sourcepath", ""]
+    options.encoding = 'UTF-8'
+  }
+
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "http://nexus.bedatadriven.com/content/groups/public" }
+  }
+
+  dependencies {
+    compile libraries.slf4j.api
+    compile libraries.slf4j.impl
+
+    testCompile libraries.junit
+    testCompile libraries.hamcrest
+    testCompile libraries.easymock
+  }
+
+  project.afterEvaluate { project -> 
+    if(project.configurations.hasProperty('gwt')) {
+      project.tasks.getByName('ideaModule').doFirst { task ->
+        // Update the configuration *just* before the ideaModules task is executed,
+        // because once we resolve the gwt configuration, it can't be further modified
+        task.module.scopes.PROVIDED.plus += [ 
+                project.configurations.gwt,
+                project.configurations.gwtSdk]
+      }
+    }
+  }
+}
+
+
+/**
+ * Define the dependencies of *this* build script itself.
+ *
+ * These are the plugins and other libraries required to evaluate
+ * the *.gradle files themselves.
+ */
+buildscript {
+  repositories {
+    maven {
+      url 'http://dl.bintray.com/steffenschaefer/maven'
+    }
+    mavenCentral()
+    jcenter()
+  }
+  dependencies {
+    classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.6'
+    classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
+  }
+}

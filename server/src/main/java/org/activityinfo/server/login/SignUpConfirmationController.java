@@ -36,9 +36,10 @@ import org.activityinfo.server.database.hibernate.entity.UserPermission;
 import org.activityinfo.server.login.model.SignUpConfirmationInvalidPageModel;
 import org.activityinfo.server.login.model.SignUpConfirmationPageModel;
 import org.activityinfo.server.util.MailingListClient;
-import org.activityinfo.server.util.logging.LogException;
+import org.activityinfo.server.util.monitoring.Count;
 
 import javax.inject.Provider;
+import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -63,28 +64,26 @@ public class SignUpConfirmationController {
     private final MailingListClient mailingList;
 
     private final Provider<UserDAO> userDAO;
-    private final Provider<UserDatabaseDAO> databaseDAO;
-    private final Provider<PartnerDAO> partnerDAO;
-    private final Provider<UserPermissionDAO> permissionDAO;
+    private final EntityManager entityManager;
     private final AuthTokenProvider authTokenProvider;
 
     @Inject
     public SignUpConfirmationController(Provider<UserDAO> userDAO,
                                         Provider<UserDatabaseDAO> databaseDAO,
-                                        Provider<PartnerDAO> partnerDAO,
+                                        EntityManager entityManager, Provider<PartnerDAO> partnerDAO,
                                         Provider<UserPermissionDAO> permissionDAO,
                                         MailingListClient mailChimp,
                                         AuthTokenProvider authTokenProvider) {
         super();
         this.userDAO = userDAO;
-        this.databaseDAO = databaseDAO;
-        this.partnerDAO = partnerDAO;
-        this.permissionDAO = permissionDAO;
+        this.entityManager = entityManager;
         this.authTokenProvider = authTokenProvider;
         this.mailingList = mailChimp;
     }
 
-    @GET @Produces(MediaType.TEXT_HTML) @LogException(emailAlert = true)
+    @GET
+    @Count("sign_up.confirmation.started")
+    @Produces(MediaType.TEXT_HTML)
     public Viewable getPage(@Context UriInfo uri) throws Exception {
         try {
             User user = userDAO.get().findUserByChangePasswordKey(uri.getRequestUri().getQuery());
@@ -94,11 +93,14 @@ public class SignUpConfirmationController {
         }
     }
 
-    @POST @LogException(emailAlert = true)
+    @POST
+    @Count("sign_up.confirmation.completed")
     public Response confirm(@Context UriInfo uri,
                             @FormParam("key") String key,
                             @FormParam("password") String password,
                             @FormParam("newsletter") boolean newsletter) {
+
+        entityManager.getTransaction().begin();
 
         try {
             // check params
@@ -114,38 +116,50 @@ public class SignUpConfirmationController {
             // add user to default database
             addUserToDefaultDatabase(user);
 
+            entityManager.getTransaction().commit();
+            
             if (newsletter) {
                 mailingList.subscribe(user);
             }
 
             // go to the home page
             return Response.seeOther(uri.getAbsolutePathBuilder().replacePath("/").build())
-                           .cookie(authTokenProvider.createNewAuthCookies(user))
-                           .build();
+                    .cookie(authTokenProvider.createNewAuthCookies(user))
+                    .build();
 
         } catch (Exception e) {
+
+            
             LOGGER.log(Level.SEVERE, "Exception during signup process", e);
             return Response.ok(SignUpConfirmationPageModel.genericErrorModel(key).asViewable())
-                           .type(MediaType.TEXT_HTML)
-                           .build();
+                .type(MediaType.TEXT_HTML)
+                .build();
         }
     }
 
-    @LogException(emailAlert = true)
     protected void addUserToDefaultDatabase(User user) {
-        UserDatabase database = databaseDAO.get().findById(DEFAULT_DATABASE_ID);
-        Partner partner = partnerDAO.get().findById(DEFAULT_PARTNER_ID);
+        UserDatabase database = entityManager.find(UserDatabase.class, DEFAULT_DATABASE_ID);
+        if(database == null) {
+            LOGGER.severe("Default database " + DEFAULT_DATABASE_ID + " does not exist, unable to add user " + user.getEmail());
+            return;
+        }
+
+        Partner partner = entityManager.find(Partner.class, DEFAULT_PARTNER_ID);
+        if(partner == null) {
+            LOGGER.severe("Default partner " + DEFAULT_PARTNER_ID + " does not exist, unable to add user " + user.getEmail());
+            return;
+        }
         UserPermission permission = new UserPermission(database, user);
         permission.setPartner(partner);
         permission.setAllowView(true);
         permission.setAllowViewAll(true);
         permission.setLastSchemaUpdate(new Date());
-        permissionDAO.get().persist(permission);
+        entityManager.persist(permission);
     }
 
     private void checkParam(String value, boolean required) {
         boolean illegal = false;
-        illegal |= (required && Strings.isNullOrEmpty(value));
+        illegal = (required && Strings.isNullOrEmpty(value));
         illegal |= (value != null && value.length() > MAX_PARAM_LENGTH); // sanity check
 
         if (illegal) {

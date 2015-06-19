@@ -24,6 +24,9 @@ package org.activityinfo.ui.client.page.config.link;
 
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.core.El;
+import com.extjs.gxt.ui.client.data.BaseListLoader;
+import com.extjs.gxt.ui.client.data.DataProxy;
+import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.*;
 import com.extjs.gxt.ui.client.store.ListStore;
@@ -31,26 +34,114 @@ import com.extjs.gxt.ui.client.util.Point;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.grid.*;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import org.activityinfo.i18n.shared.I18N;
+import org.activityinfo.legacy.client.Dispatcher;
+import org.activityinfo.legacy.shared.command.DimensionType;
+import org.activityinfo.legacy.shared.command.Filter;
+import org.activityinfo.legacy.shared.command.GetActivityForms;
+import org.activityinfo.legacy.shared.command.result.ActivityFormResults;
+import org.activityinfo.legacy.shared.command.result.ListResult;
 import org.activityinfo.legacy.shared.model.*;
+import org.activityinfo.model.type.number.QuantityType;
 import org.activityinfo.ui.client.style.legacy.icon.IconImageBundle;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public class IndicatorGridPanel extends ContentPanel {
 
+    private class Loader extends BaseListLoader<ListResult<ModelData>> {
+        public Loader() {
+            super(new Proxy());
+        }
+    }
+
+    private class Proxy implements DataProxy<List<ModelData>> {
+
+        @Override
+        public void load(DataReader<List<ModelData>> reader, Object loadConfig, final AsyncCallback<List<ModelData>> callback) {
+
+            showEmptyText(I18N.CONSTANTS.loading());
+
+            if (selectedDb == null) {
+                setEmptyText();
+                callback.onSuccess(Lists.<ModelData>newArrayList());
+                return;
+            }
+
+            dispatcher.execute(new GetActivityForms().setFilter(activityIdsFilter())).then(new AsyncCallback<ActivityFormResults>() {
+                @Override
+                public void onFailure(Throwable caught) {
+                    showEmptyText(I18N.CONSTANTS.failedToLoadEntries());
+
+                    callback.onFailure(caught);
+                }
+
+                @Override
+                public void onSuccess(ActivityFormResults result) {
+                    setEmptyText();
+                    callback.onSuccess(constructResult(result.getData()));
+                }
+            });
+        }
+
+        private List<ModelData> constructResult(List<ActivityFormDTO> data) {
+            List<ModelData> result = Lists.newArrayList();
+            for (ActivityFormDTO activity : data) {
+                result.add(activity);
+                for (IndicatorGroup group : activity.groupIndicators()) {
+                    if (group.getName() == null) {
+                        for (IndicatorDTO indicator : group.getIndicators()) {
+                            if (indicator.getType() == QuantityType.TYPE_CLASS) {
+                                result.add(indicator);
+                            }
+                        }
+                    } else {
+                        result.add(group);
+                        for (IndicatorDTO indicator : group.getIndicators()) {
+                            if (indicator.getType() == QuantityType.TYPE_CLASS) {
+                                result.add(indicator);
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        private Filter activityIdsFilter() {
+            List<Integer> activityIds = Lists.newArrayList();
+            for(ActivityDTO activity : selectedDb.getActivities()) {
+                activityIds.add(activity.getId());
+            }
+
+            Filter filter = new Filter();
+            filter.addRestriction(DimensionType.Activity, activityIds);
+            return filter;
+        }
+
+    }
+
+
     private static final int INDENT = 10;
+
+    private final Dispatcher dispatcher;
 
     private Set<Integer> linked = Collections.emptySet();
     private ListStore<ModelData> store;
     private Grid<ModelData> grid;
+    private final Loader loader = new Loader();
+    private UserDatabaseDTO selectedDb;
 
-    public IndicatorGridPanel() {
+    public IndicatorGridPanel(Dispatcher dispatcher) {
+        this.dispatcher = dispatcher;
 
-        store = new ListStore<ModelData>();
+        store = new ListStore<ModelData>(loader);
         grid = new Grid<ModelData>(store, createColumnModel());
         grid.setView(new HighlightingGridView() {
 
@@ -59,7 +150,7 @@ public class IndicatorGridPanel extends ContentPanel {
                 return model instanceof IndicatorDTO;
             }
         });
-        grid.getView().setEmptyText(I18N.CONSTANTS.selectDatabaseHelp());
+        setEmptyText();
         grid.setAutoExpandColumn("name");
         grid.setHideHeaders(true);
 
@@ -75,7 +166,15 @@ public class IndicatorGridPanel extends ContentPanel {
         });
         setLayout(new FitLayout());
         add(grid);
+    }
 
+    private void setEmptyText() {
+        showEmptyText(I18N.CONSTANTS.selectDatabaseHelp());
+    }
+
+    private void showEmptyText(String text) {
+        grid.getView().setEmptyText(text);
+        grid.getView().refresh(false);
     }
 
     public HighlightingGridView getGridView() {
@@ -168,23 +267,13 @@ public class IndicatorGridPanel extends ContentPanel {
     }
 
     public void setDatabase(UserDatabaseDTO db) {
+        selectedDb = db;
+
         setHeadingText(db.getName());
         store.removeAll();
-        for (ActivityDTO activity : db.getActivities()) {
-            store.add(activity);
-//            for (IndicatorGroup group : activity.groupIndicators()) {
-//                if (group.getName() == null) {
-//                    for (IndicatorDTO indicator : group.getIndicators()) {
-//                        store.add(indicator);
-//                    }
-//                } else {
-//                    store.add(group);
-//                    for (IndicatorDTO indicator : group.getIndicators()) {
-//                        store.add(indicator);
-//                    }
-//                }
-//            }
-        }
+
+        loader.load();
+
     }
 
     public void setLinked(Set<Integer> ids) {

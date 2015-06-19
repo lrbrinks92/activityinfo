@@ -34,7 +34,6 @@ import org.activityinfo.legacy.shared.exception.InvalidAuthTokenException;
 import org.activityinfo.legacy.shared.exception.UnexpectedCommandException;
 import org.activityinfo.server.database.hibernate.entity.Authentication;
 import org.activityinfo.server.database.hibernate.entity.User;
-import org.activityinfo.server.util.logging.LogException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +52,7 @@ public class CommandServlet2 extends RemoteServiceServlet implements RemoteComma
 
     private static final Logger LOGGER = Logger.getLogger(CommandServlet2.class.getName());
 
-    @Override @LogException
+    @Override
     public List<CommandResult> execute(String authToken, List<Command> commands) throws CommandException {
         Authentication auth = retrieveAuthentication(authToken);
         try {
@@ -82,7 +81,6 @@ public class CommandServlet2 extends RemoteServiceServlet implements RemoteComma
     /**
      * Publicly visible for testing *
      */
-    @LogException
     public List<CommandResult> handleCommands(User user, List<Command> commands) {
         List<CommandResult> results = new ArrayList<CommandResult>();
         for (Command command : commands) {
@@ -102,7 +100,6 @@ public class CommandServlet2 extends RemoteServiceServlet implements RemoteComma
         return results;
     }
 
-    @LogException(emailAlert = true)
     protected CommandResult handleCommand(User user, Command command) throws CommandException {
         RemoteExecutionContext context = new RemoteExecutionContext(injector);
         return context.execute(command);

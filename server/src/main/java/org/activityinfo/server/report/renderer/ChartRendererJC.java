@@ -34,8 +34,8 @@ import org.activityinfo.legacy.shared.reports.model.CategoryProperties;
 import org.activityinfo.legacy.shared.reports.model.Dimension;
 import org.activityinfo.legacy.shared.reports.model.PivotChartReportElement;
 import org.activityinfo.legacy.shared.reports.model.PivotChartReportElement.Type;
-import org.activityinfo.server.report.output.StorageProvider;
-import org.activityinfo.server.report.output.TempStorage;
+import org.activityinfo.server.generated.GeneratedResource;
+import org.activityinfo.server.generated.StorageProvider;
 import org.krysalis.jcharts.Chart;
 import org.krysalis.jcharts.axisChart.AxisChart;
 import org.krysalis.jcharts.chartData.AxisChartDataSet;
@@ -74,9 +74,9 @@ public class ChartRendererJC {
                               int dpi) throws IOException {
         try {
             Chart chart = createChart(element, includeTitle, width, height, dpi);
-            TempStorage storage = istorageProvider.allocateTemporaryFile(null, "activityinfo.jpg");
-            JPEGEncoder.encode(chart, 0.75f, storage.getOutputStream());
-            return storage.getUrl();
+            GeneratedResource storage = istorageProvider.create(null, "activityinfo.jpg");
+            JPEGEncoder.encode(chart, 0.75f, storage.openOutputStream());
+            return storage.getDownloadUri();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -302,10 +302,9 @@ public class ChartRendererJC {
     }
 
     protected Paint[] getDefaultPaints(int count) {
-        String[] accents = Theme.getAccents();
         Paint[] paints = new Paint[count];
         for (int i = 0; i != paints.length; ++i) {
-            paints[i] = Color.decode(accents[i % accents.length]);
+            paints[i] = Color.decode(Theme.getAccent(i));
         }
         return paints;
     }

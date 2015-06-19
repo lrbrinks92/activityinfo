@@ -35,19 +35,8 @@ import java.util.Set;
  *
  * @see org.activityinfo.legacy.shared.reports.model.Report
  */
-@Entity @Table(name = "ReportTemplate") @org.hibernate.annotations.Filters(
-        {@org.hibernate.annotations.Filter(
-                name = "userVisible",
-                condition = "(:currentUserId = OwnerUserId or " +
-                            "(Visibility = 1 and (DatabaseId is null or " +
-                            ":currentUserId in (select p.UserId from userpermission p " +
-                            "where p.AllowView and p.UserId=:currentUserId and p.DatabaseId=DatabaseId))))"
-        ),
-
-                @org.hibernate.annotations.Filter(
-                        name = "hideDeleted",
-                        condition = "DateDeleted is null"
-                )})
+@Entity 
+@Table(name = "ReportTemplate")
 public class ReportDefinition implements Serializable {
 
     private int id;
@@ -58,8 +47,6 @@ public class ReportDefinition implements Serializable {
     private Date dateDeleted;
     private String title;
     private String description;
-    private EmailDelivery frequency;
-    private Integer day;
     private Set<ReportSubscription> subscriptions = new HashSet<ReportSubscription>(0);
     private String json;
 

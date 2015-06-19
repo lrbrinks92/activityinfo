@@ -1,0 +1,93 @@
+
+
+
+dependencies {
+    compile project(':core:model')
+    compile project(':core:services')
+    compile project(':i18n')
+    compile project(':io:xform')
+    compile project(':io:akvo-api')
+    
+    testCompile project(':io:akvo-stub')
+
+    testCompile project(':core:model').sourceSets.test.output
+
+    // AppEngine
+    appengineSdk libraries.appengine.sdk
+    compile libraries.appengine.api
+    compile libraries.appengine.gcs
+    testCompile libraries.appengine.testing
+    testCompile libraries.appengine.stubs
+    testCompile libraries.appengine.tools
+
+    // IoC Framework
+    compile libraries.guice
+    compile libraries.guiceServlet
+
+    // Jersey + Rest
+    compile libraries.jersey.server
+    compile libraries.jersey.multipart
+    compile libraries.jersey.guice
+    compile libraries.jersey.json
+    compile libraries.freemarker
+    compile libraries.jackson.geojson
+    compile libraries.gson
+    compile libraries.jersey.client
+
+    // Utility libraries
+    compile libraries.guava
+    compile libraries.commons.fileupload
+    compile libraries.commons.io
+    compile libraries.bcrypt
+
+    // MySQL Related dependencies
+    compile libraries.hibernate.entitymanager
+    compile libraries.hibernate.spatial
+    compile libraries.hibernate.validator
+    compile libraries.liquibase
+    compile libraries.jdbc.mysql
+
+    testCompile libraries.jdbc.sqlite
+    testCompile libraries.dbunit
+    testCompile libraries.c3p0
+
+    compile libraries.jts
+    compile libraries.google.apiClient
+
+    // GWT User Interface Dependencies
+    compile libraries.gxt
+    compile libraries.gwt.user
+    gwt libraries.gwt.dnd
+    gwt libraries.gwt.guice
+    gwt libraries.gwt.gson
+    gwt libraries.gwt.leaflet
+    gwt libraries.gwt.gears
+    gwt libraries.gwt.guava
+
+    gwt 'com.allen-sauer.gwt.dnd:gwt-dnd:3.3.0'
+    gwt 'com.googlecode.gwtquery:gwtquery:1.4.2'
+    gwt 'com.github.jdramaix:gwtchosen:1.2.0'
+
+    compile libraries.gwt.i18nServer
+    compile libraries.rebar.time
+    compile libraries.rebar.sync
+    compile libraries.rebar.asyncFun
+    compile libraries.rebar.appcache
+    compile libraries.rebar.sql
+    compile libraries.rebar.sync
+    
+    compile libraries.appengineMetrics
+    compile 'com.bedatadriven.appengine:appengine-hibernate:25'
+
+    gwt libraries.rebar.style
+    
+
+
+    // Report Rendering
+    compile libraries.appengine.export.itext
+    compile libraries.appengine.export.awt
+    compile libraries.appengine.export.ppt
+    compile libraries.appengine.export.jcharts
+    compile libraries.appengine.export.emf
+    compile libraries.prettytime
+}

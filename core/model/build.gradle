@@ -1,0 +1,20 @@
+
+description = 'ActivityInfo Model'
+
+apply plugin: 'gwt-base'
+
+dependencies {
+    compile project(':core:promises')
+
+    gwt     libraries.gwt.user
+    runtime libraries.gwt.servlet
+    compile libraries.guava 
+    compile libraries.gson 
+    compile libraries.rebar.time 
+    compile libraries.jsr305
+}
+
+jar {
+    from project.sourceSets.main.allSource
+    from project.sourceSets.main.output
+}

@@ -22,20 +22,21 @@ package org.activityinfo.server.util.config;
  * #L%
  */
 
+import com.google.appengine.api.appidentity.AppIdentityService;
+import com.google.appengine.api.appidentity.AppIdentityServiceFactory;
+import com.google.appengine.tools.cloudstorage.*;
+import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import org.activityinfo.server.DeploymentEnvironment;
-import org.activityinfo.server.util.logging.Trace;
 import org.activityinfo.service.DeploymentConfiguration;
 
 import javax.servlet.ServletContext;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
+import java.nio.channels.Channels;
 import java.security.AccessControlException;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -56,7 +57,8 @@ public class ConfigModule extends ServletModule {
         }
     }
 
-    @Provides @Singleton @Trace
+    @Provides 
+    @Singleton
     public DeploymentConfiguration provideDeploymentConfig(ServletContext context) {
         Properties properties = new Properties();
 
@@ -65,6 +67,7 @@ public class ConfigModule extends ServletModule {
         tryToLoadFrom(properties, userSettings());
         if (DeploymentEnvironment.isAppEngine()) {
             tryToLoadFromAppEngineDatastore(properties);
+            tryToLoadFromDefaultBucket(properties);
         }
 
         // specified at server start up with
@@ -74,6 +77,28 @@ public class ConfigModule extends ServletModule {
         }
 
         return new DeploymentConfiguration(properties);
+    }
+
+    private void tryToLoadFromDefaultBucket(Properties properties) {
+        try {
+
+            GcsService gcsService = GcsServiceFactory.createGcsService(RetryParams.getDefaultInstance());
+            AppIdentityService appIdentity = AppIdentityServiceFactory.getAppIdentityService();
+
+            GcsFilename fileName = new GcsFilename(appIdentity.getDefaultGcsBucketName(), "config.properties");
+
+            logger.log(Level.INFO, "Trying to read configuration from GCS at" + fileName);
+
+            GcsInputChannel readChannel = gcsService.openReadChannel(fileName, 0);
+
+            try (Reader reader = Channels.newReader(readChannel, Charsets.UTF_8.name())) {
+                properties.load(reader);
+                logger.log(Level.INFO, "Read config from GCS.");
+            }
+            
+        } catch (IOException e) {
+            logger.log(Level.INFO, "Could not read configuration properties from GCS: " + e.getMessage());
+        }
     }
 
     private boolean tryToLoadFrom(Properties properties, File file) {

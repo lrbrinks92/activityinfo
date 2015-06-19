@@ -25,10 +25,9 @@ package org.activityinfo.legacy.shared.model;
 import com.bedatadriven.rebar.time.calendar.LocalDate;
 import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.google.common.collect.Maps;
-import org.activityinfo.model.form.FormInstance;
-import org.activityinfo.model.form.FieldId;
 import org.activityinfo.model.legacy.CuidAdapter;
 import org.activityinfo.model.resource.ResourceId;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.*;
 
@@ -77,8 +76,6 @@ public final class SiteDTO extends BaseModelData implements EntityDTO, HasAdminE
     public SiteDTO(SiteDTO site) {
         super(site.getProperties());
     }
-
-
 
     /**
      * Sets this site's id
@@ -580,6 +577,18 @@ public final class SiteDTO extends BaseModelData implements EntityDTO, HasAdminE
 
     public boolean hasAttributeDisplayMap() {
         return attributeDisplayMap != null && !attributeDisplayMap.isEmpty();
+    }
+
+    @JsonIgnore
+    @Override
+    public Map<String, Object> getProperties() {
+        return super.getProperties();
+    }
+
+    @JsonIgnore
+    @Override
+    public Collection<String> getPropertyNames() {
+        return super.getPropertyNames();
     }
 
 }

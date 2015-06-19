@@ -22,15 +22,14 @@ package org.activityinfo.legacy.shared.command;
  * #L%
  */
 
+import org.activityinfo.fixtures.InjectionSupport;
+import org.activityinfo.fixtures.Modules;
 import org.activityinfo.legacy.shared.command.result.ReportVisibilityResult;
 import org.activityinfo.legacy.shared.command.result.ReportsResult;
 import org.activityinfo.legacy.shared.model.ReportMetadataDTO;
 import org.activityinfo.legacy.shared.model.ReportVisibilityDTO;
-import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.Modules;
 import org.activityinfo.server.command.CommandTestCase2;
 import org.activityinfo.server.database.OnDataSet;
-import org.activityinfo.server.database.TestDatabaseModule;
 import org.activityinfo.server.report.ReportModule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +40,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 @RunWith(InjectionSupport.class)
-@Modules({TestDatabaseModule.class, ReportModule.class})
+@Modules(ReportModule.class)
 @OnDataSet("/dbunit/schema1.db.xml")
 public class ReportVisibilityTest extends CommandTestCase2 {
 

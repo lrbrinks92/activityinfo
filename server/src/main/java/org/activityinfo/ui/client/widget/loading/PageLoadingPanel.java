@@ -75,10 +75,12 @@ public class PageLoadingPanel implements IsWidget, LoadingPanelView {
         content.setStyleName(styleName);
     }
 
+    @Override
     public void setWidget(IsWidget widget) {
         setWidget(widget.asWidget());
     }
 
+    @Override
     public HasClickHandlers getRetryButton() {
         return retryButton;
     }

@@ -22,7 +22,8 @@ public class TileResource {
         datastore = DatastoreServiceFactory.getDatastoreService();
     }
 
-    @PUT @Path("{layer}/{z}/{x}/{y}.png")
+    @PUT 
+    @Path("{layer}/{z}/{x}/{y}.png")
     public Response putTile(@HeaderParam("X-Update-Key") String authToken,
                             @PathParam("layer") String layer,
                             @PathParam("z") int zoom,
@@ -42,7 +43,9 @@ public class TileResource {
         return Response.ok().build();
     }
 
-    @GET @Path("{layer}/{z}/{x}/{y}.png") @Produces("image/png")
+    @GET
+    @Path("{layer}/{z}/{x}/{y}.png") 
+    @Produces("image/png")
     public Response getTile(@PathParam("layer") String layer,
                             @PathParam("z") int zoom,
                             @PathParam("x") int x,

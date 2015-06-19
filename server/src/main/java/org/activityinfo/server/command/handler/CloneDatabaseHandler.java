@@ -316,11 +316,13 @@ public class CloneDatabaseHandler implements CommandHandlerAsync<CloneDatabase, 
             switch (sourceRange.iterator().next().getDomain()) {
                 case CuidAdapter.PARTNER_FORM_CLASS_DOMAIN:
                     if (command.isCopyPartners()) {
-                        for (ResourceId item : sourceRange) {
-                            Partner targetPartner = partnerMapping.get(CuidAdapter.getLegacyIdFromCuid(item));
-                            targetRange.add(CuidAdapter.partnerFormClass(targetPartner.getId()));
-                        }
+
+                        // as defined in ActivityFormClassBuilder.build() in reference range we stick to db id
+                        targetRange.add(CuidAdapter.partnerFormClass(targetDb.getId()));
                     }
+                    break;
+                case CuidAdapter.PROJECT_CLASS_DOMAIN:
+                    targetRange.add(CuidAdapter.projectFormClass(targetDb.getId()));
                     break;
             }
 

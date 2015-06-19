@@ -68,6 +68,7 @@ public class PersistImportCommand implements ImportCommand<Void> {
         return commandExecutor.getResourceLocator().persist(toPersist);
     }
 
+    @Override
     public void setCommandExecutor(ImportCommandExecutor commandExecutor) {
         this.commandExecutor = commandExecutor;
     }

@@ -22,8 +22,9 @@ package org.activityinfo.legacy.shared.command;
  * #L%
  */
 
-import com.extjs.gxt.ui.client.data.RpcMap;
 import org.activityinfo.legacy.shared.command.result.VoidResult;
+import org.activityinfo.server.endpoint.jsonrpc.Required;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Map;
 
@@ -31,19 +32,19 @@ public class UpdateTargetValue implements MutatingCommand<VoidResult> {
 
     private int targetId;
     private int indicatorId;
-    private RpcMap changes;
+    private Map<String, Double> changes;
 
     public UpdateTargetValue() {
-
     }
 
-    public UpdateTargetValue(int targetId, int indicatorId, Map<String, Object> changes) {
+    public UpdateTargetValue(int targetId, int indicatorId, Map<String, Double> changes) {
         this.targetId = targetId;
         this.indicatorId = indicatorId;
-        this.changes = new RpcMap();
-        this.changes.putAll(changes);
+        this.changes = changes;
     }
 
+    @Required
+    @JsonProperty
     public int getTargetId() {
         return targetId;
     }
@@ -52,6 +53,8 @@ public class UpdateTargetValue implements MutatingCommand<VoidResult> {
         this.targetId = targetId;
     }
 
+    @Required
+    @JsonProperty
     public int getIndicatorId() {
         return indicatorId;
     }
@@ -60,11 +63,12 @@ public class UpdateTargetValue implements MutatingCommand<VoidResult> {
         this.indicatorId = indicatorId;
     }
 
-    public RpcMap getChanges() {
+    @JsonProperty
+    public Map<String, Double> getChanges() {
         return changes;
     }
 
-    public void setChanges(RpcMap changes) {
+    public void setChanges(Map<String, Double> changes) {
         this.changes = changes;
     }
 

@@ -22,7 +22,6 @@ package org.activityinfo.server.branding;
  * #L%
  */
 
-import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.activityinfo.server.database.hibernate.entity.Domain;
@@ -62,6 +61,8 @@ public class DomainProvider implements Provider<Domain> {
             result = new Domain();
             result.setTitle("ActivityInfo");
             result.setHost(host);
+            result.setPort(request.get().getServerPort());
+            result.setSignUpAllowed(true);
         } else {
             entityManager.get().detach(result);
         }

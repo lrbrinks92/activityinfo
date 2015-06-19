@@ -167,6 +167,7 @@ public final class AttributeGroupDTO extends BaseModelData implements EntityDTO,
 
 
 
+    @Override
     public int getSortOrder() {
         return get("sortOrder", 0);
     }

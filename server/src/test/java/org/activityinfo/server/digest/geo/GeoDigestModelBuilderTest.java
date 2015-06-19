@@ -25,10 +25,9 @@ package org.activityinfo.server.digest.geo;
 import com.bedatadriven.rebar.time.calendar.LocalDate;
 import com.google.inject.Inject;
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.MockHibernateModule;
 import org.activityinfo.fixtures.Modules;
+import org.activityinfo.fixtures.TestHibernateModule;
 import org.activityinfo.server.database.OnDataSet;
-import org.activityinfo.server.database.TestDatabaseModule;
 import org.activityinfo.server.database.hibernate.entity.User;
 import org.activityinfo.server.database.hibernate.entity.UserDatabase;
 import org.activityinfo.server.digest.TestDigestModule;
@@ -47,8 +46,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(InjectionSupport.class)
 @OnDataSet("/dbunit/digests.db.xml")
 @Modules({
-        TestDatabaseModule.class,
-        MockHibernateModule.class,
+        TestHibernateModule.class,
         TestDigestModule.class
 })
 public class GeoDigestModelBuilderTest {

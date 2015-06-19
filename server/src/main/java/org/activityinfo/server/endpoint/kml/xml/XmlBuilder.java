@@ -138,9 +138,6 @@ public class XmlBuilder {
             }
 
             if (prefix == null && !defaultNamespace.equals(tag.getNamespace())) {
-
-                // atts.addAttribute("", "", "xmlns", "string",
-                // tag.getNamespace());
                 defaultNamespace = tag.getNamespace();
             }
 
@@ -152,9 +149,7 @@ public class XmlBuilder {
 
                 String attrQName = attr.getName();
                 String attrNs = attr.getNamespace();
-                // if(attr.getNamespace() == null) {
-                // attrNs = tag.getNamespace();
-                // }
+
                 if (attrNs != null && !defaultNamespace.equals(attrNs)) {
                     String attrPrefix = getPrefix(tag, attrNs);
                     if (attrPrefix == null) {
@@ -165,12 +160,6 @@ public class XmlBuilder {
 
                 atts.addAttribute(attrNs, attr.getName(), attrQName, "string", attr.getValue());
             }
-
-            // for(Entry<String, String> entry :
-            // tag.getNamespacePrefixes().entrySet()) {
-            // atts.addAttribute("", "", "xmlns:" + entry.getValue(), "string",
-            // entry.getKey());
-            // }
 
             hd.startElement(tag.getNamespace(), tag.getName(), qname, atts);
 
@@ -192,9 +181,7 @@ public class XmlBuilder {
 
     protected void writePendingTag() throws SAXException {
         if (pendingTag != null) {
-
             writeTag(pendingTag, pendingTag.isClosed());
-
             pendingTag = null;
         }
     }
@@ -232,11 +219,8 @@ public class XmlBuilder {
     }
 
     public <XmlElementT extends XmlElement> XmlElementT start(XmlElementT tag) throws SAXException {
-
         writePendingTag();
-
         pendingTag = tag;
-
         return tag;
     }
 
@@ -258,14 +242,6 @@ public class XmlBuilder {
     public XmlBuilder e(SimpleXmlElement tag) throws SAXException {
         e(new XmlElement(tag.getNamespace(), tag.getName())).text(tag.getText().toString());
         return this;
-    }
-
-    public XmlBuilder closeVerify(String tagName) throws SAXException {
-
-        // if(!openTags.peek().equals(tagName)) {
-        // throw new MismatchedTagError(openTags.peek());
-        // }
-        return close();
     }
 
 }

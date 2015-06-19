@@ -1,0 +1,3 @@
+Acceptance tests that must be added after beta-merging branch is merged back to beta
+
+1. edit new form must work after db cloning (found by Leo)

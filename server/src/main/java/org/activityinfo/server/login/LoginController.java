@@ -29,9 +29,9 @@ import org.activityinfo.server.database.hibernate.dao.UserDAO;
 import org.activityinfo.server.database.hibernate.entity.User;
 import org.activityinfo.server.login.exception.LoginException;
 import org.activityinfo.server.login.model.LoginPageModel;
-import org.activityinfo.server.util.logging.LogException;
 
 import javax.inject.Provider;
+import javax.persistence.NoResultException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -52,17 +52,24 @@ public class LoginController {
     @Inject
     private Provider<UserDAO> userDAO;
 
-    @GET @LogException(emailAlert = true) @Produces(MediaType.TEXT_HTML)
+    @GET 
+    @Produces(MediaType.TEXT_HTML)
     public Viewable getLoginPage(@Context UriInfo uri) throws Exception {
         LoginPageModel model = new LoginPageModel();
         return model.asViewable();
     }
 
-    @POST @Path("ajax")
+    @POST 
+    @Path("ajax")
     public Response ajaxLogin(@FormParam("email") String email,
                               @FormParam("password") String password) throws Exception {
 
-        User user = userDAO.get().findUserByEmail(email);
+        User user;
+        try {
+            user = userDAO.get().findUserByEmail(email);
+        } catch(NoResultException e) {
+            throw new LoginException();
+        }
         checkPassword(password, user);
 
         return Response.ok().cookie(authTokenProvider.get().createNewAuthCookies(user)).build();
@@ -77,10 +84,11 @@ public class LoginController {
         try {
             user = userDAO.get().findUserByEmail(email);
             checkPassword(password, user);
+            
         } catch (Exception e) {
             LoginPageModel model = LoginPageModel.unsuccessful();
 
-            return Response.ok(model).type(MediaType.TEXT_HTML).build();
+            return Response.ok(model.asViewable()).type(MediaType.TEXT_HTML).build();
         }
 
         return Response.seeOther(uri.getAbsolutePathBuilder().replacePath("/").build())

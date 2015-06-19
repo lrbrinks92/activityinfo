@@ -29,6 +29,8 @@ import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.Command;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.activityinfo.i18n.shared.I18N;
@@ -42,9 +44,12 @@ import org.activityinfo.ui.client.page.report.resources.ReportResources;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class CompositeEditor2 extends LayoutContainer implements ReportElementEditor<Report>, AddCallback,
         ElementWidget.EventHandler {
+    
+    private static final Logger LOGGER = Logger.getLogger(CompositeEditor2.class.getName());
 
     private final Provider<ElementWidget> elementWidgetProvider;
 
@@ -152,5 +157,38 @@ public class CompositeEditor2 extends LayoutContainer implements ReportElementEd
     @Override
     public void onElementChanged(ElementWidget widget) {
         reportEventBus.fireChange();
+    }
+
+    @Override
+    public void onElementMove(ElementWidget elementWidget, int delta) {
+        
+        int currentIndex = model.getElements().indexOf(elementWidget.getModel());
+        assert currentIndex >= 0;
+        
+        int newIndex = currentIndex + delta;
+        
+        //int insertIndex = (newIndex > currentIndex) ?  newIndex-1 : newIndex;
+        
+        int insertIndex = newIndex;
+        
+        LOGGER.info("Moving Element " + currentIndex + " -> " + newIndex + " (insert pos:" + insertIndex + ")");
+        
+        if(newIndex >= 0 && newIndex < model.getElements().size()) {
+
+            // move model element
+            model.getElements().remove(currentIndex);
+            model.getElements().add(insertIndex, elementWidget.getModel());
+
+            // move widgets
+            page.remove(elementWidget);
+            page.insert(elementWidget, insertIndex);
+            page.layout();
+            Scheduler.get().scheduleDeferred(new Command() {
+                @Override
+                public void execute() {
+                    reportEventBus.fireChange();
+                }
+            });
+        }
     }
 }

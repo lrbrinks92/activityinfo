@@ -18,8 +18,8 @@ import org.activityinfo.server.database.hibernate.entity.UserDatabase;
 import org.activityinfo.server.digest.DigestModelBuilder;
 import org.activityinfo.server.digest.UserDigest;
 import org.activityinfo.server.digest.geo.GeoDigestModel.DatabaseModel;
-import org.activityinfo.server.report.output.StorageProvider;
-import org.activityinfo.server.report.output.TempStorage;
+import org.activityinfo.server.generated.GeneratedResource;
+import org.activityinfo.server.generated.StorageProvider;
 import org.activityinfo.server.report.renderer.image.ImageMapRenderer;
 import org.activityinfo.server.util.date.DateFormatter;
 
@@ -95,11 +95,11 @@ public class GeoDigestModelBuilder implements DigestModelBuilder {
             if (!content.getMarkers().isEmpty()) {
                 reportModel.setContent(content);
 
-                TempStorage storage = storageProvider.allocateTemporaryFile("image/png", "map.png");
-                imageMapRenderer.render(reportModel, storage.getOutputStream());
-                storage.getOutputStream().close();
+                GeneratedResource storage = storageProvider.create("image/png", "map.png");
+                imageMapRenderer.render(reportModel, storage.openOutputStream());
+                storage.openOutputStream().close();
 
-                databaseModel.setUrl(storage.getUrl());
+                databaseModel.setUrl(storage.getDownloadUri());
             }
         }
     }

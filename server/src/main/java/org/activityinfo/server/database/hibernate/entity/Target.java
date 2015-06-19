@@ -22,9 +22,13 @@ package org.activityinfo.server.database.hibernate.entity;
  * #L%
  */
 
+import org.hibernate.annotations.BatchSize;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Target implements Serializable, ReallyDeleteable {
@@ -37,6 +41,7 @@ public class Target implements Serializable, ReallyDeleteable {
     private Partner partner;
     private AdminEntity adminEntity;
     private UserDatabase userDatabase;
+    private Set<TargetValue> values = new HashSet<TargetValue>(0);
 
     public Target() {
         super();
@@ -49,6 +54,24 @@ public class Target implements Serializable, ReallyDeleteable {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    @PreRemove
+    public void preRemove() {
+        // bi-directional association: removing target that are part of an association, we have to clear parents first
+        // or otherwise get "un-scheduling entity deletion" from org.hibernate.event.internal.DefaultPersistEventListener
+        if (userDatabase != null) {
+            userDatabase.getTargets().remove(this);
+        }
+        if (adminEntity != null) {
+            adminEntity.getTargets().remove(this);
+        }
+        if (partner !=null) {
+            partner.getTargets().remove(this);
+        }
+        if (project != null) {
+            project.getTargets().remove(this);
+        }
     }
 
     @Column(name = "Name", nullable = false, length = 255)
@@ -112,9 +135,18 @@ public class Target implements Serializable, ReallyDeleteable {
         return userDatabase;
     }
 
-    @Override
-    public void deleteReferences() {
-        // delete references also , from targetValue
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "target")
+    @BatchSize(size = 200)
+    public Set<TargetValue> getValues() {
+        return values;
     }
 
+    public void setValues(Set<TargetValue> values) {
+        this.values = values;
+    }
+
+    @Override
+    public void deleteReferences() {
+        values.clear();
+    }
 }

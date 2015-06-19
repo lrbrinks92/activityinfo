@@ -1,0 +1,9 @@
+
+
+dependencies {
+    compile project(':core:model')
+    compile project(':io:akvo-api')
+    compile libraries.guava
+    compile libraries.jersey.simpleServer
+    compile libraries.jackson.mapper
+}

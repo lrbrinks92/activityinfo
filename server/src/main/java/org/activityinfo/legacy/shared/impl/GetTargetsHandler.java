@@ -117,10 +117,9 @@ public class GetTargetsHandler implements CommandHandlerAsync<GetTargets, Target
                 .appendColumn("t.name")
                 .appendColumn("i.name", "iname")
                 .from(Tables.TARGET_VALUE, "v")
-                .leftJoin(Tables.TARGET, "t")
-                .on("v.targetId = t.targetId")
-                .leftJoin(Tables.INDICATOR, "i")
-                .on("v.indicatorId = i.indicatorId")
+                .leftJoin(Tables.TARGET, "t").on("v.targetId = t.targetId")
+                .leftJoin(Tables.INDICATOR, "i").on("v.indicatorId = i.indicatorId")
+                .whereTrue("v.value IS NOT NULL")
                 .execute(context.getTransaction(), new SqlResultCallback() {
                     @Override
                     public void onSuccess(SqlTransaction tx, SqlResultSet results) {
@@ -135,7 +134,7 @@ public class GetTargetsHandler implements CommandHandlerAsync<GetTargets, Target
                             List<TargetValueDTO> list = targetValues.get(dto.getTargetId());
 
                             if (targetValues.get(dto.getTargetId()) == null) {
-                                list = new ArrayList<TargetValueDTO>();
+                                list = new ArrayList<>();
                             }
 
                             list.add(dto);

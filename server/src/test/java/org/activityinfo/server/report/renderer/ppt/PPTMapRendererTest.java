@@ -48,7 +48,7 @@ public class PPTMapRendererTest {
 
         referenceBaseMap = new TileBaseMap();
         referenceBaseMap
-                .setTileUrlPattern("http://mt{s}.aimaps.net/admin/v1/z{z}/{x}x{y}.png");
+                .setTileUrlPattern("http://www.activityinfo.org/resources/tile/admin/v1/z{z}/{x}x{y}.png");
         referenceBaseMap.setName("Administrative Map");
 
     }

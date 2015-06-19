@@ -128,6 +128,7 @@ public abstract class AbstractGridView<M extends ModelData, P extends GridPresen
         return new MaskingAsyncMonitor(this, I18N.CONSTANTS.saving());
     }
 
+    @Override
     public void refresh() {
         grid.getView().refresh(false);
     }

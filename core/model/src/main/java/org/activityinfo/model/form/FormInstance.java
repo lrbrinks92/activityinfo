@@ -34,7 +34,6 @@ import org.activityinfo.model.type.primitive.TextValue;
 import org.activityinfo.model.type.time.LocalDate;
 
 import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
@@ -151,11 +150,11 @@ public class FormInstance implements IsResource {
         }
     }
 
-    public FormInstance set(@NotNull ResourceId fieldId, ResourceId referenceId) {
+    public FormInstance set(@Nonnull ResourceId fieldId, ResourceId referenceId) {
         return set(fieldId, new ReferenceValue(referenceId));
     }
 
-    public FormInstance set(@NotNull ResourceId fieldId, String value) {
+    public FormInstance set(@Nonnull ResourceId fieldId, String value) {
         if(value == null) {
             propertyBag.remove(fieldId.asString());
         } else {
@@ -169,27 +168,27 @@ public class FormInstance implements IsResource {
         return set(ResourceId.valueOf(fieldId), name);
     }
 
-    public FormInstance set(@NotNull ResourceId fieldId, double value) {
+    public FormInstance set(@Nonnull ResourceId fieldId, double value) {
         return set(fieldId, new Quantity(value));
     }
 
-    public FormInstance set(@NotNull ResourceId fieldId, boolean value) {
+    public FormInstance set(@Nonnull ResourceId fieldId, boolean value) {
         propertyBag.set(fieldId.asString(), value);
         return this;
     }
 
-    public FormInstance set(@NotNull ResourceId fieldId, FieldValue fieldValue) {
+    public FormInstance set(@Nonnull ResourceId fieldId, FieldValue fieldValue) {
         propertyBag.set(fieldId, fieldValue);
         return this;
     }
 
-    public FormInstance set(@NotNull ResourceId fieldId, AiLatLng latLng) {
+    public FormInstance set(@Nonnull ResourceId fieldId, AiLatLng latLng) {
         propertyBag.set(fieldId, new GeoPoint(latLng.getLat(), latLng.getLng()));
         return this;
     }
 
 
-    public void set(@NotNull ResourceId fieldId, Set<ResourceId> references) {
+    public void set(@Nonnull ResourceId fieldId, Set<ResourceId> references) {
         set(fieldId, new ReferenceValue(references));
     }
 

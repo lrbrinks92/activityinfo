@@ -37,7 +37,6 @@ import org.activityinfo.legacy.client.Dispatcher;
 import org.activityinfo.legacy.client.monitor.MaskingAsyncMonitor;
 import org.activityinfo.legacy.shared.Log;
 import org.activityinfo.legacy.shared.command.GenerateElement;
-import org.activityinfo.legacy.shared.model.BaseMap;
 import org.activityinfo.legacy.shared.reports.content.AdminOverlay;
 import org.activityinfo.legacy.shared.reports.content.MapContent;
 import org.activityinfo.legacy.shared.reports.model.MapReportElement;
@@ -65,13 +64,8 @@ public class MapEditorMapView extends ContentPanel implements HasReportElement<M
     private static final int DEFAULT_ZOOM_CONTROL_OFFSET_X = 5;
     private static final int ZOOM_CONTROL_OFFSET_Y = 5;
 
-    private static final int RDC_CENTER_LONG = 25;
-    private static final int RDC_CENTER_LAT = -1;
-
     private final Dispatcher dispatcher;
     private final ReportEventBus reportEventBus;
-
-    private BaseMap currentBaseMap = null;
 
     private final Status statusWidget;
     private final LeafletMarkerDrilldownEventHandler markerDrilldownEventHandler;
@@ -87,7 +81,6 @@ public class MapEditorMapView extends ContentPanel implements HasReportElement<M
     // True when the first layer is just put on the map
     private boolean isFirstLayerUpdate = true;
 
-    //private LargeMapControl zoomControl;
     private int zoomControlOffsetX = DEFAULT_ZOOM_CONTROL_OFFSET_X;
 
     private LeafletMap map;
@@ -153,11 +146,7 @@ public class MapEditorMapView extends ContentPanel implements HasReportElement<M
     public MapReportElement getModel() {
         return model;
     }
-    //
-    //    private ControlPosition zoomControlPosition() {
-    //        return new ControlPosition(ControlAnchor.TOP_LEFT, zoomControlOffsetX,
-    //            ZOOM_CONTROL_OFFSET_Y);
-    //    }
+
 
     /**
      * Updates the size of the map and adds Overlays to reflect the content of

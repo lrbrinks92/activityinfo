@@ -23,7 +23,6 @@ package org.activityinfo.server.endpoint.kml;
  */
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -32,10 +31,9 @@ import org.activityinfo.legacy.shared.command.GetSchema;
 import org.activityinfo.legacy.shared.model.SchemaDTO;
 import org.activityinfo.server.authentication.BasicAuthentication;
 import org.activityinfo.server.command.DispatcherSync;
-import org.activityinfo.server.database.hibernate.entity.DomainFilters;
 import org.activityinfo.server.database.hibernate.entity.User;
+import org.activityinfo.server.util.monitoring.Count;
 
-import javax.persistence.EntityManager;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -43,29 +41,31 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Singleton
 public class KmlActivityServlet extends HttpServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(KmlActivityServlet.class.getName());
+
     private final DispatcherSync dispatcher;
     private final BasicAuthentication authenticator;
     private final Configuration templateCfg;
-    private final Provider<EntityManager> entityManager;
 
     @Inject
-    public KmlActivityServlet(Provider<EntityManager> entityManager,
-                              Configuration templateCfg,
+    public KmlActivityServlet(Configuration templateCfg,
                               BasicAuthentication authenticator,
                               DispatcherSync dispatcher) {
 
         this.templateCfg = templateCfg;
-        this.entityManager = entityManager;
         this.authenticator = authenticator;
         this.dispatcher = dispatcher;
     }
-
+    
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    @Count("kml.activity")
+    public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 
         // Get Authorization header
         String auth = req.getHeader("Authorization");
@@ -80,7 +80,7 @@ public class KmlActivityServlet extends HttpServlet {
         }
 
         String baseURL = "http://" + req.getServerName() + ":" + req.getServerPort() + "/earth/sites?activityId=";
-        SchemaDTO schemaDTO = loadSchema(user);
+        SchemaDTO schemaDTO = dispatcher.execute(new GetSchema());
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("schema", schemaDTO);
@@ -93,14 +93,8 @@ public class KmlActivityServlet extends HttpServlet {
         try {
             tpl.process(map, res.getWriter());
         } catch (TemplateException e) {
+            LOGGER.log(Level.SEVERE, "Exception rendering KML", e);
             res.setStatus(500);
-            e.printStackTrace();
         }
-    }
-
-    private SchemaDTO loadSchema(User user) {
-        DomainFilters.applyUserFilter(user, entityManager.get());
-
-        return dispatcher.execute(new GetSchema());
     }
 }

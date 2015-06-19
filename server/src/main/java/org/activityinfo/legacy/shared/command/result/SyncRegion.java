@@ -41,6 +41,10 @@ public class SyncRegion implements Serializable {
         this.currentVersion = currentVersion;
     }
 
+    public SyncRegion(String id, Object currentVersion) {
+        this(id, currentVersion.toString());
+    }
+
     public String getId() {
         return id;
     }
@@ -57,4 +61,29 @@ public class SyncRegion implements Serializable {
         this.currentVersion = currentVersion;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SyncRegion that = (SyncRegion) o;
+
+        if (currentVersion != null ? !currentVersion.equals(that.currentVersion) : that.currentVersion != null)
+            return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (currentVersion != null ? currentVersion.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + id + ": " + currentVersion + "]";
+    }
 }

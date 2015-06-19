@@ -3372,6 +3372,9 @@ public interface UiConstants extends Constants {
     @DefaultStringValue("This field is required")
     String requiredFieldMessage();
 
+    @DefaultStringValue("No data for the field")
+    String noDataForField();
+
     @DefaultStringValue("Load more")
     String loadMore();
 
@@ -3695,5 +3698,8 @@ public interface UiConstants extends Constants {
 
     @DefaultStringValue("Please specify 'From' date before 'To' date.")
     String fromDateIsBeforeToDate();
+
+    @DefaultStringValue("Please type to search for results")
+    String suggestBoxPlaceholder();
 }
 

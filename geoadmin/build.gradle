@@ -1,0 +1,20 @@
+
+description = 'Geographic Data Administrator'
+
+
+dependencies {
+    compile group: 'com.sun.jersey', name: 'jersey-client', version:'1.17'
+    compile group: 'com.sun.jersey', name: 'jersey-json', version:'1.17'
+    compile(group: 'com.bedatadriven', name: 'jackson-geojson', version:'0.7') {
+        exclude(module: 'xercesImpl')
+    }
+    compile group: 'com.google.guava', name: 'guava', version:'13.0.1'
+    compile(group: 'org.geotools', name: 'gt-shapefile', version:'8.7') {
+        exclude(module: 'xercesImpl')
+    }
+    compile group: 'org.swinglabs', name: 'swingx', version:'1.6.1'
+    compile group: 'org.geotools', name: 'gt-epsg-hsql', version:'8.7'
+    compile group: 'com.miglayout', name: 'miglayout', version:'3.7.4'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.1'
+    compile group: 'commons-lang', name: 'commons-lang', version:'2.6'
+}

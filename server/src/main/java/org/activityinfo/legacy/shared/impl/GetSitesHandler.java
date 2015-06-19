@@ -121,13 +121,13 @@ public class GetSitesHandler implements CommandHandlerAsync<GetSites, SiteResult
         final SiteResult result = new SiteResult(sites);
         result.setOffset(command.getOffset());
 
-        Log.trace("About to execute primary query: " + unioned.toString());
+        Log.trace("About to execute primary query: " + unioned.sql());
 
         unioned.execute(context.getTransaction(), new SqlResultCallback() {
             @Override
             public void onSuccess(SqlTransaction tx, SqlResultSet results) {
 
-                Log.trace("Primary query returned, starting to add to map");
+                Log.trace("Primary query returned " + results.getRows().size() + ", rows, starting to add to map");
 
                 for (SqlResultSetRow row : results.getRows()) {
                     SiteDTO site = toSite(command, row);

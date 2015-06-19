@@ -4,19 +4,23 @@ package org.activityinfo.legacy.shared.adapter;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.activityinfo.core.client.InstanceQuery;
+import org.activityinfo.core.client.form.tree.AsyncFormTreeBuilder;
 import org.activityinfo.core.shared.Projection;
 import org.activityinfo.core.shared.application.ApplicationProperties;
 import org.activityinfo.core.shared.criteria.ClassCriteria;
+import org.activityinfo.core.shared.criteria.IdCriteria;
 import org.activityinfo.fixtures.InjectionSupport;
 import org.activityinfo.legacy.shared.command.GetLocations;
 import org.activityinfo.legacy.shared.command.result.LocationResult;
 import org.activityinfo.legacy.shared.model.LocationDTO;
 import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.formTree.FieldPath;
+import org.activityinfo.model.formTree.TFormTree;
 import org.activityinfo.model.legacy.CuidAdapter;
 import org.activityinfo.model.legacy.KeyGenerator;
 import org.activityinfo.model.resource.ResourceId;
-import org.activityinfo.model.type.geo.AiLatLng;
+import org.activityinfo.model.type.geo.GeoPoint;
+import org.activityinfo.model.type.number.Quantity;
 import org.activityinfo.model.type.time.LocalDate;
 import org.activityinfo.promise.Promise;
 import org.activityinfo.server.command.CommandTestCase2;
@@ -115,12 +119,65 @@ public class ResourceLocatorAdaptorTest extends CommandTestCase2 {
     }
 
     @Test
+    @OnDataSet("/dbunit/sites-calculated-indicators.db.xml")
+    public void persistSiteWithCalculatedIndicators() {
+        FormInstance instance = new FormInstance(CuidAdapter.cuid(SITE_DOMAIN, new KeyGenerator().generateInt()),
+                NFI_DIST_FORM_CLASS);
+
+        instance.set(indicatorField(1), 1);
+        instance.set(indicatorField(2), 2);
+        instance.set(locationField(NFI_DIST_ID), locationInstanceId(1));
+        instance.set(partnerField(NFI_DIST_ID), partnerInstanceId(1));
+        instance.set(projectField(NFI_DIST_ID), projectInstanceId(1));
+        instance.set(field(NFI_DIST_FORM_CLASS, START_DATE_FIELD), new LocalDate(2014, 1, 1));
+        instance.set(field(NFI_DIST_FORM_CLASS, END_DATE_FIELD), new LocalDate(2014, 1, 1));
+        instance.set(field(NFI_DIST_FORM_CLASS, COMMENT_FIELD), "My comment");
+
+        assertResolves(resourceLocator.persist(instance));
+
+        TFormTree formTree = new TFormTree(assertResolves(new AsyncFormTreeBuilder(resourceLocator).apply(NFI_DIST_FORM_CLASS)));
+        InstanceQuery query = new InstanceQuery(Lists.newArrayList(formTree.getRootPaths()), new IdCriteria(instance.getId()));
+
+        Projection firstRead = singleSiteProjection(query);
+
+        assertEquals(new Quantity(1), firstRead.getValue(path(indicatorField(1))));
+        assertEquals(new Quantity(2), firstRead.getValue(path(indicatorField(2))));
+        assertEquals(new Quantity(3), firstRead.getValue(path(indicatorField(11))));
+        assertEquals(new Quantity(0.5), firstRead.getValue(path(indicatorField(12))));
+
+        // set indicators to null
+        instance.set(indicatorField(1).asString(), null);
+        instance.set(indicatorField(2).asString(), null);
+
+        // persist it
+        assertResolves(resourceLocator.persist(instance));
+
+        // read from server
+        Projection secondRead = singleSiteProjection(query);
+
+        assertEquals(null, secondRead.getValue(path(indicatorField(1))));
+        assertEquals(null, secondRead.getValue(path(indicatorField(2))));
+        assertEquals(new Quantity(0), secondRead.getValue(path(indicatorField(11))));
+        assertEquals(new Quantity(Double.NaN), secondRead.getValue(path(indicatorField(12)))); // make sure NaN is not returned |
+    }
+
+    private FieldPath path(ResourceId... fieldIds) {
+        return new FieldPath(fieldIds);
+    }
+
+    private Projection singleSiteProjection(InstanceQuery query) {
+        List<Projection> projections = assertResolves(resourceLocator.query(query));
+        assertEquals(projections.size(), 1);
+        return projections.get(0);
+    }
+
+    @Test
     public void persistLocation() {
 
         FormInstance instance = new FormInstance(newLegacyFormInstanceId(HEALTH_CENTER_CLASS),
                 HEALTH_CENTER_CLASS);
         instance.set(field(HEALTH_CENTER_CLASS, NAME_FIELD), "CS Ubuntu");
-        instance.set(field(HEALTH_CENTER_CLASS, GEOMETRY_FIELD), new AiLatLng(-1, 13));
+        instance.set(field(HEALTH_CENTER_CLASS, GEOMETRY_FIELD), new GeoPoint(-1, 13));
         instance.set(field(HEALTH_CENTER_CLASS, ADMIN_FIELD), entity(IRUMU));
 
         assertResolves(resourceLocator.persist(instance));
@@ -174,8 +231,8 @@ public class ResourceLocatorAdaptorTest extends CommandTestCase2 {
 
         List<Projection> projections = assertResolves(resourceLocator.query(
                 new InstanceQuery(
-                    Lists.newArrayList(locationName, locationAdminUnitName),
-                    new ClassCriteria(HEALTH_CENTER_CLASS))));
+                        Lists.newArrayList(locationName, locationAdminUnitName),
+                        new ClassCriteria(HEALTH_CENTER_CLASS))));
 
         System.out.println(Joiner.on("\n").join(projections));
     }
@@ -216,12 +273,12 @@ public class ResourceLocatorAdaptorTest extends CommandTestCase2 {
 
         ResourceLocatorAdaptor adapter = new ResourceLocatorAdaptor(getDispatcher());
         ResourceId instanceToDelete = CuidAdapter.locationInstanceId(1);
-        adapter.remove(Arrays.asList(instanceToDelete));
+        assertResolves(adapter.remove(Arrays.asList(instanceToDelete)));
 
         List<FormInstance> formInstances = assertResolves(adapter.queryInstances(new ClassCriteria(CuidAdapter.locationFormClass(1))));
 
-        for(FormInstance instance : formInstances) {
-            if(instance.getId().equals(instanceToDelete)) {
+        for (FormInstance instance : formInstances) {
+            if (instance.getId().equals(instanceToDelete)) {
                 throw new AssertionError();
             }
         }

@@ -36,15 +36,23 @@ public class FormDesignerActions {
     private final FormDesigner formDesigner;
     private final FormDesignerPanel formDesignerPanel;
 
-    public FormDesignerActions(FormDesigner formDesigner) {
+    private FormDesignerActions(FormDesigner formDesigner) {
         this.formDesigner = formDesigner;
-        formDesignerPanel = formDesigner.getFormDesignerPanel();
+        this.formDesignerPanel = formDesigner.getFormDesignerPanel();
+    }
+
+    public static FormDesignerActions create(FormDesigner formDesigner) {
+        return new FormDesignerActions(formDesigner).bind();
+    }
+
+    private FormDesignerActions bind() {
         formDesignerPanel.getSaveButton().addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 save();
             }
         });
+        return this;
     }
 
     public Promise<Void> save() {

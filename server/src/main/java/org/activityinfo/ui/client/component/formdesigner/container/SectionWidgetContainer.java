@@ -66,6 +66,7 @@ public class SectionWidgetContainer implements WidgetContainer {
         widgetContainer.getLabel().setHTML("<h3>" + SafeHtmlUtils.fromString(Strings.nullToEmpty(formSection.getLabel())) + "</h3>");
     }
 
+    @Override
     public Widget asWidget() {
         return widgetContainer.asWidget();
     }

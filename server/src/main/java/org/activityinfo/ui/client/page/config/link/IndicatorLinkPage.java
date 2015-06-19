@@ -35,7 +35,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import org.activityinfo.i18n.shared.I18N;
 import org.activityinfo.legacy.client.Dispatcher;
-import org.activityinfo.legacy.client.state.StateProvider;
+import org.activityinfo.legacy.shared.Log;
 import org.activityinfo.legacy.shared.command.GetIndicatorLinks;
 import org.activityinfo.legacy.shared.command.LinkIndicators;
 import org.activityinfo.legacy.shared.command.result.IndicatorLinkResult;
@@ -66,7 +66,7 @@ public class IndicatorLinkPage extends ContentPanel implements Page {
     private ToggleButton linkButton;
 
     @Inject
-    public IndicatorLinkPage(Dispatcher dispatcher, StateProvider stateMgr) {
+    public IndicatorLinkPage(Dispatcher dispatcher) {
 
         this.dispatcher = dispatcher;
 
@@ -84,8 +84,10 @@ public class IndicatorLinkPage extends ContentPanel implements Page {
 
             @Override
             public void handleEvent(GridEvent<UserDatabaseDTO> event) {
-                sourceDatabaseGrid.getGridView().clearHighlight();
-                destDatabaseGrid.getGridView().highlight(linkGraph.destinationForDatabase(event.getModel()));
+                if (event.getModel() != null) {
+                    sourceDatabaseGrid.getGridView().clearHighlight();
+                    destDatabaseGrid.getGridView().highlight(linkGraph.destinationForDatabase(event.getModel()));
+                }
             }
         });
 
@@ -168,7 +170,7 @@ public class IndicatorLinkPage extends ContentPanel implements Page {
         sourceDatabaseGrid.setHeadingText("Source Database");
         container.add(sourceDatabaseGrid, vflex(3));
 
-        sourceIndicatorGrid = new IndicatorGridPanel();
+        sourceIndicatorGrid = new IndicatorGridPanel(dispatcher);
         container.add(sourceIndicatorGrid, vflex(7));
     }
 
@@ -214,7 +216,7 @@ public class IndicatorLinkPage extends ContentPanel implements Page {
         destDatabaseGrid.setHeadingText("Destination Database");
         container.add(destDatabaseGrid, vflex(3));
 
-        destIndicatorGrid = new IndicatorGridPanel();
+        destIndicatorGrid = new IndicatorGridPanel(dispatcher);
         container.add(destIndicatorGrid, vflex(7));
     }
 
@@ -272,15 +274,15 @@ public class IndicatorLinkPage extends ContentPanel implements Page {
         IndicatorDTO source = sourceIndicatorGrid.getSelectedItem();
         IndicatorDTO dest = destIndicatorGrid.getSelectedItem();
 
-        final boolean link = !linkGraph.linked(source, dest);
-        linkButton.toggle(link);
+        final boolean isLinked = !linkGraph.linked(source, dest);
+        linkButton.toggle(isLinked);
 
-        LinkIndicators update = new LinkIndicators();
-        update.setLink(link);
-        update.setSourceIndicatorId(source.getId());
-        update.setDestIndicatorId(dest.getId());
+        LinkIndicators updateCommand = new LinkIndicators();
+        updateCommand.setLink(isLinked);
+        updateCommand.setSourceIndicatorId(source.getId());
+        updateCommand.setDestIndicatorId(dest.getId());
 
-        if (link) {
+        if (isLinked) {
             linkGraph.link(sourceDatabaseGrid.getSelectedItem(), source, destDatabaseGrid.getSelectedItem(), dest);
         } else {
             linkGraph.unlink(source, dest);
@@ -289,17 +291,16 @@ public class IndicatorLinkPage extends ContentPanel implements Page {
         sourceDatabaseGrid.setLinked(linkGraph.sourceDatabases());
         onDatabaseLinksChanged();
 
-        dispatcher.execute(update, new AsyncCallback<VoidResult>() {
+        dispatcher.execute(updateCommand, new AsyncCallback<VoidResult>() {
 
             @Override
             public void onFailure(Throwable caught) {
-                // TODO Auto-generated method stub
-
+                Log.error(caught.getMessage(), caught);
             }
 
             @Override
             public void onSuccess(VoidResult result) {
-                Info.display(I18N.CONSTANTS.saved(), link ? "Link created" : "Link removed");
+                Info.display(I18N.CONSTANTS.saved(), isLinked ? "Link created" : "Link removed");
             }
         });
 
@@ -321,8 +322,7 @@ public class IndicatorLinkPage extends ContentPanel implements Page {
 
             @Override
             public void onFailure(Throwable caught) {
-                // TODO Auto-generated method stub
-
+                Log.error(caught.getMessage(), caught);
             }
 
             @Override
@@ -336,8 +336,6 @@ public class IndicatorLinkPage extends ContentPanel implements Page {
 
     @Override
     public void shutdown() {
-        // TODO Auto-generated method stub
-
     }
 
     @Override

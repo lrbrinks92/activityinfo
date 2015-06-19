@@ -33,7 +33,6 @@ import org.activityinfo.legacy.shared.reports.model.layers.BubbleMapLayer;
 import org.activityinfo.legacy.shared.reports.model.layers.IconMapLayer;
 import org.activityinfo.server.command.CommandTestCase2;
 import org.activityinfo.server.database.OnDataSet;
-import org.activityinfo.server.database.TestDatabaseModule;
 import org.activityinfo.server.report.ReportModule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +41,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 @RunWith(InjectionSupport.class)
-@Modules({TestDatabaseModule.class, ReportModule.class})
+@Modules(ReportModule.class)
 @OnDataSet("/dbunit/sites-simple1.db.xml")
 public class MapGeneratorTest extends CommandTestCase2 {
 

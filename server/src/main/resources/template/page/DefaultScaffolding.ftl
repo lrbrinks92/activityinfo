@@ -25,6 +25,7 @@
 <head>
     <title>${title}</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=10">
 
     <!-- CSS Files -->
     <link href="/css/style.css" rel="stylesheet" media="screen">

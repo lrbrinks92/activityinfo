@@ -102,6 +102,9 @@ public class Targets extends BaseTable {
         query.appendColumn(String.valueOf(IndicatorDTO.AGGREGATE_SUM), ValueFields.AGGREGATION);
         query.appendColumn("V.Value", ValueFields.SUM);
         query.appendColumn("COUNT(V.Value)", ValueFields.COUNT);
+
+        // filter out deleted targets (handle case when targetvalue was not removed after target removing)
+        query.where("V.TargetId IN (SELECT Target.TargetId FROM target)");
     }
 
     @Override

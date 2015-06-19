@@ -23,6 +23,7 @@ package org.activityinfo.legacy.shared.model;
  */
 
 import com.extjs.gxt.ui.client.data.BaseModelData;
+import org.activityinfo.server.endpoint.jsonrpc.Required;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.codehaus.jackson.annotate.JsonMethod;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -53,12 +54,15 @@ public final class PartnerDTO extends BaseModelData implements DTO, ProvidesKey 
         set("id", id);
     }
 
-    @JsonProperty @JsonView(DTOViews.Schema.class)
+    @Required
+    @JsonProperty 
+    @JsonView(DTOViews.Schema.class)
     public int getId() {
         return (Integer) get("id");
     }
 
-    @JsonProperty @JsonView(DTOViews.Schema.class)
+    @JsonProperty 
+    @JsonView(DTOViews.Schema.class)
     public String getName() {
         return get("name");
     }

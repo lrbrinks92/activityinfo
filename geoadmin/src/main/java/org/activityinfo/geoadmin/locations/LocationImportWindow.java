@@ -1,6 +1,23 @@
 package org.activityinfo.geoadmin.locations;
 
-import java.awt.BorderLayout;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.vividsolutions.jts.geom.Point;
+import net.miginfocom.swing.MigLayout;
+import org.activityinfo.geoadmin.ImportFeature;
+import org.activityinfo.geoadmin.ImportSource;
+import org.activityinfo.geoadmin.Sql;
+import org.activityinfo.geoadmin.model.ActivityInfoClient;
+import org.activityinfo.geoadmin.model.AdminEntity;
+import org.activityinfo.geoadmin.model.AdminLevel;
+import org.activityinfo.geoadmin.model.NewLocation;
+import org.activityinfo.geoadmin.util.GenericTableModel;
+import org.activityinfo.geoadmin.util.GenericTableModel.Builder;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -9,30 +26,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JToolBar;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import com.google.common.math.IntMath;
-import net.miginfocom.swing.MigLayout;
-
-import org.activityinfo.geoadmin.ImportFeature;
-import org.activityinfo.geoadmin.ImportSource;
-import org.activityinfo.geoadmin.Sql;
-import org.activityinfo.geoadmin.model.*;
-import org.activityinfo.geoadmin.util.GenericTableModel;
-import org.activityinfo.geoadmin.util.GenericTableModel.Builder;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Point;
 
 public class LocationImportWindow extends JFrame {
 
@@ -112,7 +105,8 @@ public class LocationImportWindow extends JFrame {
 		Builder<LocationFeature> model = GenericTableModel.newModel(locations);
 		for(final AdminLevel level : levels) {
 			model.addColumn(level.getName(), String.class, new Function<LocationFeature, String>() {
-				public String apply(LocationFeature location) {
+				@Override
+                public String apply(LocationFeature location) {
 					AdminEntity entity = location.getEntities().get(level.getId());
 					if(entity == null) {
 						return null;
@@ -124,7 +118,8 @@ public class LocationImportWindow extends JFrame {
 		for(int i=0;i!=source.getAttributeCount();++i) {
 			final int attributeindex = i;
 			model.addColumn(source.getAttributes().get(i).getName().getLocalPart(), Object.class, new Function<LocationFeature, Object>() {
-				public Object apply(LocationFeature location) {
+				@Override
+                public Object apply(LocationFeature location) {
 					return location.getFeature().getAttributeValue(attributeindex);
 				}
 			});

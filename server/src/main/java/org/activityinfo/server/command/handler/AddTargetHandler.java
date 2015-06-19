@@ -36,28 +36,36 @@ import java.util.Date;
 public class AddTargetHandler implements CommandHandler<AddTarget> {
 
     private final EntityManager em;
+    private final PermissionOracle permissionOracle;
 
     @Inject
-    public AddTargetHandler(EntityManager em) {
+    public AddTargetHandler(EntityManager em, PermissionOracle permissionOracle) {
         this.em = em;
+        this.permissionOracle = permissionOracle;
     }
 
     @Override
     public CommandResult execute(AddTarget cmd, User user) throws CommandException {
 
-        TargetDTO form = cmd.getTargetDTO();
+        TargetDTO form = cmd.getTarget();
         UserDatabase db = em.find(UserDatabase.class, cmd.getDatabaseId());
 
+        permissionOracle.assertDesignPrivileges(db, user);
+        
         Partner partner = null;
         if (form.get("partnerId") != null) {
             partner = em.find(Partner.class, form.get("partnerId"));
+        } else if (form.getPartner() != null) {
+            partner = em.find(Partner.class, form.getPartner().getId());
         }
 
         Project project = null;
         if (form.get("projectId") != null) {
             project = em.find(Project.class, form.get("projectId"));
+        } else if (form.getProject() != null) {
+            project = em.find(Project.class, form.getProject().getId());
         }
-
+        
         AdminEntity adminEntity = null;
         // if(form.getAdminEntity() != null){
         // adminEntity = em.find(AdminEntity.class,

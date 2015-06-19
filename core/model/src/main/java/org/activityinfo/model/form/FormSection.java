@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import org.activityinfo.model.resource.Record;
 import org.activityinfo.model.resource.ResourceId;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -27,7 +27,8 @@ public class FormSection extends FormElement implements FormElementContainer {
         return id;
     }
 
-    @NotNull
+    @Override
+    @Nonnull
     public String getLabel() {
         return label;
     }
@@ -36,6 +37,7 @@ public class FormSection extends FormElement implements FormElementContainer {
         this.label = label;
     }
 
+    @Override
     public List<FormElement> getElements() {
         return elements;
     }

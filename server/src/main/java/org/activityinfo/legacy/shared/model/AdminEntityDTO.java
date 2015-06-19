@@ -100,6 +100,7 @@ public final class AdminEntityDTO extends BaseModelData implements EntityDTO {
     /**
      * @return this AdminEntity's id
      */
+    @Override
     public int getId() {
         return (Integer) get("id");
     }
@@ -112,6 +113,7 @@ public final class AdminEntityDTO extends BaseModelData implements EntityDTO {
     /**
      * @return this AdminEntity's name
      */
+    @Override
     public String getName() {
         return get("name");
     }

@@ -23,7 +23,6 @@ package org.activityinfo.server.digest;
  */
 
 import com.google.common.base.Preconditions;
-import net.lightoze.gwt.i18n.server.LocaleProxy;
 import net.lightoze.gwt.i18n.server.ThreadLocalLocaleProvider;
 import org.activityinfo.i18n.shared.I18N;
 import org.activityinfo.server.mail.Message;

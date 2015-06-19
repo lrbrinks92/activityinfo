@@ -23,7 +23,6 @@ package org.activityinfo.server.util.date;
  */
 
 import org.activityinfo.legacy.shared.reports.model.DateRange;
-import org.activityinfo.legacy.shared.reports.model.DateUnit;
 import org.activityinfo.server.report.util.DateUtilCalendarImpl;
 import org.junit.Test;
 
@@ -42,7 +41,7 @@ public class DateUtilCalendarImplTest {
         Calendar fifth = Calendar.getInstance();
         fifth.set(2011, Calendar.MAY, 5);
 
-        Date date = util.floor(fifth.getTime(), DateUnit.MONTH);
+        Date date = util.floorMonth(fifth.getTime());
 
         Calendar floored = Calendar.getInstance();
         floored.setTime(date);

@@ -22,6 +22,8 @@ package org.activityinfo.legacy.shared.command.result;
  * #L%
  */
 
+import javax.ws.rs.core.Response;
+
 /**
  * Result of commands which create a new entity.
  *
@@ -29,6 +31,7 @@ package org.activityinfo.legacy.shared.command.result;
  * @see org.activityinfo.legacy.shared.command.CreateEntity
  * @see org.activityinfo.legacy.shared.command.CreateReport
  */
+@HttpStatusCode(Response.Status.CREATED)
 public class CreateResult implements CommandResult {
 
     private static final long serialVersionUID = -2196195672020302549L;

@@ -29,7 +29,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
-import net.lightoze.gwt.i18n.server.LocaleProxy;
 import net.lightoze.gwt.i18n.server.ThreadLocalLocaleProvider;
 import org.activityinfo.model.auth.AuthenticatedUser;
 import org.activityinfo.server.database.hibernate.entity.Authentication;
@@ -61,6 +60,7 @@ public class AuthenticationFilter implements Filter {
     private final Provider<EntityManager> entityManager;
     private final ServerSideAuthProvider authProvider;
     private final BasicAuthentication basicAuthenticator;
+    
 
     private final LoadingCache<String, AuthenticatedUser> authTokenCache;
 
@@ -74,14 +74,14 @@ public class AuthenticationFilter implements Filter {
         this.authProvider = authProvider;
         this.basicAuthenticator = basicAuthenticator;
         authTokenCache = CacheBuilder.newBuilder()
-        .maximumSize(10000)
-        .expireAfterAccess(6, TimeUnit.HOURS)
-        .build(new CacheLoader<String, AuthenticatedUser>() {
-            @Override
-            public AuthenticatedUser load(String authToken) throws Exception {
-                return queryAuthToken(authToken);
-            }
-        });
+            .maximumSize(10000)
+            .expireAfterAccess(6, TimeUnit.HOURS)
+            .build(new CacheLoader<String, AuthenticatedUser>() {
+                @Override
+                public AuthenticatedUser load(String authToken) throws Exception {
+                    return queryAuthToken(authToken);
+                }
+            });
     }
 
     @Override

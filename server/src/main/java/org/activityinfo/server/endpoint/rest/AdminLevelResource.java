@@ -33,6 +33,7 @@ import com.vividsolutions.jts.io.ParseException;
 import org.activityinfo.model.auth.AuthenticatedUser;
 import org.activityinfo.server.database.hibernate.entity.*;
 import org.activityinfo.server.endpoint.rest.model.*;
+import org.activityinfo.server.util.monitoring.Timed;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.util.DefaultPrettyPrinter;
@@ -68,12 +69,14 @@ public class AdminLevelResource {
         this.level = level;
     }
 
-    @GET @Produces(MediaType.TEXT_HTML)
+    @GET 
+    @Produces(MediaType.TEXT_HTML)
     public Viewable get() {
         return new Viewable("/resource/AdminLevel.ftl", level);
     }
 
-    @GET @Produces(MediaType.APPLICATION_JSON)
+    @GET 
+    @Produces(MediaType.APPLICATION_JSON)
     public AdminLevel getJson() {
         return level;
     }
@@ -99,7 +102,10 @@ public class AdminLevelResource {
         }
     }
 
-    @GET @Path("/entities") @Produces(MediaType.APPLICATION_JSON)
+    @GET 
+    @Path("/entities")
+    @Timed(name = "site.rest.admin.entities")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<AdminEntity> getEntities(@InjectParam EntityManager em) {
         return em.createQuery("select e  from AdminEntity e where e.deleted = false and e.level = :level")
                  .setParameter("level", level)
@@ -107,7 +113,9 @@ public class AdminLevelResource {
     }
 
 
-    @GET @Path("/entities/features")
+    @GET 
+    @Timed(name = "site.rest.admin.features")
+    @Path("/entities/features")
     public Response getFeatures(@InjectParam EntityManager em) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -153,7 +161,9 @@ public class AdminLevelResource {
         return Response.ok().entity(baos.toByteArray()).type(MediaType.APPLICATION_JSON).build();
     }
 
-    @PUT @Consumes(MediaType.APPLICATION_JSON)
+    @PUT
+    @Timed(name = "site.rest.admin.put")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@InjectParam AuthenticatedUser user, UpdatedAdminLevel updatedLevel) throws ParseException {
 
         assertAuthorized(user);
@@ -239,7 +249,9 @@ public class AdminLevelResource {
         return geometry instanceof Polygon || geometry instanceof MultiPolygon;
     }
 
-    @POST @Path("/childLevels") @Consumes(MediaType.APPLICATION_JSON)
+    @POST
+    @Timed(name = "site.rest.admin.child_levels")
+    @Path("/childLevels") @Consumes(MediaType.APPLICATION_JSON)
     public Response postNewLevel(@InjectParam AuthenticatedUser user, NewAdminLevel newLevel) throws ParseException {
 
         assertAuthorized(user);

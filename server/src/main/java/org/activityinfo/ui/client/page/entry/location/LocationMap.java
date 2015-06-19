@@ -163,7 +163,7 @@ public class LocationMap extends Html {
     private void updateMap(final LatLngBounds bounds) {
         //GWT.log("===> Bounds: " + bounds + ", eq:" + LeafletUtil.equals(bounds, previousBounds));
 
-        if (!LeafletUtil.equals(bounds, previousBounds)) {
+        if (!LeafletUtil.equal(bounds, previousBounds)) {
             int effectiveZoom = Math.min(8, map.getBoundsZoom(bounds, false));
             map.setView(bounds.getCenter(), effectiveZoom, false);
             map.fitBounds(bounds);

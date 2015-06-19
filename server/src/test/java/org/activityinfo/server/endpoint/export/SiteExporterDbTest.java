@@ -26,6 +26,7 @@ import org.activityinfo.legacy.shared.command.DimensionType;
 import org.activityinfo.legacy.shared.command.Filter;
 import org.activityinfo.server.command.CommandTestCase2;
 import org.activityinfo.server.database.OnDataSet;
+import org.activityinfo.server.report.NullStorageProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,7 +53,7 @@ public class SiteExporterDbTest extends CommandTestCase2 {
         Filter filter = new Filter();
         filter.addRestriction(DimensionType.Database, PEAR_DB);
 
-        SiteExporter exporter = new SiteExporter(getDispatcherSync());
+        SiteExporter exporter = new SiteExporter(new TaskContext(getDispatcherSync(), new NullStorageProvider(), "XY"));
         exporter.buildExcelWorkbook(filter);
 
         assertEquals(exporter.getBook().getNumberOfSheets(), 2);

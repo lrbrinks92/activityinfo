@@ -31,12 +31,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * @author Alex Bertram
- */
-@Entity @org.hibernate.annotations.Filter(
-        name = "hideDeleted",
-        condition = "DateDeleted is null")
+@Entity
 public class AttributeGroup implements Serializable, Deleteable, Orderable, FormFieldEntity {
 
     private int id;
@@ -99,7 +94,8 @@ public class AttributeGroup implements Serializable, Deleteable, Orderable, Form
         this.name = name;
     }
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinTable(name = "AttributeGroupInActivity",
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(name = "AttributeGroupInActivity",
             joinColumns = {@JoinColumn(name = "AttributeGroupId", nullable = false, updatable = false)},
             inverseJoinColumns = {@JoinColumn(name = "ActivityId", nullable = false, updatable = false)})
     public Set<Activity> getActivities() {
@@ -122,7 +118,8 @@ public class AttributeGroup implements Serializable, Deleteable, Orderable, Form
         this.attributes = attributes;
     }
 
-    @Override @Column(nullable = false)
+    @Override
+    @Column(nullable = false)
     public int getSortOrder() {
         return sortOrder;
     }
@@ -141,7 +138,8 @@ public class AttributeGroup implements Serializable, Deleteable, Orderable, Form
         this.multipleAllowed = allowed;
     }
 
-    @Column @Temporal(value = TemporalType.TIMESTAMP)
+    @Column
+    @Temporal(value = TemporalType.TIMESTAMP)
     public Date getDateDeleted() {
         return this.dateDeleted;
     }
@@ -150,7 +148,7 @@ public class AttributeGroup implements Serializable, Deleteable, Orderable, Form
         this.dateDeleted = date;
     }
 
-    @Column(name="defaultValue", nullable = true)
+    @Column(name = "defaultValue", nullable = true)
     public Integer getDefaultValue() {
         return this.defaultValue;
     }
@@ -159,7 +157,7 @@ public class AttributeGroup implements Serializable, Deleteable, Orderable, Form
         this.defaultValue = defaultValue;
     }
 
-    @Column(name="workflow")
+    @Column(name = "workflow")
     public boolean isWorkflow() {
         return workflow;
     }
@@ -202,8 +200,10 @@ public class AttributeGroup implements Serializable, Deleteable, Orderable, Form
         this.category = category;
     }
 
-    @Override @Transient
+    @Override
+    @Transient
     public boolean isDeleted() {
         return getDateDeleted() == null;
     }
+
 }

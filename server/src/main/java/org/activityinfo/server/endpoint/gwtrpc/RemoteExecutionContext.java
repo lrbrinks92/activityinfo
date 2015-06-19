@@ -27,24 +27,19 @@ import com.bedatadriven.rebar.sql.client.SqlTransaction;
 import com.bedatadriven.rebar.sql.client.SqlTransactionCallback;
 import com.bedatadriven.rebar.sql.server.jdbc.JdbcScheduler;
 import com.bedatadriven.rebar.sql.shared.adapter.SyncTransactionAdapter;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Injector;
 import org.activityinfo.legacy.shared.command.Command;
-import org.activityinfo.legacy.shared.command.MutatingCommand;
 import org.activityinfo.legacy.shared.command.result.CommandResult;
 import org.activityinfo.legacy.shared.exception.CommandException;
-import org.activityinfo.legacy.shared.impl.AuthorizationHandler;
 import org.activityinfo.legacy.shared.impl.CommandHandlerAsync;
 import org.activityinfo.legacy.shared.impl.ExecutionContext;
-import org.activityinfo.legacy.shared.util.Commands;
 import org.activityinfo.model.auth.AuthenticatedUser;
 import org.activityinfo.server.command.handler.CommandHandler;
 import org.activityinfo.server.command.handler.HandlerUtil;
 import org.activityinfo.server.database.hibernate.HibernateExecutor;
 import org.activityinfo.server.database.hibernate.entity.User;
-import org.activityinfo.server.event.CommandEvent;
-import org.activityinfo.server.event.ServerEventBus;
+import org.activityinfo.server.util.monitoring.Profiler;
 import org.hibernate.ejb.HibernateEntityManager;
 
 import javax.persistence.EntityManager;
@@ -63,8 +58,6 @@ public class RemoteExecutionContext implements ExecutionContext {
     private HibernateEntityManager entityManager;
     private JdbcScheduler scheduler;
 
-    private ServerEventBus serverEventBus;
-
     public RemoteExecutionContext(Injector injector) {
         super();
         this.injector = injector;
@@ -72,7 +65,6 @@ public class RemoteExecutionContext implements ExecutionContext {
         this.entityManager = (HibernateEntityManager) injector.getInstance(EntityManager.class);
         this.scheduler = new JdbcScheduler();
         this.scheduler.allowNestedProcessing();
-        this.serverEventBus = injector.getInstance(ServerEventBus.class);
     }
 
     @Override
@@ -107,14 +99,15 @@ public class RemoteExecutionContext implements ExecutionContext {
      */
     public <C extends Command<R>, R extends CommandResult> R startExecute(final C command) {
 
+        
         if (CURRENT.get() != null) {
             throw new IllegalStateException("Command execution context already in progress");
         }
-
-        AdvisoryLock lock = null;
-        if (Commands.hasMutatingCommand(command)) {
-            lock = new AdvisoryLock(entityManager);
-        }
+//
+//        AdvisoryLock lock = null;
+//        if (Commands.hasMutatingCommand(command)) {
+//            lock = new AdvisoryLock(entityManager);
+//        }
 
         try {
             CURRENT.set(this);
@@ -175,7 +168,7 @@ public class RemoteExecutionContext implements ExecutionContext {
 
         } finally {
             CURRENT.remove();
-            AdvisoryLock.closeQuietly(lock);
+           // AdvisoryLock.closeQuietly(lock);
         }
     }
 
@@ -189,7 +182,7 @@ public class RemoteExecutionContext implements ExecutionContext {
             throw new IllegalStateException("Command execution has not started yet");
         }
 
-        ResultCollector<R> collector = new ResultCollector<R>(command.getClass().getSimpleName());
+        ResultCollector<R> collector = new ResultCollector<>(command.getClass());
         execute(command, collector);
 
         scheduler.process();
@@ -202,44 +195,16 @@ public class RemoteExecutionContext implements ExecutionContext {
      * within CommandHandlers to execute nested commands.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public <C extends Command<R>, R extends CommandResult> void execute(final C command,
-                                                                        final AsyncCallback<R> callback) {
+                                                                        final AsyncCallback<R> outerCallback) {
 
-        if (command instanceof MutatingCommand) {
-            // mutating commands MUST have a server-side AuthorizationHandler
-            Class<AuthorizationHandler<C>> authHandlerClass = HandlerUtil.authorizationHandlerForCommand(command);
+        LOGGER.info("Executing " + command.getClass().getSimpleName() + " for " + user.getEmail());
 
-            if (authHandlerClass == null) {
-                LOGGER.warning("No authorization handler for " + command.getClass());
-                onAuthorized(command, callback);
-            } else {
-                AuthorizationHandler<C> authHandler = injector.getInstance(authHandlerClass);
-
-                authHandler.authorize(command, this, new AsyncCallback<Void>() {
-
-                    @Override
-                    public void onSuccess(Void result) {
-                        onAuthorized(command, callback);
-                    }
-
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        callback.onFailure(caught);
-                    }
-                });
-            }
-        } else {
-            onAuthorized(command, callback);
-        }
-    }
-
-    private <C extends Command<R>, R extends CommandResult> void onAuthorized(final C command,
-                                                                              AsyncCallback<R> outerCallback) {
-
-        AsyncCallback<R> callback = new FiringCallback<R>(command, outerCallback);
+        AsyncCallback<R> callback = new FiringCallback<>(command, outerCallback);
 
 
-        Object handler = injector.getInstance(HandlerUtil.asyncHandlerForCommand(command));
+        Object handler = injector.getInstance(HandlerUtil.handlerForCommand(command));
 
         if (handler instanceof CommandHandlerAsync) {
             /**
@@ -254,7 +219,6 @@ public class RemoteExecutionContext implements ExecutionContext {
             try {
                 callback.onSuccess((R) ((CommandHandler) handler).execute(command, retrieveUserEntity()));
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Command execution failed", e);
                 callback.onFailure(e);
             }
         }
@@ -262,11 +226,6 @@ public class RemoteExecutionContext implements ExecutionContext {
 
     public User retrieveUserEntity() {
         return entityManager.find(User.class, user.getId());
-    }
-
-    private void fireEvent(Command command, CommandResult result) {
-        LOGGER.fine("notifying serverEventBus of completed command " + command.toString());
-        serverEventBus.post(new CommandEvent(command, result, this));
     }
 
     private static RuntimeException wrapException(Throwable t) {
@@ -293,69 +252,55 @@ public class RemoteExecutionContext implements ExecutionContext {
     }
 
     private class FiringCallback<R extends CommandResult> implements AsyncCallback<R> {
-        private final Command command;
         private final AsyncCallback<R> callback;
+        private final Profiler profiler;
+        private final String commandName;
 
         public FiringCallback(Command command, AsyncCallback<R> callback) {
             super();
-            this.command = command;
             this.callback = callback;
+            commandName = command.getClass().getSimpleName();
+            this.profiler = new Profiler("api/rpc", commandName);
         }
 
         @Override
         public void onFailure(Throwable caught) {
+            this.profiler.failed();            
             callback.onFailure(caught);
         }
 
         @Override
         public void onSuccess(final R result) {
-            // *only* enqueue the event notification --
-            // unfortunately, many async command handlers are written
-            // to only submit their update statements to the queue
-            // before returning, which breaks terribly when 
-            // subsequent nested commands rely on their having inserted
-            // something
-            scheduler.scheduleDeferred(new ScheduledCommand() {
-
-                @Override
-                public void execute() {
-
-                    LOGGER.fine("notifying serverEventBus of completed command " + command.toString());
-                    try {
-                        serverEventBus.post(new CommandEvent(command, result, RemoteExecutionContext.this));
-                    } catch (Exception e) {
-                        LOGGER.log(Level.SEVERE, "Exception while posting via server event bus: " + e.getMessage(), e);
-                    }
-                }
-            });
+            this.profiler.succeeded();
+            LOGGER.info(commandName + " finished in " + profiler.elapsedTime() + " ms");
             callback.onSuccess(result);
         }
     }
 
-    private static class ResultCollector<R> implements AsyncCallback<R> {
+    private class ResultCollector<R> implements AsyncCallback<R> {
 
-        private String name;
+        private Class<? extends Command> commandClass;
         private int callbackCount = 0;
         private R result = null;
         private Throwable caught = null;
 
-        public ResultCollector(String name) {
+        public ResultCollector(Class<? extends Command> commandClass) {
             super();
-            this.name = name;
+            this.commandClass = commandClass;
         }
 
         @Override
         public void onFailure(Throwable caught) {
             this.callbackCount++;
             if (callbackCount > 1) {
-                throw new RuntimeException("Callback for '" + name + "' called multiple times");
+                throw new RuntimeException("Callback for '" + commandClass + "' called multiple times");
             }
             this.caught = caught;
         }
 
         public R get() throws CommandException {
             if (callbackCount != 1) {
-                throw new IllegalStateException("Callback for '" + name + "' called " + callbackCount + " times");
+                throw new IllegalStateException("Callback for '" + commandClass + "' called " + callbackCount + " times");
             } else if (caught != null) {
                 throw wrapException(caught);
             }
@@ -371,5 +316,4 @@ public class RemoteExecutionContext implements ExecutionContext {
             this.result = result;
         }
     }
-
 }

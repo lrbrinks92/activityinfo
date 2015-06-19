@@ -42,7 +42,7 @@ import org.activityinfo.server.report.generator.MapIconPath;
 import org.activityinfo.server.report.generator.map.TileProvider;
 import org.activityinfo.server.report.generator.map.TiledMap;
 import org.activityinfo.server.report.util.ColorUtil;
-import org.activityinfo.server.util.logging.LogSlow;
+import org.activityinfo.server.util.monitoring.Timed;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -139,7 +139,7 @@ public class ImageMapRenderer {
         }
     }
 
-    @LogSlow(threshold = 50)
+    @Timed(name = "mapping.draw_admin_overlay")
     protected void drawAdminOverlay(TiledMap map, Graphics2D g2d, AdminOverlay overlay) {
 
         List<AdminGeo> geometry = geometryProvider.getGeometries(overlay.getAdminLevelId());

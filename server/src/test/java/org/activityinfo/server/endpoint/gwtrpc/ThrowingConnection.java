@@ -291,20 +291,25 @@ public class ThrowingConnection implements Connection {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setSchema(String schema) throws SQLException {
     }
 
+    @Override
     public String getSchema() throws SQLException {
         return null;
     }
 
+    @Override
     public void abort(Executor executor) throws SQLException {
     }
 
+    @Override
     public void setNetworkTimeout(Executor executor, int milliseconds)
             throws SQLException {
     }
 
+    @Override
     public int getNetworkTimeout() throws SQLException {
         return 0;
     }

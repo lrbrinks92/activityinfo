@@ -35,11 +35,19 @@
     <include path="/static/**.png" expiration="365d"/>
     <include path="/error.html"/>
   </static-files>
+ 
+  <inbound-services>
+    <service>warmup</service>
+  </inbound-services>
 
-  <admin-console>
-    <page name="Appstats" url="/appstats"/>
-  </admin-console>
-
+  <instance-class>F4</instance-class>
+  <automatic-scaling>
+    <min-idle-instances>3</min-idle-instances>
+    <max-idle-instances>4</max-idle-instances>
+    <max-pending-latency>500ms</max-pending-latency>
+    <max-concurrent-requests>11</max-concurrent-requests>
+  </automatic-scaling>
+  
   <sessions-enabled>false</sessions-enabled>
   <precompilation-enabled>false</precompilation-enabled>
   <threadsafe>true</threadsafe>

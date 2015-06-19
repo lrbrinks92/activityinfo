@@ -26,6 +26,7 @@ import com.bedatadriven.rebar.sql.client.SqlResultSetRow;
 import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.model.type.geo.GeoPoint;
 
 import java.util.List;
@@ -117,7 +118,11 @@ public class LocationDTO extends BaseModelData implements EntityDTO, HasAdminEnt
     }
 
     public int getLocationTypeId() {
-        return (Integer) get("locationTypeId");
+        Object value = get("locationTypeId");
+        if(!(value instanceof Number)) {
+            throw new CommandException("Expecting a numeric value for locationTypeId");
+        }
+        return ((Number) value).intValue();
     }
 
     public LocationDTO setLocationTypeId(int locationTypeId) {

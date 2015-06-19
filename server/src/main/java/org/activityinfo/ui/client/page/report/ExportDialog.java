@@ -37,8 +37,12 @@ import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayoutData;
+import com.google.common.base.Strings;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.http.client.*;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.RootPanel;
 import org.activityinfo.i18n.shared.I18N;
@@ -152,7 +156,8 @@ public class ExportDialog extends Dialog {
 
     public void exportSites(Filter filter) {
 
-        showStartProgress();
+        show();
+        bar.updateText(I18N.CONSTANTS.exportProgress());
 
         RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.POST, "/ActivityInfo/export");
         requestBuilder.setHeader("Content-type", "application/x-www-form-urlencoded");
@@ -161,17 +166,21 @@ public class ExportDialog extends Dialog {
             @Override
             public void onResponseReceived(Request request, Response response) {
                 final String exportId = response.getText();
-                getDownloadUrl(exportId).then(new AsyncCallback<String>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        showError();
-                    }
+                if(Strings.isNullOrEmpty(exportId)) {
+                    showError();
+                } else {
+                    getDownloadUrl(exportId).then(new AsyncCallback<String>() {
+                        @Override
+                        public void onFailure(Throwable caught) {
+                            showError();
+                        }
 
-                    @Override
-                    public void onSuccess(String downloadUrl) {
-                        initiateDownload(downloadUrl);
-                    }
-                });
+                        @Override
+                        public void onSuccess(String downloadUrl) {
+                            initiateDownload(downloadUrl);
+                        }
+                    });
+                }
             }
 
             @Override
@@ -196,23 +205,35 @@ public class ExportDialog extends Dialog {
         Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                pollServer(exportId, downloadUrl);
+                if(!canceled) {
+                    pollServer(exportId, downloadUrl);
+                }
                 return false;
             }
         }, 1000);
     }
 
     private void pollServer(final String exportId, final Promise<String> downloadUrl) {
-        RequestBuilder request = new RequestBuilder(RequestBuilder.GET, "/ActivityInfo/export?id=" + exportId);
+        RequestBuilder request = new RequestBuilder(RequestBuilder.GET, "/generated/status/" + exportId);
         request.setCallback(new RequestCallback() {
             @Override
             public void onResponseReceived(Request request, Response response) {
-                if(response.getStatusCode() == 200) {
-                    downloadUrl.onSuccess(response.getText());
+                if (response.getStatusCode() == Response.SC_OK) {
+                    JSONObject status = JSONParser.parseStrict(response.getText()).isObject();
+                    double progress = status.get("progress").isNumber().doubleValue();
+                    JSONValue downloadUri = status.get("downloadUri");
+                    
+                    if(downloadUri != null) {
+                        downloadUrl.onSuccess(downloadUri.isString().stringValue());
+                    } else {
+                        bar.updateProgress(progress, I18N.CONSTANTS.exportProgress());
+                        schedulePoll(exportId, downloadUrl);
+                    }
                 } else {
-                    schedulePoll(exportId, downloadUrl);
+                    showError();
                 }
             }
+
             @Override
             public void onError(Request request, Throwable exception) {
                 downloadUrl.onFailure(exception);

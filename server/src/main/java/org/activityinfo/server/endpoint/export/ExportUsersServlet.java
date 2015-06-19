@@ -27,6 +27,7 @@ import com.google.inject.Singleton;
 import org.activityinfo.legacy.shared.command.GetUsers;
 import org.activityinfo.legacy.shared.command.result.UserResult;
 import org.activityinfo.server.command.DispatcherSync;
+import org.activityinfo.server.util.monitoring.Timed;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -44,7 +45,7 @@ import java.util.Date;
 @Singleton
 public class ExportUsersServlet extends HttpServlet {
 
-    private DispatcherSync dispatcher;
+    private final DispatcherSync dispatcher;
 
     @Inject
     public ExportUsersServlet(DispatcherSync dispatcher) {
@@ -52,32 +53,27 @@ public class ExportUsersServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    @Timed(name = "export", kind = "users")
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         int dbId = Integer.valueOf(req.getParameter("dbUsers"));
 
-        try {
 
-            UserResult userResult = dispatcher.execute(new GetUsers(dbId));
+        UserResult userResult = dispatcher.execute(new GetUsers(dbId));
 
-            DbUserExport export = new DbUserExport(userResult.getData());
-            export.createSheet();
+        DbUserExport export = new DbUserExport(userResult.getData());
+        export.createSheet();
 
-            resp.setContentType("application/vnd.ms-excel");
-            if (req.getHeader("User-Agent").contains("MSIE")) {
-                resp.addHeader("Content-Disposition", "attachment; filename=ActivityInfo.xls");
-            } else {
-                resp.addHeader("Content-Disposition",
-                        "attachment; filename=" +
-                        ("ActivityInfo Export " + new Date().toString() + ".xls").replace(" ", "_"));
-            }
-
-            OutputStream os = resp.getOutputStream();
-            export.getBook().write(os);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            resp.setStatus(500);
+        resp.setContentType("application/vnd.ms-excel");
+        if (req.getHeader("User-Agent").contains("MSIE")) {
+            resp.addHeader("Content-Disposition", "attachment; filename=ActivityInfo.xls");
+        } else {
+            resp.addHeader("Content-Disposition",
+                    "attachment; filename=" +
+                            ("ActivityInfo Export " + new Date().toString() + ".xls").replace(" ", "_"));
         }
+
+        OutputStream os = resp.getOutputStream();
+        export.getBook().write(os);
     }
 }

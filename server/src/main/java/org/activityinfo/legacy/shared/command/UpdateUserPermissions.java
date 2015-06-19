@@ -25,6 +25,13 @@ package org.activityinfo.legacy.shared.command;
 import org.activityinfo.legacy.shared.command.result.VoidResult;
 import org.activityinfo.legacy.shared.model.UserDatabaseDTO;
 import org.activityinfo.legacy.shared.model.UserPermissionDTO;
+import org.activityinfo.server.endpoint.jsonrpc.Required;
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonMethod;
+import org.codehaus.jackson.annotate.JsonProperty;
+
+import javax.validation.Valid;
 
 /**
  * Update the permissions of a user to access a given database.
@@ -35,6 +42,7 @@ import org.activityinfo.legacy.shared.model.UserPermissionDTO;
  * the creation of a new user account and all that entails, such as an email
  * message, etc.
  */
+@JsonAutoDetect(JsonMethod.NONE)
 public class UpdateUserPermissions implements MutatingCommand<VoidResult> {
 
     private int databaseId;
@@ -63,6 +71,8 @@ public class UpdateUserPermissions implements MutatingCommand<VoidResult> {
         this.host = host;
     }
 
+    @Required
+    @JsonProperty
     public int getDatabaseId() {
         return databaseId;
     }
@@ -71,6 +81,9 @@ public class UpdateUserPermissions implements MutatingCommand<VoidResult> {
         this.databaseId = databaseId;
     }
 
+    @Required
+    @Valid
+    @JsonProperty
     public UserPermissionDTO getModel() {
         return model;
     }

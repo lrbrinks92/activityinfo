@@ -23,10 +23,14 @@ package org.activityinfo.legacy.shared.command.result;
  */
 
 import org.activityinfo.legacy.shared.model.TargetDTO;
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonMethod;
+import org.codehaus.jackson.annotate.JsonValue;
 
 import java.util.Arrays;
 import java.util.List;
 
+@JsonAutoDetect(JsonMethod.NONE)
 public class TargetResult extends ListResult<TargetDTO> implements CommandResult {
 
     public TargetResult() {
@@ -39,5 +43,11 @@ public class TargetResult extends ListResult<TargetDTO> implements CommandResult
 
     public TargetResult(TargetDTO... targets) {
         super(Arrays.asList(targets));
+    }
+    
+    @Override
+    @JsonValue
+    public List<TargetDTO> getData() {
+        return super.getData();
     }
 }

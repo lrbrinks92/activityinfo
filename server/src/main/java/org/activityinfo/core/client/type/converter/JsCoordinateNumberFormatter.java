@@ -57,7 +57,7 @@ public class JsCoordinateNumberFormatter implements CoordinateParser.NumberForma
 
     @Override
     public double parseDouble(String string) {
-        return Double.parseDouble(string);
+        return NumberFormat.getDecimalFormat().parse(string);
     }
 
 }

@@ -24,11 +24,11 @@ package org.activityinfo.server.command;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import org.activityinfo.fixtures.Modules;
+import org.activityinfo.fixtures.TestHibernateModule;
 import org.activityinfo.legacy.shared.command.Command;
 import org.activityinfo.legacy.shared.command.result.CommandResult;
 import org.activityinfo.legacy.shared.exception.CommandException;
-import org.activityinfo.fixtures.MockHibernateModule;
-import org.activityinfo.fixtures.Modules;
 import org.activityinfo.server.authentication.AuthenticationModuleStub;
 import org.activityinfo.server.database.hibernate.entity.User;
 import org.activityinfo.server.endpoint.gwtrpc.CommandServlet;
@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Modules({
-        MockHibernateModule.class,
+        TestHibernateModule.class,
         TemplateModule.class,
         GwtRpcModule.class,
         AuthenticationModuleStub.class,

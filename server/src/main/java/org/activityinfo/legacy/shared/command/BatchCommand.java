@@ -48,7 +48,7 @@ public class BatchCommand implements Command<BatchResult> {
     }
 
     public BatchCommand(Command... commands) {
-        this.commands = new ArrayList<Command>(commands.length);
+        this.commands = new ArrayList<>(commands.length);
         for (Command cmd : commands) {
             this.commands.add(cmd);
         }

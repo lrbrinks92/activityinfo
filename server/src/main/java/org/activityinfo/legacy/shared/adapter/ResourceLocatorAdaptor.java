@@ -137,6 +137,7 @@ public class ResourceLocatorAdaptor implements ResourceLocator {
         return new Joiner(dispatcher, query.getFieldPaths(), query.getCriteria()).apply(query);
     }
 
+    @Override
     public Promise<QueryResult<Projection>> queryProjection(InstanceQuery query) {
         return query(query).then(new InstanceQueryResultAdapter(query));
     }

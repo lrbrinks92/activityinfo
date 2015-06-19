@@ -3,7 +3,6 @@ package org.activityinfo.ui.client.component.form.field.hierarchy;
 import com.google.common.collect.Lists;
 import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.core.shared.application.ApplicationProperties;
-import org.activityinfo.core.shared.criteria.FormClassSet;
 import org.activityinfo.model.form.FormClass;
 import org.activityinfo.model.form.FormField;
 import org.activityinfo.model.type.ReferenceType;

@@ -26,7 +26,7 @@ Thank you for signing up to ActivityInfo!
 
 To complete your user registration, click on the following link:
 
-https://${domain.host}/signUpConfirmation?${user.changePasswordKey}
+${domain.rootUrl}/signUpConfirmation?${user.changePasswordKey}
 
 Best regards,
 

@@ -24,9 +24,9 @@ package org.activityinfo.server.report;
 
 import com.google.inject.Inject;
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.MockHibernateModule;
 import org.activityinfo.fixtures.Modules;
 import org.activityinfo.fixtures.ServletStubModule;
+import org.activityinfo.fixtures.TestHibernateModule;
 import org.activityinfo.legacy.shared.command.RenderElement;
 import org.activityinfo.legacy.shared.reports.content.PivotContent;
 import org.activityinfo.legacy.shared.reports.model.MapReportElement;
@@ -56,7 +56,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(InjectionSupport.class)
 @Modules({ReportStubModule.class, ServletStubModule.class,
-        MockHibernateModule.class})
+        TestHibernateModule.class})
 public class ReportsTest {
 
     @Inject

@@ -184,7 +184,7 @@ public class DownSynchronizer implements AsyncCommand {
                 @Override
                 public void onFailure(Throwable throwable) {
                     handleException("Synchronizer: Async execution of region " + region.getId() + " failed." +
-                                    "\nMessage: " + throwable.getMessage(), throwable);
+                                    "\nMessage: " + throwable.getMessage() + ", SQL: " + update.getSql(), throwable);
                 }
 
                 @Override

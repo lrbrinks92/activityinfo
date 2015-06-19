@@ -30,7 +30,7 @@ import com.vividsolutions.jts.io.InStream;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import freemarker.log.Logger;
-import org.activityinfo.server.util.logging.LogSlow;
+import org.activityinfo.server.util.monitoring.Timed;
 
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -51,7 +51,7 @@ public class WkbGeometryProvider implements AdminGeometryProvider {
     }
 
     @Override
-    @LogSlow(threshold = 200)
+    @Timed(name = "mapping.fetch_geometry")
     public List<AdminGeo> getGeometries(int adminLevelId) {
         try {
             List<AdminGeo> list = Lists.newArrayList();
@@ -66,9 +66,7 @@ public class WkbGeometryProvider implements AdminGeometryProvider {
                 list.add(new AdminGeo(id, geometry));
             }
             return list;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
     }

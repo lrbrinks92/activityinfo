@@ -48,6 +48,7 @@ public class HasCellAdapter<T,C> implements HasCell<T,C> {
         this.fieldUpdater = fieldUpdater;
     }
 
+    @Override
     public Cell<C> getCell() {
         return cell;
     }
@@ -57,6 +58,7 @@ public class HasCellAdapter<T,C> implements HasCell<T,C> {
      *
      * @return an instance of FieldUpdater<T, C>
      */
+    @Override
     public FieldUpdater<T, C> getFieldUpdater(){
         return fieldUpdater;
     }

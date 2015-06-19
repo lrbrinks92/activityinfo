@@ -92,6 +92,7 @@ public class PivotQuery implements WorkItem {
         return alias;
     }
 
+    @Override
     public void execute(final AsyncCallback<Void> callback) {
 
         baseTable.setupQuery(command, query);

@@ -30,6 +30,7 @@ public interface NanoClock {
     long nanoTime();
 
     NanoClock GWT = new NanoClock() {
+        @Override
         public long nanoTime() {
             return (long) Duration.currentTimeMillis();
         }

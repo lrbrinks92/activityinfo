@@ -81,7 +81,6 @@ public class GetActivityFormHandler implements CommandHandlerAsync<GetActivityFo
     }
 
     private Promise<ActivityFormDTO> applyPermissions(ExecutionContext context, final ActivityFormDTO form) {
-        final int userId = context.getUser().getId();
         final Promise<ActivityFormDTO> result = new Promise<>();
         SqlQuery.selectAll()
                 .appendColumn("allowView")
@@ -91,18 +90,18 @@ public class GetActivityFormHandler implements CommandHandlerAsync<GetActivityFo
                 .appendColumn("allowDesign")
                 .appendColumn("partnerId")
                 .from(Tables.USER_PERMISSION, "p")
-                .where("p.UserId").equalTo(userId)
+                .where("p.UserId").equalTo(context.getUser().getId())
                 .where("p.DatabaseId").equalTo(form.getDatabaseId())
                 .execute(context.getTransaction(), new SqlResultCallback() {
                     @Override
                     public void onSuccess(SqlTransaction tx, SqlResultSet results) {
                         if(results.getRows().isEmpty()) {
-                            result.reject(new IllegalAccessCommandException("No user permissions found for " + userId));
+                            result.reject(new IllegalAccessCommandException());
                             return;
                         }
                         SqlResultSetRow row = results.getRow(0);
                         if(!row.getBoolean("allowView")) {
-                            result.reject(new IllegalAccessCommandException("User permissions deny view to " + userId));
+                            result.reject(new IllegalAccessCommandException());
                             return;
                         }
                         form.setEditAllowed(row.getBoolean("allowEdit"));

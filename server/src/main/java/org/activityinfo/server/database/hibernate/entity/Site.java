@@ -32,22 +32,7 @@ import java.util.Set;
  *
  * @author Alex Bertram
  */
-@Entity @org.hibernate.annotations.Filters(
-        {@org.hibernate.annotations.Filter(
-                name = "userVisible",
-                condition = "(ActivityId in (select a.ActivityId from activity a where a.DatabaseId in " +
-                            "(select d.DatabaseId from userdatabase d where " +
-                            "d.OwnerUserId = :currentUserId or " +
-                            "d.DatabaseId in " +
-                            "(select p.DatabaseId from userpermission p where p.UserId = :currentUserId and p" +
-                            ".AllowViewAll) or " +
-                            "d.DatabaseId in " +
-                            "(select p.DatabaseId from userpermission p where p.UserId = :currentUserId and p" +
-                            ".AllowView and p.PartnerId = PartnerId))))"
-        ), @org.hibernate.annotations.Filter(
-                name = "hideDeleted",
-                condition = "DateDeleted is null"
-        )})
+@Entity
 public class Site implements java.io.Serializable, Deleteable {
 
     private int id;
@@ -73,6 +58,7 @@ public class Site implements java.io.Serializable, Deleteable {
     private Set<SiteHistory> siteHistories = new HashSet<SiteHistory>(0);
 
     private String comments;
+    private long version;
 
     public Site() {
         Date now = new Date();
@@ -327,7 +313,8 @@ public class Site implements java.io.Serializable, Deleteable {
      * @return the time at which this Site was deleted. Used for synchronization
      * with clients.
      */
-    @Column @Temporal(value = TemporalType.TIMESTAMP)
+    @Column 
+    @Temporal(value = TemporalType.TIMESTAMP)
     public Date getDateDeleted() {
         return this.dateDeleted;
     }
@@ -351,7 +338,7 @@ public class Site implements java.io.Serializable, Deleteable {
         Date now = new Date();
         setDateDeleted(now);
         setDateEdited(now);
-        getActivity().getDatabase().setLastSchemaUpdate(new Date());
+        setVersion(activity.incrementSiteVersion());
     }
 
     /**
@@ -369,5 +356,15 @@ public class Site implements java.io.Serializable, Deleteable {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "ProjectId", nullable = true)
     public Project getProject() {
         return project;
+    }
+
+
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+        this.dateEdited = new Date();
     }
 }

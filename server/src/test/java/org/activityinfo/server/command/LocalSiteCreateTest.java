@@ -22,6 +22,9 @@ package org.activityinfo.server.command;
  * #L%
  */
 
+import org.activityinfo.fixtures.InjectionSupport;
+import org.activityinfo.fixtures.Modules;
+import org.activityinfo.fixtures.TestHibernateModule;
 import org.activityinfo.legacy.shared.command.*;
 import org.activityinfo.legacy.shared.command.result.CreateResult;
 import org.activityinfo.legacy.shared.command.result.SiteResult;
@@ -29,12 +32,8 @@ import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.model.LocationDTO;
 import org.activityinfo.legacy.shared.model.PartnerDTO;
 import org.activityinfo.legacy.shared.model.SiteDTO;
-import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.MockHibernateModule;
-import org.activityinfo.fixtures.Modules;
 import org.activityinfo.server.database.OnDataSet;
 import org.activityinfo.server.endpoint.gwtrpc.GwtRpcModule;
-import org.activityinfo.server.util.logging.LoggingModule;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,9 +45,8 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(InjectionSupport.class)
 @Modules({
-        MockHibernateModule.class,
+        TestHibernateModule.class,
         GwtRpcModule.class,
-        LoggingModule.class
 })
 public class LocalSiteCreateTest extends LocalHandlerTestCase {
 
@@ -56,7 +54,7 @@ public class LocalSiteCreateTest extends LocalHandlerTestCase {
     @OnDataSet("/dbunit/sites-simple1.db.xml")
     public void createNew() throws CommandException {
 
-        synchronizeFirstTime();
+        synchronize();
 
         // create a new detached, client model
         SiteDTO newSite = SiteDTOs.newSite();
@@ -104,7 +102,7 @@ public class LocalSiteCreateTest extends LocalHandlerTestCase {
     @OnDataSet("/dbunit/sites-simple1.db.xml")
     public void delete() throws CommandException {
 
-        synchronizeFirstTime();
+        synchronize();
 
         executeLocally(new DeleteSite(1));
 
@@ -136,7 +134,7 @@ public class LocalSiteCreateTest extends LocalHandlerTestCase {
 
         // Now U2 synchronizes, and adds a new site with this partner
 
-        synchronizeFirstTime();
+        synchronize();
 
         SiteDTO site = new SiteDTO();
         site.setId(3343234);

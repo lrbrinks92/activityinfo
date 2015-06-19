@@ -4,29 +4,28 @@ public class Codes {
 
     public static boolean hasCode(Object[] attributeValues, String code) {
         if (code.matches("\\d+")) {
-            return hasIntCode(attributeValues, Integer.parseInt(code));
+            return hasIntCode(attributeValues, Long.parseLong(code));
         } else {
             // TODO
             return false;
         }
     }
 
-    private static boolean hasIntCode(Object[] attributeValues, int code) {
+    private static boolean hasIntCode(Object[] attributeValues, long code) {
         for (Object value : attributeValues) {
             try {
                 if (value instanceof Number) {
-                    if (((Number) value).intValue() == code) {
+                    if (((Number) value).longValue() == code) {
                         return true;
                     }
                 } else if (value instanceof String) {
-                    if (Integer.parseInt((String) value) == code) {
+                    if (Long.parseLong((String) value) == code) {
                         return true;
                     }
                 }
-            } catch (Exception e) {
+            } catch (NumberFormatException ignored) {
             }
         }
         return false;
     }
-
 }

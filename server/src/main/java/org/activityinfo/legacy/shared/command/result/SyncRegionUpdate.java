@@ -57,4 +57,8 @@ public class SyncRegionUpdate implements CommandResult {
     public void setComplete(boolean complete) {
         this.complete = complete;
     }
+
+    public void setVersion(long versionNumber) {
+        setVersion(Long.toString(versionNumber));
+    }
 }

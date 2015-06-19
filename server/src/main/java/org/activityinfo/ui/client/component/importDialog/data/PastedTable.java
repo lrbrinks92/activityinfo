@@ -73,6 +73,7 @@ public class PastedTable implements SourceTable {
      *
      * @return returns newly parsed rows (if nothing was parsed before returns all rows)
      */
+    @Override
     public List<PastedRow> parseAllRows() {
         return parseNextRows(Integer.MAX_VALUE);
     }
@@ -82,6 +83,7 @@ public class PastedTable implements SourceTable {
         return rowParser.eof();
     }
 
+    @Override
     public List<PastedRow> parseNextRows(int numberOfRowsToParse) {
         long startTime = new Date().getTime();
         List<PastedRow> parsedRows = rowParser.parseRows(numberOfRowsToParse);

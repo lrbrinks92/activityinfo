@@ -24,6 +24,7 @@ package org.activityinfo.server.command.handler.crud;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
+import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.model.LocationTypeDTO;
 import org.activityinfo.server.command.handler.PermissionOracle;
 import org.activityinfo.server.database.hibernate.dao.ActivityDAO;
@@ -83,14 +84,11 @@ public class ActivityPolicy implements EntityPolicy<Activity> {
     }
 
     private UserDatabase getDatabase(PropertyMap properties) {
-        int databaseId = (Integer) properties.get("databaseId");
-
-        return databaseDAO.findById(databaseId);
+        return databaseDAO.findById(properties.getRequiredInt("databaseId"));
     }
 
     private LocationType getLocationType(PropertyMap properties) {
-        int locationTypeId = (Integer) properties.get("locationTypeId");
-        return em.getReference(LocationType.class, locationTypeId);
+        return em.getReference(LocationType.class, properties.getRequiredInt("locationTypeId"));
     }
 
     private Integer calculateNextSortOrderIndex(int databaseId) {

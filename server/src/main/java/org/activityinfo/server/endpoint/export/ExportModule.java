@@ -31,6 +31,5 @@ public class ExportModule extends ServletModule {
         serve("/ActivityInfo/export/users*").with(ExportUsersServlet.class);
         serve("/ActivityInfo/export*").with(ExportSitesServlet.class);
         serve(ExportSitesTask.END_POINT).with(ExportSitesTask.class);
-        serve("/report").with(ReportServlet.class);
     }
 }

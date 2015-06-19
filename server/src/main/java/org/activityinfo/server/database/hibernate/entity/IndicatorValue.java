@@ -27,15 +27,14 @@ import javax.persistence.*;
 /**
  * @author Alex Bertram
  */
-@Entity @org.hibernate.annotations.Filter(
-        name = "hideDeleted",
-        condition = "(IndicatorId not in (select i.IndicatorId from indicator i where i.dateDeleted is not null))")
+@Entity
 public class IndicatorValue implements java.io.Serializable {
 
     private IndicatorValueId id;
     private Indicator indicator;
     private ReportingPeriod reportingPeriod;
     private Double value;
+    private String textValue;
 
     public IndicatorValue() {
     }
@@ -52,6 +51,12 @@ public class IndicatorValue implements java.io.Serializable {
         this.reportingPeriod = reportingPeriod;
         this.value = value;
     }
+    
+    public IndicatorValue(ReportingPeriod period, Indicator indicator) {
+        this.id = new IndicatorValueId(period.getId(), indicator.getId());
+        this.indicator = indicator;
+        this.reportingPeriod = period;
+    }
 
     public IndicatorValue(ReportingPeriod period, Indicator indicator, double value) {
 
@@ -61,9 +66,10 @@ public class IndicatorValue implements java.io.Serializable {
         this.value = value;
     }
 
-    @EmbeddedId @AttributeOverrides({@AttributeOverride(name = "reportingPeriodId",
-            column = @Column(name = "ReportingPeriodId", nullable = false)),
-            @AttributeOverride(name = "indicatorId", column = @Column(name = "IndicatorId", nullable = false))})
+    @EmbeddedId 
+    @AttributeOverrides({
+        @AttributeOverride(name = "reportingPeriodId", column = @Column(name = "ReportingPeriodId", nullable = false)),
+        @AttributeOverride(name = "indicatorId", column = @Column(name = "IndicatorId", nullable = false))})
     public IndicatorValueId getId() {
         return this.id;
     }
@@ -92,13 +98,22 @@ public class IndicatorValue implements java.io.Serializable {
         this.reportingPeriod = reportingPeriod;
     }
 
-    @Column(name = "Value", precision = 15, scale = 0, nullable = false)
+    @Column(name = "Value", precision = 15, scale = 0, nullable = true)
     public Double getValue() {
         return this.value;
     }
 
     public void setValue(Double value) {
         this.value = value;
+    }
+
+    @Lob
+    public String getTextValue() {
+        return textValue;
+    }
+
+    public void setTextValue(String textValue) {
+        this.textValue = textValue;
     }
 
     @Override
@@ -122,4 +137,18 @@ public class IndicatorValue implements java.io.Serializable {
         return this.getId().hashCode();
     }
 
+    public void setValue(Object value) {
+        if(value == null) {
+            this.value = null;
+            this.textValue = null;
+        } else if(value instanceof Number) {
+            this.value = ((Number) value).doubleValue();
+            this.textValue = null;
+        } else if(value instanceof String) {
+            this.value = null;
+            this.textValue = (String)value;
+        } else {
+            throw new IllegalArgumentException("Value: "+ value);
+        }
+    }
 }

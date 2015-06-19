@@ -1,0 +1,60 @@
+import org.activityinfo.store.mysql.MySqlReleaseTask
+import org.activityinfo.store.mysql.MySqlSetupTask
+
+def setupScripts =
+        files("${project.rootDir}/store/mysql/geography.sql",
+        "${project.rootDir}/store/mysql/nullary-locations.sql",
+        "${project.rootDir}/store/mysql/training-db-stub.sql")
+
+
+task configureDatabase(type: org.activityinfo.gcloud.FetchCloudSqlConfiguration) {
+    instanceId = 'activityinfo'
+    doFirst {
+        if(!project.hasProperty('env')) {
+            throw new InvalidUserDataException("You must provide the name of the projectId using -Penv=<projectId>")
+        }
+        projectId = project.property('env')
+    }
+}
+
+configureDatabase.onlyIf { project.hasProperty('env') }
+
+
+task setupDatabase(type: MySqlSetupTask) {
+    description = "Creates and populates a database called 'activityinfo' locally for development"
+    dropDatabase = true
+    database = mysql.localDev
+    scripts = files("${project.rootDir}/store/mysql/geography.sql",
+            "${project.rootDir}/store/mysql/nullary-locations.sql",
+            "${project.rootDir}/store/mysql/dev-user.sql",
+            "${project.rootDir}/store/mysql/training-db-stub.sql")
+}
+
+task migrateDatabase(type: MySqlSetupTask, dependsOn: 'configureDatabase') {
+    description =  "Applies schema migrations to the local 'activityinfo' development database"
+    database =      environment.database
+}
+
+task setupDatabaseAT(type: MySqlSetupTask, dependsOn: 'configureDatabase') {
+    description =  "Creates and populates a database for running acceptance tests"
+    dropDatabase =  true
+    database =      environment.database
+    scripts =       setupScripts
+    
+    doFirst {
+        logger.info("Setting up ${database.url}...")
+    }
+}
+
+task migrateProductionDatabase(type: MySqlReleaseTask) {
+    description = "Prepares a migration script for the production database"
+    changeLog = 'org/activityinfo/database/changelog/db.changelog-master.xml'   
+}
+
+
+tasks.withType(MySqlSetupTask) {
+    group = "Database"
+    changeLog = 'org/activityinfo/database/changelog/db.changelog-master.xml'
+}
+
+

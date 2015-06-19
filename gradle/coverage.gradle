@@ -1,0 +1,12 @@
+/**
+ * Measures test coverage of server-side cost by our acceptance test suite.
+ * 
+ * To get these statistics 
+ */
+
+ext {
+    jacocoAcceptanceDataFile = project(':tests:acceptance').file("build/acceptanceTest.exec")
+    gwtAcceptanceDataFile = project(':tests:acceptance').file("build/acceptanceTest-gwt.xml")
+    acceptanceDataFile = project(':tests:acceptance').file("build/acceptanceTest-total.xml")
+
+}

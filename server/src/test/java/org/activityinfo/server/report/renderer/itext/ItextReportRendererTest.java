@@ -37,24 +37,33 @@ import org.activityinfo.legacy.shared.reports.model.layers.BubbleMapLayer;
 import org.activityinfo.legacy.shared.reports.model.layers.IconMapLayer;
 import org.activityinfo.legacy.shared.reports.model.layers.PiechartMapLayer;
 import org.activityinfo.legacy.shared.reports.util.mapping.Extents;
+import org.activityinfo.server.generated.StorageProviderStub;
 import org.activityinfo.server.geo.TestGeometry;
 import org.activityinfo.server.report.DummyPivotTableData;
-import org.activityinfo.server.report.output.StorageProvider;
-import org.activityinfo.server.report.output.TempStorage;
 import org.activityinfo.server.report.renderer.Renderer;
 import org.activityinfo.server.report.renderer.excel.ExcelReportRenderer;
 import org.activityinfo.server.report.renderer.image.ImageMapRenderer;
 import org.activityinfo.server.report.renderer.ppt.PPTMapRenderer;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 public class ItextReportRendererTest {
+
+    private StorageProviderStub storageProvider;
+
+    @BeforeClass
+    public static void initLocale() {
+        LocaleProxy.initialize();
+    }
 
     private Comparator<PivotTableData.Axis> comparator = new Comparator<PivotTableData.Axis>() {
 
@@ -66,7 +75,10 @@ public class ItextReportRendererTest {
 
     @Before
     public void setUpDirs() {
-        new File("target/report-tests").mkdirs();
+        File outputDir = new File("target/report-tests");
+        boolean created = outputDir.mkdirs();
+        
+        storageProvider = new StorageProviderStub(outputDir.getAbsolutePath());
     }
 
     @Before
@@ -78,7 +90,7 @@ public class ItextReportRendererTest {
     public void pageNumbers() throws IOException {
 
         ReportContent content = new ReportContent();
-        content.setFilterDescriptions(Collections.EMPTY_LIST);
+        content.setFilterDescriptions(Collections.<FilterDescription>emptyList());
 
         Report report = new Report();
         report.setContent(content);
@@ -130,7 +142,7 @@ public class ItextReportRendererTest {
 
         TileBaseMap baseMap = new TileBaseMap();
         baseMap
-                .setTileUrlPattern("http://mt{s}.aimaps.net/nordkivu.cd/v1/z{z}/{x}x{y}.png");
+                .setTileUrlPattern("http://www.activityinfo.org/resources/tile/nordkivu.cd/v1/z{z}/{x}x{y}.png");
 
         MapContent mapContent = new MapContent();
         mapContent.setFilterDescriptions(Collections.EMPTY_LIST);
@@ -155,7 +167,6 @@ public class ItextReportRendererTest {
 
         renderToPdf(report, "piechart.pdf");
         renderToHtml(report, "piechart.html");
-        // renderToHtmlUsingWriter(report, "piechart2.html");
         renderToRtf(report, "piechart.rtf");
     }
 
@@ -247,8 +258,7 @@ public class ItextReportRendererTest {
         marker1.setY(100);
 
         TileBaseMap baseMap = new TileBaseMap();
-        baseMap
-                .setTileUrlPattern("//www.activityinfo.org/resources/tile/nordkivu.cd/{z}/{x}/{y}.png");
+        baseMap.setTileUrlPattern("//www.activityinfo.org/resources/tile/nordkivu.cd/{z}/{x}/{y}.png");
 
         IconMapLayer layer3 = new IconMapLayer();
         layer3.setIcon(MapIcon.Icon.Default.name());
@@ -292,8 +302,7 @@ public class ItextReportRendererTest {
         marker1.setValue(300);
 
         TileBaseMap baseMap = new TileBaseMap();
-        baseMap
-                .setTileUrlPattern("//www.activityinfo.org/resources/tile/nordkivu.cd/{z}/{x}/{y}.png");
+        baseMap.setTileUrlPattern("//www.activityinfo.org/resources/tile/nordkivu.cd/{z}/{x}/{y}.png");
 
         BubbleMapLayer layer1 = new BubbleMapLayer();
         layer1.addIndicatorId(101);
@@ -331,8 +340,7 @@ public class ItextReportRendererTest {
 
             PiechartMapLayer pieChartLayer = new PiechartMapLayer();
             for (int i = 0; i != sliceCount; ++i) {
-                pieChartLayer.addIndicatorId(indicatorIds[i
-                        % indicatorIds.length]);
+                pieChartLayer.addIndicatorId(indicatorIds[i  % indicatorIds.length]);
             }
             pieChartLayer.setMinRadius(25);
             pieChartLayer.setMaxRadius(25);
@@ -346,20 +354,16 @@ public class ItextReportRendererTest {
 
         IndicatorDTO indicator101 = new IndicatorDTO();
         indicator101.setId(101);
-        indicator101
-                .setName("Nombre de salles de classe fonctionnelles (construites, rehabilitees, equipees) "
-                        +
-                        "pour l'education formelle et non formelle.");
+        indicator101.setName("Nombre de salles de classe fonctionnelles (construites, rehabilitees, equipees) " +
+                "pour l'education formelle et non formelle.");
 
         IndicatorDTO indicator102 = new IndicatorDTO();
         indicator102.setId(102);
-        indicator102
-                .setName("Nombre d'enfants ayant beneficie de kits scolaires, recreatifs et didactiques");
+        indicator102.setName("Nombre d'enfants ayant beneficie de kits scolaires, recreatifs et didactiques");
 
         IndicatorDTO indicator103 = new IndicatorDTO();
         indicator103.setId(103);
-        indicator103
-                .setName("Pourcentage des ménages qui utilsent la moustiquaire rationnellement");
+        indicator103.setName("Pourcentage des ménages qui utilsent la moustiquaire rationnellement");
 
         MapContent mapContent = new MapContent();
         mapContent.setFilterDescriptions(Collections.EMPTY_LIST);
@@ -410,28 +414,20 @@ public class ItextReportRendererTest {
         Axis sudKivu = data.getRootColumn().addChild(province,
                 new EntityCategory(1, "Sud Kivu"),
                 "Sud Kivu", comparator);
-        Axis y2010 = sudKivu.addChild(year, new SimpleCategory("2010"), "2010",
-                comparator);
-        Axis y2011 = sudKivu.addChild(year, new SimpleCategory("2010"), "2010",
-                comparator);
-        Axis jan2010 = y2010.addChild(month, new SimpleCategory("Jan"), "Jan",
-                comparator);
-        Axis feb2010 = y2010.addChild(month, new SimpleCategory("Feb"), "Feb",
-                comparator);
-        Axis jan2011 = y2011.addChild(month, new SimpleCategory("Jan"), "Jan",
-                comparator);
-        Axis feb2011 = y2011.addChild(month, new SimpleCategory("Feb"), "Feb",
-                comparator);
+        Axis y2010 = sudKivu.addChild(year, new SimpleCategory("2010"), "2010", comparator);
+        Axis y2011 = sudKivu.addChild(year, new SimpleCategory("2010"), "2010", comparator);
+        Axis jan2010 = y2010.addChild(month, new SimpleCategory("Jan"), "Jan", comparator);
+        Axis feb2010 = y2010.addChild(month, new SimpleCategory("Feb"), "Feb", comparator);
+        Axis jan2011 = y2011.addChild(month, new SimpleCategory("Jan"), "Jan", comparator);
+        Axis feb2011 = y2011.addChild(month, new SimpleCategory("Feb"), "Feb", comparator);
 
-        Axis avsiRow = data.getRootRow().addChild(partner, avsi,
-                avsi.getLabel(), comparator);
+        Axis avsiRow = data.getRootRow().addChild(partner, avsi, avsi.getLabel(), comparator);
         avsiRow.setValue(jan2010, 1d);
         avsiRow.setValue(feb2010, 2d);
         avsiRow.setValue(jan2011, 3d);
         avsiRow.setValue(feb2011, 4d);
 
-        PivotContent tableContent = new PivotContent(data,
-                Lists.<FilterDescription>newArrayList());
+        PivotContent tableContent = new PivotContent(data, Lists.<FilterDescription>newArrayList());
 
         PivotTableReportElement table = new PivotTableReportElement();
         table.addRowDimension(partner);
@@ -461,17 +457,14 @@ public class ItextReportRendererTest {
         Dimension year = new DateDimension(DateUnit.YEAR);
 
         EntityCategory avsi = new EntityCategory(100, "AVSI RRMP");
-        Axis avsiRow = data.getRootRow().addChild(partner, avsi,
-                avsi.getLabel(), comparator);
+        Axis avsiRow = data.getRootRow().addChild(partner, avsi, avsi.getLabel(), comparator);
 
         for (int y = 2011; y < 2030; ++y) {
-            Axis col = data.getRootColumn().addChild(year,
-                    new SimpleCategory("" + y), "" + y, comparator);
+            Axis col = data.getRootColumn().addChild(year, new SimpleCategory("" + y), "" + y, comparator);
             avsiRow.setValue(col, (double) y);
         }
 
-        PivotContent tableContent = new PivotContent(data,
-                Lists.<FilterDescription>newArrayList());
+        PivotContent tableContent = new PivotContent(data, Lists.<FilterDescription>newArrayList());
 
         PivotTableReportElement table = new PivotTableReportElement();
         table.addRowDimension(partner);
@@ -479,7 +472,7 @@ public class ItextReportRendererTest {
         table.setContent(tableContent);
 
         ReportContent content = new ReportContent();
-        content.setFilterDescriptions(Collections.EMPTY_LIST);
+        content.setFilterDescriptions(Collections.<FilterDescription>emptyList());
 
         Report report = new Report();
         report.setContent(content);
@@ -493,26 +486,20 @@ public class ItextReportRendererTest {
         return "src/main/webapp/mapicons";
     }
 
-    private void renderTo(Report report, Renderer reportRenderer, String name)
-            throws FileNotFoundException, IOException {
-        FileOutputStream fos = new FileOutputStream("target/report-tests/"
-                + name);
+    private void renderTo(Report report, Renderer reportRenderer, String name) throws IOException {
+        FileOutputStream fos = new FileOutputStream("target/report-tests/" + name);
         reportRenderer.render(report, fos);
         fos.close();
     }
 
     private void renderToPdf(Report report, String name) throws IOException {
-        PdfReportRenderer reportRenderer = new PdfReportRenderer(
-                TestGeometry.get(), mapIconPath());
+        PdfReportRenderer reportRenderer = new PdfReportRenderer(TestGeometry.get(), mapIconPath());
         renderTo(report, reportRenderer, name);
     }
 
-    private void renderToImage(MapReportElement map, String name)
-            throws IOException {
-        ImageMapRenderer mapRenderer = new ImageMapRenderer(TestGeometry.get(),
-                mapIconPath());
+    private void renderToImage(MapReportElement map, String name) throws IOException {
+        ImageMapRenderer mapRenderer = new ImageMapRenderer(TestGeometry.get(), mapIconPath());
         mapRenderer.renderToFile(map, new File("target/report-tests/" + name));
-
     }
 
     private void renderToXls(Report report, String name) throws IOException {
@@ -521,43 +508,16 @@ public class ItextReportRendererTest {
     }
 
     private void renderToHtml(Report report, String name) throws IOException {
-        renderTo(report, new HtmlReportRenderer(TestGeometry.get(),
-                mapIconPath(), new TestImageStorageProvider()), name);
-    }
-
-    private void renderToHtmlUsingWriter(Report report, String name)
-            throws IOException {
-        FileWriter writer = new FileWriter("target/report-tests/" + name);
-        HtmlReportRenderer renderer = new HtmlReportRenderer(
-                TestGeometry.get(), mapIconPath(), new TestImageStorageProvider());
-        renderer.render(report, writer);
-        writer.close();
+        renderTo(report, new HtmlReportRenderer(TestGeometry.get(), mapIconPath(), storageProvider), name);
     }
 
     private void renderToRtf(Report report, String name) throws IOException {
-        renderTo(report, new RtfReportRenderer(TestGeometry.get(),
-                mapIconPath()), name);
+        renderTo(report, new RtfReportRenderer(TestGeometry.get(), mapIconPath()), name);
     }
 
-    private void renderToPpt(MapReportElement map, String name)
-            throws FileNotFoundException, IOException {
-        PPTMapRenderer renderer = new PPTMapRenderer(TestGeometry.get(),
-                mapIconPath());
-        renderer.render(map,
-                new FileOutputStream("target/report-tests/" + name));
+    private void renderToPpt(MapReportElement map, String name) throws IOException {
+        PPTMapRenderer renderer = new PPTMapRenderer(TestGeometry.get(), mapIconPath());
+        renderer.render(map, new FileOutputStream("target/report-tests/" + name));
     }
 
-    private static class TestImageStorageProvider implements StorageProvider {
-
-        private static int nextId = 1;
-
-        @Override
-        public TempStorage allocateTemporaryFile(String mimeType, String suffix)
-                throws IOException {
-            String fileName = (nextId++) + suffix;
-            File file = new File("target/report-tests/" + fileName);
-            return new TempStorage(file.toURI().toURL().toString(),
-                    new FileOutputStream(file));
-        }
-    }
 }

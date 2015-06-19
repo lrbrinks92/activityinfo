@@ -26,7 +26,6 @@ import com.google.common.base.Charsets;
 import com.google.inject.Inject;
 import freemarker.template.Configuration;
 import org.activityinfo.service.DeploymentConfiguration;
-import org.activityinfo.server.util.logging.LogException;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -56,7 +55,7 @@ public class SmtpMailSender extends MailSender {
         this.configuration = configuration;
     }
 
-    @Override @LogException
+    @Override
     public void send(Message message) {
         try {
             Properties props = new Properties();

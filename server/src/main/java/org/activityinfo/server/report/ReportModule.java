@@ -23,29 +23,28 @@ package org.activityinfo.server.report;
  */
 
 import com.google.inject.Singleton;
-import com.google.inject.servlet.ServletModule;
 import org.activityinfo.server.endpoint.gwtrpc.MapIconServlet;
+import org.activityinfo.server.generated.GcsStorageProvider;
+import org.activityinfo.server.generated.GeneratedResources;
+import org.activityinfo.server.generated.StorageProvider;
 import org.activityinfo.server.report.generator.MapIconPath;
-import org.activityinfo.server.report.output.BlobServiceStorageProvider;
-import org.activityinfo.server.report.output.StorageProvider;
-import org.activityinfo.server.report.output.TempStorageServlet;
 import org.activityinfo.server.schedule.ReportMailerServlet;
+import org.activityinfo.server.util.jaxrs.AbstractRestModule;
 
-public class ReportModule extends ServletModule {
+public class ReportModule extends AbstractRestModule {
 
     public ReportModule() {
         super();
     }
 
     @Override
-    protected void configureServlets() {
-
-        bind(StorageProvider.class).to(BlobServiceStorageProvider.class);
-
+    protected void configureResources() {
+        bind(StorageProvider.class).to(GcsStorageProvider.class);
         bind(String.class).annotatedWith(MapIconPath.class).toProvider(MapIconPathProvider.class).in(Singleton.class);
+        
+        bindResource(GeneratedResources.class);
 
         serve("/icon*").with(MapIconServlet.class);
-        serve("/generated/*").with(TempStorageServlet.class);
         serve("/tasks/mailSubscriptions").with(ReportMailerServlet.class);
     }
 }

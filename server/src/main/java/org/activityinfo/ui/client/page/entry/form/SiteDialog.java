@@ -49,9 +49,9 @@ import org.activityinfo.legacy.shared.adapter.ResourceLocatorAdaptor;
 import org.activityinfo.legacy.shared.command.CreateSite;
 import org.activityinfo.legacy.shared.command.UpdateEntity;
 import org.activityinfo.legacy.shared.command.UpdateSite;
-import org.activityinfo.legacy.shared.command.exception.NotAuthorizedException;
 import org.activityinfo.legacy.shared.command.result.CreateResult;
 import org.activityinfo.legacy.shared.command.result.VoidResult;
+import org.activityinfo.legacy.shared.exception.IllegalAccessCommandException;
 import org.activityinfo.legacy.shared.model.ActivityFormDTO;
 import org.activityinfo.legacy.shared.model.LocationDTO;
 import org.activityinfo.legacy.shared.model.SiteDTO;
@@ -362,7 +362,7 @@ public class SiteDialog extends Window {
 
     private void showError(Throwable caught) {
         finishButton.enable();
-        if (caught != null && caught instanceof NotAuthorizedException) {
+        if (caught != null && caught instanceof IllegalAccessCommandException) {
             MessageBox.alert(I18N.CONSTANTS.dataEntry(), I18N.CONSTANTS.notAuthorized(), null);
         } else {
             MessageBox.alert(I18N.CONSTANTS.dataEntry(), I18N.CONSTANTS.serverError(), null);

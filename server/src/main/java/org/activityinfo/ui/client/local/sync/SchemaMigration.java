@@ -33,7 +33,7 @@ public class SchemaMigration {
     // This should be generated automatically from the liquibase change set logs.
     // This will do until then:
 
-    public static final String[] MIGRATION_DDL = new String[]{"ALTER TABLE Site ADD COLUMN timeEdited REAL",
+    private static final String[] MIGRATION_DDL = new String[]{"ALTER TABLE Site ADD COLUMN timeEdited REAL",
             "ALTER TABLE Location ADD COLUMN timeEdited REAL",
             "CREATE TABLE IF NOT EXISTS  siteattachment (blobid TEXT, siteid INT, filename TEXT, uploadedBy INT, " +
             "blobSize REAL, contentType TEXT)",

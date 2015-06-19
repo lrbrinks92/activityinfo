@@ -1,10 +1,7 @@
 package org.activityinfo.legacy.shared.command;
 
 import org.activityinfo.legacy.shared.command.result.ActivityFormResults;
-import org.activityinfo.legacy.shared.command.result.ListResult;
-import org.activityinfo.legacy.shared.model.ActivityFormDTO;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -31,7 +28,8 @@ public class GetActivityForms implements Command<ActivityFormResults> {
         return filter;
     }
 
-    public void setFilter(Filter filter) {
+    public GetActivityForms setFilter(Filter filter) {
         this.filter = filter;
+        return this;
     }
 }

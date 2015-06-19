@@ -24,6 +24,7 @@ package org.activityinfo.legacy.shared.command;
 
 import org.activityinfo.legacy.shared.command.result.CreateResult;
 import org.activityinfo.legacy.shared.model.ProjectDTO;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /*
  * The user wants to add a project to a UserDatabase
@@ -50,11 +51,12 @@ public class AddProject implements Command<CreateResult> {
         this.databaseId = databaseId;
     }
 
+    @JsonProperty("project")
     public ProjectDTO getProjectDTO() {
         return projectDTO;
     }
 
-    public void setProject2DTO(ProjectDTO project2dto) {
+    public void setProjectDTO(ProjectDTO project2dto) {
         projectDTO = project2dto;
     }
 }

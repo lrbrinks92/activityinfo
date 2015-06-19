@@ -28,10 +28,10 @@ import org.activityinfo.legacy.shared.command.result.CommandResult;
 import org.activityinfo.legacy.shared.command.result.CountryResult;
 import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.model.CountryDTO;
-import org.activityinfo.server.database.hibernate.dao.CountryDAO;
 import org.activityinfo.server.database.hibernate.entity.Country;
 import org.activityinfo.server.database.hibernate.entity.User;
 
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -40,16 +40,20 @@ public class GetCountriesHandler implements CommandHandler<GetCountries> {
 
     private final static Logger LOG = Logger.getLogger(GetCountriesHandler.class.getName());
 
-    private final CountryDAO countryDAO;
+    private final EntityManager entityManager;
 
     @Inject
-    public GetCountriesHandler(CountryDAO countryDAO) {
-        this.countryDAO = countryDAO;
+    public GetCountriesHandler(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @SuppressWarnings("unchecked") @Override
     public CommandResult execute(GetCountries cmd, User user) throws CommandException {
-        return new CountryResult(mapToDtos(countryDAO.queryAllCountriesAlphabetically()));
+        List<Country> countries = entityManager
+            .createQuery("SELECT c FROM Country c ORDER by c.name", Country.class)
+            .getResultList();
+        
+        return new CountryResult(mapToDtos(countries));
     }
 
     private ArrayList<CountryDTO> mapToDtos(List<Country> countries) {

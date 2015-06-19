@@ -22,14 +22,11 @@ package org.activityinfo.server.database.hibernate.entity;
  * #L%
  */
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.Sets;
 import org.activityinfo.legacy.shared.model.Published;
-import org.hibernate.Hibernate;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Blob;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,9 +42,11 @@ import java.util.Set;
  *
  * @author Alex Bertram
  */
-@Entity @org.hibernate.annotations.Filter(name = "hideDeleted", condition = "DateDeleted is null")
+@Entity
 @NamedQuery(name = "queryMaxSortOrder", query = "select max(e.sortOrder) from Activity e where e.database.id = ?1")
 public class Activity implements Serializable, Deleteable, Orderable {
+
+    private static final int DEFAULT_BATCH_SIZE = 100;
 
     private int id;
     private LocationType locationType;
@@ -72,6 +71,10 @@ public class Activity implements Serializable, Deleteable, Orderable {
     private String mapIcon;
 
     private int published = Published.NOT_PUBLISHED.getIndex();
+    
+    private long version;
+    private long siteVersion;
+    
     private boolean classicView;
 
     private String formClass;
@@ -103,7 +106,10 @@ public class Activity implements Serializable, Deleteable, Orderable {
         this.classicView = sourceActivity.classicView;
     }
 
-    @Id @GeneratedValue(strategy = GenerationType.AUTO) @Column(name = "ActivityId", unique = true, nullable = false)
+    @Id
+    @Offline
+    @GeneratedValue(strategy = GenerationType.AUTO) 
+    @Column(name = "ActivityId", unique = true, nullable = false)
     public int getId() {
         return this.id;
     }
@@ -112,7 +118,9 @@ public class Activity implements Serializable, Deleteable, Orderable {
         this.id = id;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "LocationTypeId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @Offline
+    @JoinColumn(name = "LocationTypeId", nullable = false)
     public LocationType getLocationType() {
         return this.locationType;
     }
@@ -121,7 +129,9 @@ public class Activity implements Serializable, Deleteable, Orderable {
         this.locationType = locationType;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "DatabaseId", nullable = false)
+    @Offline
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @JoinColumn(name = "DatabaseId", nullable = false)
     public UserDatabase getDatabase() {
         return this.database;
     }
@@ -130,6 +140,7 @@ public class Activity implements Serializable, Deleteable, Orderable {
         this.database = database;
     }
 
+    @Offline
     @Column(name = "Name", nullable = false, length = 45)
     public String getName() {
         return this.name;
@@ -148,6 +159,7 @@ public class Activity implements Serializable, Deleteable, Orderable {
         this.classicView = classicView;
     }
 
+    @Offline
     @Column(name = "ReportingFrequency", nullable = false)
     public int getReportingFrequency() {
         return this.reportingFrequency;
@@ -166,7 +178,9 @@ public class Activity implements Serializable, Deleteable, Orderable {
         this.allowEdit = allowEdit;
     }
 
-    @Override @Column(name = "SortOrder", nullable = false)
+    @Offline
+    @Override 
+    @Column(name = "SortOrder", nullable = false)
     public int getSortOrder() {
         return this.sortOrder;
     }
@@ -180,7 +194,6 @@ public class Activity implements Serializable, Deleteable, Orderable {
             joinColumns = {@JoinColumn(name = "ActivityId", nullable = false, updatable = false)},
             inverseJoinColumns = {@JoinColumn(name = "AttributeGroupId", nullable = false, updatable = false)})
     @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
-    @org.hibernate.annotations.Filter(name = "hideDeleted", condition = "DateDeleted is null")
     public Set<AttributeGroup> getAttributeGroups() {
         return this.attributeGroups;
     }
@@ -192,7 +205,6 @@ public class Activity implements Serializable, Deleteable, Orderable {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "activity")
     @org.hibernate.annotations.OrderBy(clause = "sortOrder")
     @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
-    @org.hibernate.annotations.Filter(name = "hideDeleted", condition = "DateDeleted is null")
     public Set<Indicator> getIndicators() {
         return this.indicators;
     }
@@ -215,6 +227,7 @@ public class Activity implements Serializable, Deleteable, Orderable {
      * @return the FormClass resource encoded as JSON
      */
     @Lob
+    @Offline(sync = false)
     public String getFormClass() {
         return formClass;
     }
@@ -223,6 +236,7 @@ public class Activity implements Serializable, Deleteable, Orderable {
         this.formClass = formClass;
     }
 
+    @Offline(sync = false)
     public byte[] getGzFormClass() {
         return gzFormClass;
     }
@@ -231,7 +245,8 @@ public class Activity implements Serializable, Deleteable, Orderable {
         this.gzFormClass = gzFormClass;
     }
 
-    @Column @Temporal(value = TemporalType.TIMESTAMP)
+    @Column 
+    @Temporal(value = TemporalType.TIMESTAMP)
     public Date getDateDeleted() {
         return this.dateDeleted;
     }
@@ -241,11 +256,14 @@ public class Activity implements Serializable, Deleteable, Orderable {
     }
 
     @Override
+    @Offline(sync = false)
     public void delete() {
         setDateDeleted(new Date());
         getDatabase().setLastSchemaUpdate(new Date());
     }
 
+    @Offline
+    @Column(name = "category")
     public String getCategory() {
         return category;
     }
@@ -254,7 +272,8 @@ public class Activity implements Serializable, Deleteable, Orderable {
         this.category = category;
     }
 
-    @Override @Transient
+    @Override 
+    @Transient
     public boolean isDeleted() {
         return getDateDeleted() == null;
     }
@@ -273,11 +292,12 @@ public class Activity implements Serializable, Deleteable, Orderable {
     }
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "activity")
+    @BatchSize(size = DEFAULT_BATCH_SIZE)
     public Set<LockedPeriod> getLockedPeriods() {
         return lockedPeriods;
     }
 
-    // the rebar synchronization library does not yet support enums :-(
+    @Offline
     @Column(name = "published")
     public int getPublished() {
         return published;
@@ -285,5 +305,27 @@ public class Activity implements Serializable, Deleteable, Orderable {
 
     public void setPublished(int published) {
         this.published = published;
+    }
+
+    public long getSiteVersion() {
+        return siteVersion;
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+    }
+
+    public void setSiteVersion(long siteVersion) {
+        this.siteVersion = siteVersion;
+    }
+
+    public long incrementSiteVersion() {
+        version++;
+        siteVersion = version;
+        return version;
     }
 }

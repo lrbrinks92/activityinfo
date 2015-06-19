@@ -23,23 +23,24 @@ package org.activityinfo.server.command;
  */
 
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
+import org.activityinfo.fixtures.InjectionSupport;
 import org.activityinfo.legacy.shared.adapter.ResourceLocatorAdaptor;
 import org.activityinfo.legacy.shared.command.CreateLocation;
 import org.activityinfo.legacy.shared.command.CreateSite;
 import org.activityinfo.legacy.shared.command.GetSites;
-import org.activityinfo.legacy.shared.command.exception.NotAuthorizedException;
+import org.activityinfo.legacy.shared.command.UpdateSite;
 import org.activityinfo.legacy.shared.command.result.CreateResult;
 import org.activityinfo.legacy.shared.exception.CommandException;
+import org.activityinfo.legacy.shared.exception.IllegalAccessCommandException;
 import org.activityinfo.legacy.shared.model.*;
-import org.activityinfo.fixtures.InjectionSupport;
 import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.legacy.CuidAdapter;
+import org.activityinfo.model.legacy.KeyGenerator;
 import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.model.type.enumerated.EnumValue;
 import org.activityinfo.model.type.geo.GeoPoint;
 import org.activityinfo.model.type.time.LocalDate;
 import org.activityinfo.server.database.OnDataSet;
-import org.activityinfo.model.legacy.KeyGenerator;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -71,10 +72,8 @@ public class CreateSiteTest extends CommandTestCase2 {
         CreateResult result = execute(cmd);
         newSite.setId(result.getNewId());
         assertThat(result.getNewId(), not(equalTo(0)));
-        PagingLoadResult<SiteDTO> loadResult = execute(GetSites.byId(newSite
-                .getId()));
-        Assert.assertEquals(1, loadResult.getData().size());
-        SiteDTO secondRead = loadResult.getData().get(0);
+
+        SiteDTO secondRead = readSite(newSite.getId());
         SiteDTOs.validateNewSite(secondRead);
     }
 
@@ -103,7 +102,7 @@ public class CreateSiteTest extends CommandTestCase2 {
         assertResolves(locator.persist(instance));
     }
 
-    @Test(expected = NotAuthorizedException.class)
+    @Test(expected = IllegalAccessCommandException.class)
     public void unauthorized() throws CommandException {
         // create a new detached, client model
         SiteDTO newSite = SiteDTOs.newSite();
@@ -148,13 +147,7 @@ public class CreateSiteTest extends CommandTestCase2 {
         newSite.setId(result.getNewId());
 
         // try to retrieve what we've created
-
-        PagingLoadResult<SiteDTO> loadResult = execute(GetSites.byId(newSite
-                .getId()));
-
-        Assert.assertEquals(1, loadResult.getData().size());
-
-        SiteDTO secondRead = loadResult.getData().get(0);
+        SiteDTO secondRead = readSite(newSite.getId());
 
         // confirm that the changes are there
         Assert.assertEquals("site.location.name", "Walungu",
@@ -189,22 +182,74 @@ public class CreateSiteTest extends CommandTestCase2 {
 
         // let the client know the command has succeeded
         newSite.setId(result.getNewId());
-        // cmd.onCompleted(result);
 
         // try to retrieve what we've created
-
-        PagingLoadResult<SiteDTO> loadResult = execute(GetSites.byId(newSite
-                .getId()));
-
-        Assert.assertEquals(1, loadResult.getData().size());
-
-        SiteDTO secondRead = loadResult.getData().get(0);
+        SiteDTO secondRead = readSite(newSite.getId());
 
         // confirm that the changes are there
         Assert.assertEquals("site.attribute[2]", false,
                 secondRead.getAttributeValue(1));
         Assert.assertEquals("site.attribute[2]", false,
                 secondRead.getAttributeValue(2));
+    }
+
+    @OnDataSet("/dbunit/sites-calculated-indicators.db.xml")
+    @Test
+    public void testSiteWithCalculatedIndicators() throws CommandException {
+        // create a new detached, client model
+        SiteDTO newSite = new SiteDTO();
+        newSite.setId(new KeyGenerator().generateInt());
+        newSite.setActivityId(1);
+        newSite.setLocationId(1);
+        newSite.setPartner(new PartnerDTO(1, "Foobar"));
+        newSite.setDate1((new GregorianCalendar(2008, 12, 1)).getTime());
+        newSite.setDate2((new GregorianCalendar(2009, 1, 3)).getTime());
+        newSite.setLocationName("Virunga");
+        newSite.setProject(new ProjectDTO(1, "SomeProject"));
+        newSite.setReportingPeriodId(11);
+        newSite.setIndicatorValue(1, 1);
+        newSite.setIndicatorValue(2, 2);
+
+        // create command
+        CreateSite cmd = new CreateSite(newSite);
+        assertThat((Integer) cmd.getProperties().get("locationId"), equalTo(1));
+
+        // execute the command
+
+        setUser(1);
+
+        CreateResult result = execute(cmd);
+
+        newSite.setId(result.getNewId());
+
+        // try to retrieve what we've created
+        SiteDTO firstRead = readSite(newSite.getId());
+
+        Assert.assertEquals(1d, firstRead.getIndicatorValue(1));
+        Assert.assertEquals(2d, firstRead.getIndicatorValue(2));
+        Assert.assertEquals(3d, firstRead.getIndicatorValue(11));
+        Assert.assertEquals(0.5d, firstRead.getIndicatorValue(12));
+
+        SiteDTO updateSite = new SiteDTO(newSite);
+        updateSite.setIndicatorValue(1, null);
+        updateSite.setIndicatorValue(2, null);
+
+        execute(new UpdateSite(newSite, updateSite)); // update site
+
+        SiteDTO secondRead = readSite(newSite.getId());
+
+        Assert.assertEquals(null, secondRead.getIndicatorValue(1));
+        Assert.assertEquals(null, secondRead.getIndicatorValue(2));
+        Assert.assertEquals(0d, secondRead.getIndicatorValue(11));
+        Assert.assertEquals(Double.NaN, secondRead.getIndicatorValue(12));
+
+    }
+
+    private SiteDTO readSite(int siteId) {
+        PagingLoadResult<SiteDTO> loadResult = execute(GetSites.byId(siteId));
+
+        Assert.assertEquals(1, loadResult.getData().size());
+        return loadResult.getData().get(0);
     }
 
 }

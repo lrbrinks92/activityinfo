@@ -24,13 +24,13 @@ package org.activityinfo.server.command.handler.crud;
 
 import com.google.inject.Inject;
 import org.activityinfo.legacy.shared.command.AddPartner;
+import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.model.PartnerDTO;
 import org.activityinfo.server.command.handler.AddPartnerHandler;
 import org.activityinfo.server.command.handler.PermissionOracle;
 import org.activityinfo.server.database.hibernate.dao.CountryDAO;
 import org.activityinfo.server.database.hibernate.dao.UserDatabaseDAO;
 import org.activityinfo.server.database.hibernate.entity.Country;
-import org.activityinfo.server.database.hibernate.entity.Partner;
 import org.activityinfo.server.database.hibernate.entity.User;
 import org.activityinfo.server.database.hibernate.entity.UserDatabase;
 
@@ -82,12 +82,16 @@ public class UserDatabasePolicy implements EntityPolicy<UserDatabase> {
     private Country findCountry(PropertyMap properties) {
         int countryId;
         if (properties.containsKey("countryId")) {
-            countryId = (Integer) properties.get("countryId");
+            countryId = properties.get("countryId");
         } else {
             // this was the default
             countryId = 1;
         }
-        return countryDAO.findById(countryId);
+        Country country = countryDAO.findById(countryId);
+        if(country == null) {
+            throw new CommandException(String.format("No country exists with id %d", countryId));
+        }
+        return country;
     }
 
     @Override

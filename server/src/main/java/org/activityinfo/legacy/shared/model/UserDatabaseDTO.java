@@ -25,14 +25,12 @@ package org.activityinfo.legacy.shared.model;
 import com.extjs.gxt.ui.client.data.BaseModelData;
 import org.activityinfo.legacy.shared.model.LockedPeriodDTO.HasLockedPeriod;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonMethod;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.annotate.JsonView;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * One-to-one DTO of the
@@ -79,7 +77,9 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
     /**
      * @return the name of this UserDatabase
      */
-    @Override @JsonProperty @JsonView({DTOViews.Schema.class, DTOViews.List.class})
+    @Override 
+    @JsonProperty 
+    @JsonView({DTOViews.Schema.class, DTOViews.List.class})
     public String getName() {
         return get("name");
     }
@@ -131,7 +131,8 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
     /**
      * Gets the full, descriptive name of this UserDatabase
      */
-    @JsonProperty("description") @JsonView(DTOViews.Schema.class)
+    @JsonProperty("description") 
+    @JsonView(DTOViews.Schema.class)
     public String getFullName() {
         return get("fullName");
     }
@@ -139,7 +140,8 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
     /**
      * @return this list of ActivityDTOs that belong to this UserDatabase
      */
-    @JsonProperty @JsonView(DTOViews.Schema.class)
+    @JsonProperty 
+    @JsonView(DTOViews.Schema.class)
     public List<ActivityDTO> getActivities() {
         return activities;
     }
@@ -154,7 +156,8 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
     /**
      * @return the Country in which this UserDatabase is set
      */
-    @JsonProperty @JsonView(DTOViews.Schema.class)
+    @JsonProperty 
+    @JsonView(DTOViews.Schema.class)
     public CountryDTO getCountry() {
         return country;
     }
@@ -205,7 +208,7 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
      * {@link org.activityinfo.server.database.hibernate.entity.UserPermission#setAllowViewAll(boolean)}
      */
     public boolean isViewAllAllowed() {
-        return (Boolean) get("viewAllAllowed");
+        return (Boolean) get("viewAllAllowed", false);
     }
 
     /**
@@ -222,7 +225,7 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
      */
     @JsonProperty @JsonView(DTOViews.Schema.class)
     public boolean isEditAllowed() {
-        return (Boolean) get("editAllowed");
+        return get("editAllowed", false);
     }
 
     /**
@@ -239,7 +242,7 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
      */
     @JsonProperty @JsonView(DTOViews.Schema.class)
     public boolean isDesignAllowed() {
-        return (Boolean) get("designAllowed");
+        return get("designAllowed", false);
     }
 
     /**
@@ -256,7 +259,7 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
      */
     @JsonProperty @JsonView(DTOViews.Schema.class)
     public boolean isEditAllAllowed() {
-        return (Boolean) get("editAllAllowed");
+        return get("editAllAllowed", false);
     }
 
     /**
@@ -264,7 +267,7 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
      * permissions on behalf of the Partner to which they belong
      */
     public boolean isManageUsersAllowed() {
-        return (Boolean) get("manageUsersAllowed");
+        return get("manageUsersAllowed", false);
     }
 
     /**
@@ -281,7 +284,7 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
      * permissions on behalf of all Partners in this UserDatabase
      */
     public boolean isManageAllUsersAllowed() {
-        return (Boolean) get("manageAllUsersAllowed");
+        return get("manageAllUsersAllowed", false);
     }
 
     /**
@@ -322,7 +325,7 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
      */
     @JsonProperty("owned") @JsonView(DTOViews.Schema.class)
     public boolean getAmOwner() {
-        return (Boolean) get("amOwner");
+        return get("amOwner", false);
     }
 
     /**
@@ -411,5 +414,17 @@ public final class UserDatabaseDTO extends BaseModelData implements EntityDTO, H
 
     public void addActivity(ActivityFormDTO dist) {
         activities.add(new ActivityDTO(this, dist));
+    }
+
+    @JsonIgnore
+    @Override
+    public Map<String, Object> getProperties() {
+        return super.getProperties();
+    }
+
+    @JsonIgnore
+    @Override
+    public Collection<String> getPropertyNames() {
+        return super.getPropertyNames();
     }
 }

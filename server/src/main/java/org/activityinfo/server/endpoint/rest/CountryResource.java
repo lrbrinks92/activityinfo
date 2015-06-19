@@ -41,7 +41,8 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Set;
 
-@Path("/country") @Produces(MediaType.APPLICATION_JSON)
+@Path("/country") 
+@Produces(MediaType.APPLICATION_JSON)
 public class CountryResource {
 
     private Country country;
@@ -50,17 +51,21 @@ public class CountryResource {
         this.country = country;
     }
 
-    @GET @Produces(MediaType.TEXT_HTML)
+    @GET 
+    @Produces(MediaType.TEXT_HTML)
     public Viewable getPage() {
         return new Viewable("/resource/Country.ftl", country);
     }
 
-    @GET @Produces(MediaType.APPLICATION_JSON)
+    @GET 
+    @Produces(MediaType.APPLICATION_JSON)
     public Country getJson() {
         return country;
     }
 
-    @GET @Path("locationTypes") @Produces(MediaType.APPLICATION_JSON)
+    @GET 
+    @Path("locationTypes") 
+    @Produces(MediaType.APPLICATION_JSON)
     public List<LocationType> getLocationTypes() {
         List<LocationType> types = Lists.newArrayList();
         for (LocationType type : country.getLocationTypes()) {
@@ -72,12 +77,16 @@ public class CountryResource {
     }
 
 
-    @GET @Path("adminLevels") @Produces(MediaType.APPLICATION_JSON)
+    @GET 
+    @Path("adminLevels") 
+    @Produces(MediaType.APPLICATION_JSON)
     public Set<AdminLevel> getAdminLevels() {
         return country.getAdminLevels();
     }
 
-    @POST @Path("adminLevels") @Consumes(MediaType.APPLICATION_JSON)
+    @POST 
+    @Path("adminLevels") 
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response postNewLevel(@InjectParam AuthenticatedUser user,
                                  @InjectParam EntityManager em,
                                  NewAdminLevel newLevel) {

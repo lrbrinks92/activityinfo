@@ -23,7 +23,10 @@ package org.activityinfo.ui.client.component.form.field;
 
 import com.google.common.base.Function;
 import com.google.gwt.cell.client.ValueUpdater;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.EventBus;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import org.activityinfo.core.client.ResourceLocator;
 import org.activityinfo.core.shared.application.ApplicationProperties;
 import org.activityinfo.legacy.shared.Log;
@@ -56,6 +59,13 @@ import java.util.List;
  */
 public class FormFieldWidgetFactory {
 
+    public interface Template extends SafeHtmlTemplates {
+
+        @SafeHtmlTemplates.Template("<span class='help-block'>{0}</span>")
+        SafeHtml error(String error);
+    }
+
+    public static final Template TEMPLATE = GWT.create(Template.class);
 
     /**
      * Based on this numbers FormField Widget generates different widgets and layouts:

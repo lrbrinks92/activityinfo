@@ -23,21 +23,19 @@ package org.activityinfo.server.endpoint.kml;
  */
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import org.activityinfo.legacy.shared.command.*;
-import org.activityinfo.legacy.shared.exception.CommandException;
+import org.activityinfo.legacy.shared.model.ActivityDTO;
 import org.activityinfo.legacy.shared.model.ActivityFormDTO;
+import org.activityinfo.legacy.shared.model.SchemaDTO;
 import org.activityinfo.legacy.shared.model.SiteDTO;
 import org.activityinfo.server.authentication.BasicAuthentication;
 import org.activityinfo.server.command.DispatcherSync;
-import org.activityinfo.server.database.hibernate.entity.DomainFilters;
 import org.activityinfo.server.database.hibernate.entity.User;
 import org.activityinfo.server.endpoint.kml.xml.XmlBuilder;
 import org.activityinfo.ui.client.page.entry.form.SiteRenderer;
 import org.xml.sax.SAXException;
 
-import javax.persistence.EntityManager;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,6 +44,8 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Serves a KML (Google Earth) file containing the locations of all activities
@@ -60,18 +60,15 @@ import java.util.List;
 @Singleton
 public class KmlDataServlet extends javax.servlet.http.HttpServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(KmlDataServlet.class.getName());
+
     private final DispatcherSync dispatcher;
     private final BasicAuthentication authenticator;
     private final SiteRenderer siteRenderer;
 
-    private final Provider<EntityManager> entityManager;
-
     @Inject
-    public KmlDataServlet(Provider<EntityManager> entityManager,
-                          BasicAuthentication authenticator,
-                          DispatcherSync dispatcher) {
+    public KmlDataServlet(BasicAuthentication authenticator, DispatcherSync dispatcher) {
 
-        this.entityManager = entityManager;
         this.authenticator = authenticator;
         this.dispatcher = dispatcher;
         this.siteRenderer = new SiteRenderer(new JreIndicatorValueFormatter());
@@ -99,26 +96,15 @@ public class KmlDataServlet extends javax.servlet.http.HttpServlet {
         res.setContentType("application/vnd.google-earth.kml+xml");
 
         try {
-            writeDocument(user, res.getWriter(), activityId);
+            writeDocument(res.getWriter(), activityId);
 
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (CommandException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "KML Rendering failed", e);
+            res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-
     }
 
-    protected void writeDocument(User user,
-                                 PrintWriter out,
-                                 int activityId) throws TransformerConfigurationException, SAXException,
-            CommandException {
-
-        // TODO: rewrite using FreeMarker
-
-        DomainFilters.applyUserFilter(user, entityManager.get());
+    protected void writeDocument(PrintWriter out, int activityId) throws SAXException, TransformerConfigurationException {
 
         XmlBuilder xml = new XmlBuilder(new StreamResult(out));
 

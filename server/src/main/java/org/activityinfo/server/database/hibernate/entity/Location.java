@@ -22,6 +22,7 @@ package org.activityinfo.server.database.hibernate.entity;
  * #L%
  */
 
+import org.activityinfo.core.shared.workflow.Workflow;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.codehaus.jackson.annotate.JsonMethod;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -48,8 +49,10 @@ public class Location implements java.io.Serializable {
     private Set<AdminEntity> adminEntities = new HashSet<AdminEntity>(0);
     private String workflowStatusId;
     private long timeEdited;
+    private long version;
 
     public Location() {
+        workflowStatusId = Workflow.VALIDATED;
     }
 
     @Id @JsonProperty @Column(name = "LocationID", unique = true, nullable = false)
@@ -164,27 +167,36 @@ public class Location implements java.io.Serializable {
         }
     }
 
+    /**
+     * @deprecated Use the version field for synchronization purposes
+     */
+    @Deprecated
     public long getTimeEdited() {
         return timeEdited;
     }
 
+    /**
+     * @deprecated Use the version field for synchronization purposes
+     */
+    @Deprecated
     public void setTimeEdited(long timeEdited) {
         this.timeEdited = timeEdited;
     }
 
+    /**
+     * @deprecated Use the version field for synchronization purposes
+     */
+    @Deprecated
     public void setTimeEdited(Date date) {
         this.timeEdited = date.getTime();
     }
 
-    @PrePersist
-    public void onCreate() {
-        Date now = new Date();
-        setTimeEdited(now.getTime());
+
+    public long getVersion() {
+        return version;
     }
 
-    @PreUpdate
-    public void onUpdate() {
-        Date now = new Date();
-        setTimeEdited(now.getTime());
+    public void setVersion(long version) {
+        this.version = version;
     }
 }

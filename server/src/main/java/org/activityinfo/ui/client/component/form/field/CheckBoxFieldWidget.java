@@ -23,11 +23,14 @@ package org.activityinfo.ui.client.component.form.field;
 
 import com.google.common.collect.Sets;
 import com.google.gwt.cell.client.ValueUpdater;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
+import org.activityinfo.i18n.shared.I18N;
 import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.form.FormInstanceLabeler;
 import org.activityinfo.model.resource.ResourceId;
@@ -50,12 +53,10 @@ public class CheckBoxFieldWidget implements ReferenceFieldWidget {
 
     private final FlowPanel panel;
     private final List<CheckBox> controls;
-    private final List<FormInstance> range;
 
     public CheckBoxFieldWidget(ReferenceType type, List<FormInstance> range, final ValueUpdater valueUpdater) {
         panel = new FlowPanel();
         controls = new ArrayList<>();
-        this.range = range;
 
         ValueChangeHandler<Boolean> changeHandler = new ValueChangeHandler<Boolean>() {
             @Override
@@ -70,6 +71,19 @@ public class CheckBoxFieldWidget implements ReferenceFieldWidget {
             checkBox.addValueChangeHandler(changeHandler);
             panel.add(checkBox);
             controls.add(checkBox);
+        }
+
+        // inform user that there is not any data on server for given formfield
+        if (controls.isEmpty()) {
+            panel.add(new HTML(FormFieldWidgetFactory.TEMPLATE.error(I18N.CONSTANTS.noDataForField())));
+
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    valueUpdater.update(updatedValue()); // trigger update
+                }
+            });
+
         }
     }
 
@@ -96,7 +110,7 @@ public class CheckBoxFieldWidget implements ReferenceFieldWidget {
     private ReferenceValue updatedValue() {
         final Set<ResourceId> value = Sets.newHashSet();
         for (CheckBox control : controls) {
-            if(control.getValue()) {
+            if (control.getValue()) {
                 value.add(ResourceId.valueOf(control.getFormValue()));
             }
         }
@@ -115,7 +129,7 @@ public class CheckBoxFieldWidget implements ReferenceFieldWidget {
 
     @Override
     public void clearValue() {
-       setValue(ReferenceValue.EMPTY);
+        setValue(ReferenceValue.EMPTY);
     }
 
     @Override

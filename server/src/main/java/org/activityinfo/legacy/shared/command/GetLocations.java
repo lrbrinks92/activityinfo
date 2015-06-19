@@ -73,8 +73,9 @@ public class GetLocations implements Command<LocationResult> {
         this.filter = filter;
     }
 
-    public void setLocationTypeId(Integer locationTypeId) {
+    public GetLocations setLocationTypeId(Integer locationTypeId) {
         this.locationTypeId = locationTypeId;
+        return this;
     }
 
     public boolean hasLocationIds() {

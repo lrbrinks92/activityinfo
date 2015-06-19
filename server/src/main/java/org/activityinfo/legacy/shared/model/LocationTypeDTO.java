@@ -46,10 +46,18 @@ import java.util.List;
 @JsonAutoDetect(JsonMethod.NONE)
 public final class LocationTypeDTO extends BaseModelData implements EntityDTO, IsFormClass {
 
-    public static int NAME_MAX_LENGTH = 50;
+    public static final int NOT_NATIONWIDE_LOCATION_TYPE_ID = 20301;
+
+    public static final String NATIONWIDE_NAME = "Country";
+
+    public static final int NAME_MAX_LENGTH = 50;
+
     private Integer databaseId;
     private List<AdminLevelDTO> adminLevels = new ArrayList<>();
     private Extents countryBounds;
+    private long version;
+    private long childVersion;
+    private boolean deleted;
 
     public LocationTypeDTO() {
     }
@@ -68,6 +76,7 @@ public final class LocationTypeDTO extends BaseModelData implements EntityDTO, I
         set("id", id);
     }
 
+    @Override
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty @JsonView(DTOViews.Schema.class)
     public int getId() {
@@ -83,6 +92,7 @@ public final class LocationTypeDTO extends BaseModelData implements EntityDTO, I
         set("name", value);
     }
 
+    @Override
     @JsonProperty @JsonView(DTOViews.Schema.class)
     public String getName() {
         return get("name");
@@ -90,7 +100,7 @@ public final class LocationTypeDTO extends BaseModelData implements EntityDTO, I
 
     public boolean isNationwide() {
         // hack!!
-        return "Country".equals(getName()) && getId() != 20301;
+        return NATIONWIDE_NAME.equals(getName()) && getId() != NOT_NATIONWIDE_LOCATION_TYPE_ID;
     }
 
     @JsonProperty("adminLevelId") @JsonView(DTOViews.Schema.class)
@@ -123,9 +133,6 @@ public final class LocationTypeDTO extends BaseModelData implements EntityDTO, I
     }
 
     public List<AdminLevelDTO> getAdminLevels() {
-        if (adminLevels == null) {
-            adminLevels = new ArrayList<>();
-        }
         return adminLevels;
     }
 
@@ -141,5 +148,27 @@ public final class LocationTypeDTO extends BaseModelData implements EntityDTO, I
         this.countryBounds = countryBounds;
     }
 
+    public long getChildVersion() {
+        return childVersion;
+    }
 
+    public void setChildVersion(long childVersion) {
+        this.childVersion = childVersion;
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 }

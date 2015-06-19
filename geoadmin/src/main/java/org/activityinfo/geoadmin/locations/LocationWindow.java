@@ -1,32 +1,20 @@
 package org.activityinfo.geoadmin.locations;
 
-import java.awt.BorderLayout;
-import java.awt.Button;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import org.activityinfo.geoadmin.GeoAdmin;
+import org.activityinfo.geoadmin.ImportSource;
+import org.activityinfo.geoadmin.model.*;
+import org.activityinfo.geoadmin.util.GenericTableModel;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 import java.util.prefs.Preferences;
-
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JToolBar;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
-import com.google.common.collect.Lists;
-import org.activityinfo.geoadmin.GeoAdmin;
-import org.activityinfo.geoadmin.ImportSource;
-import org.activityinfo.geoadmin.model.ActivityInfoClient;
-import org.activityinfo.geoadmin.model.AdminEntity;
-import org.activityinfo.geoadmin.model.AdminLevel;
-import org.activityinfo.geoadmin.model.Country;
-import org.activityinfo.geoadmin.model.Location;
-import org.activityinfo.geoadmin.model.LocationType;
-import org.activityinfo.geoadmin.util.GenericTableModel;
-
-import com.google.common.base.Function;
 
 public class LocationWindow extends JFrame {
 
@@ -59,6 +47,7 @@ public class LocationWindow extends JFrame {
 
 		GenericTableModel.Builder<Location> model = GenericTableModel.newModel(locations);
 		model.addColumn("name", String.class, new Function<Location, String>() {
+			@Override
 			public String apply(Location location) {
 				return location.getName();
 			}
@@ -66,6 +55,7 @@ public class LocationWindow extends JFrame {
 		for(final AdminLevel level : levels) {
 			model.addColumn(level.getName(), String.class, new Function<Location, String>() {
 
+				@Override
 				public String apply(Location location) {
 					AdminEntity adminEntity = location.getAdminEntities().get(level.getId());
 					if(adminEntity != null) {

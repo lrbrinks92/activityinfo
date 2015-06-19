@@ -83,7 +83,7 @@ public class PivotSitesHandler implements CommandHandlerAsync<PivotSites, PivotS
             }
         }
 
-        if(command.isPivotedBy(DimensionType.Indicator)) {
+        if (command.getValueType() == PivotSites.ValueType.INDICATOR) {
             workList.add(new ErrorLoggingWorkItem(new CalculatedIndicatorsQuery(queryContext)));
         }
 

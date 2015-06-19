@@ -1,11 +1,11 @@
 package org.activityinfo.server.endpoint.jsonrpc;
 
-import com.google.inject.servlet.ServletModule;
+import org.activityinfo.server.util.jaxrs.AbstractRestModule;
 
-public class JsonRpcModule extends ServletModule {
+public class JsonRpcModule extends AbstractRestModule {
 
     @Override
-    protected void configureServlets() {
-        serve("/command").with(JsonRpcServlet.class);
+    protected void configureResources() {
+        bindResource(JsonRpcServlet.class);
     }
 }

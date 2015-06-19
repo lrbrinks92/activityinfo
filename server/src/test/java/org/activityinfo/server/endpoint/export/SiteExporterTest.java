@@ -6,6 +6,7 @@ import org.activityinfo.legacy.shared.command.GetSites;
 import org.activityinfo.legacy.shared.command.result.SiteResult;
 import org.activityinfo.legacy.shared.model.*;
 import org.activityinfo.server.command.DispatcherSync;
+import org.activityinfo.server.report.NullStorageProvider;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.junit.Test;
 
@@ -58,7 +59,7 @@ public class SiteExporterTest {
 
         Filter filter = new Filter();
 
-        SiteExporter exporter = new SiteExporter(dispatcher);
+        SiteExporter exporter = new SiteExporter(new TaskContext(dispatcher, new NullStorageProvider(), "XYZ"));
         exporter.export(activity, filter);
         exporter.export(activity2, filter);
         exporter.export(activity3, filter);

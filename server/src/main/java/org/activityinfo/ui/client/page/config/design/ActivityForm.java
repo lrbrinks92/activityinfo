@@ -78,7 +78,9 @@ class ActivityForm extends AbstractDesignForm {
 
         final MappingComboBox<Integer> locationTypeCombo = new MappingComboBox<Integer>();
         for (LocationTypeDTO type : database.getCountry().getLocationTypes()) {
-            locationTypeCombo.add(type.getId(), type.getName());
+            if (!type.isDeleted()) { // ai-1045 : we still fetching deleted location types but don't want to show it to user
+                locationTypeCombo.add(type.getId(), type.getName());
+            }
         }
         locationTypeCombo.setAllowBlank(false);
         locationTypeCombo.setFieldLabel(I18N.CONSTANTS.locationType());

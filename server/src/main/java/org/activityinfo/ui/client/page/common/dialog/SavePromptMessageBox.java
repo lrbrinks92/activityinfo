@@ -47,12 +47,6 @@ public class SavePromptMessageBox extends Window implements AsyncMonitor {
     private Button cancelButton;
     private boolean asyncCallCancelled;
 
-    public enum Choice {
-        SAVE,
-        DISCARD,
-        CANCEL
-    }
-
     public SavePromptMessageBox() {
         /*
          * Configure this window

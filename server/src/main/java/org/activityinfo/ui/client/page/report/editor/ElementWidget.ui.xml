@@ -79,6 +79,12 @@
 
     .removeButton {
     }
+    
+    .moveUpButton {
+    }
+    
+    .moveDownButton {
+    }
 
     .loading {
       font-style: italic;
@@ -118,6 +124,20 @@
           <ui:text from='{i18n.remove}'/>
         </span>
         ]
+        <span ui:field="moveUpSpan">
+        [
+        <span class="{style.linkButton} {style.moveUpButton}">
+          <ui:text from='{i18n.moveUp}'/>
+        </span>
+        ]
+        </span>
+        <span ui:field="moveDownSpan"> 
+        [
+        <span class="{style.linkButton} {style.moveDownButton}">
+          <ui:text from='{i18n.moveDown}'/>
+        </span>
+        ]
+        </span>
       </div>
     </div>
     <div class="{style.block}" ui:field="contentContainerElement">

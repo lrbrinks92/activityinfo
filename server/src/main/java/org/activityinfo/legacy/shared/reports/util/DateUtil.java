@@ -70,9 +70,9 @@ public abstract class DateUtil {
 
     public abstract int getDay(Date date);
 
-    public abstract Date floor(Date date, DateUnit dateUnit);
+    public abstract Date floorMonth(Date date);
 
-    public abstract Date ceil(Date date, DateUnit dateUnit);
+    public abstract Date ceilMonth(Date date);
 
     public abstract Date add(Date date, DateUnit dateUnit, int count);
 
@@ -80,7 +80,7 @@ public abstract class DateUtil {
 
     public Date startDateOfLastCompleteMonth(Date today) {
         // set this to the beginning of the last complete month
-        Date start = floor(today, DateUnit.MONTH);
+        Date start = floorMonth(today);
         if (!isLastDayOfMonth(today)) {
             start = add(start, DateUnit.MONTH, -1);
 
@@ -90,7 +90,7 @@ public abstract class DateUtil {
 
     public Date endDateOfLastCompleteMonth(Date today) {
         // set this to the beginning of the last complete month
-        Date end = ceil(today, DateUnit.MONTH);
+        Date end = ceilMonth(today);
         if (!isLastDayOfMonth(today)) {
             end = add(end, DateUnit.MONTH, -1);
         }

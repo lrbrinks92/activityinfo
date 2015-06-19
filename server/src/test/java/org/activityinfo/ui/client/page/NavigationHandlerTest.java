@@ -22,6 +22,7 @@ package org.activityinfo.ui.client.page;
  * #L%
  */
 
+import com.google.gwt.junit.GWTMockUtilities;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import org.activityinfo.legacy.client.monitor.NullAsyncMonitor;
 import org.activityinfo.ui.client.MockEventBus;
@@ -70,6 +71,8 @@ public class NavigationHandlerTest {
 
     @Before
     public void setUp() {
+
+        GWTMockUtilities.disarm();
 
         expect(outerFrameSet.getPageId()).andReturn(outerFrameSetId).anyTimes();
         expect(firstPage.getPageId()).andReturn(firstPageId).anyTimes();

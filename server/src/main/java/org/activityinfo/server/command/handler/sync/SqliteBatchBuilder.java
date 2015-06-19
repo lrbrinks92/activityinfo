@@ -35,6 +35,7 @@ public class SqliteBatchBuilder {
 
     private StringWriter stringWriter;
     private JsonWriter jsonWriter;
+    private boolean empty = true;
 
     public SqliteBatchBuilder() throws IOException {
         super();
@@ -53,6 +54,7 @@ public class SqliteBatchBuilder {
             LOGGER.log(Level.WARNING, "Add statement with size " + sqlState.length() + ": " +
                     sqlState.substring(0, 100) + "...");
         }
+        empty = false;
     }
 
     public SqliteInsertBuilder insert() {
@@ -60,9 +62,13 @@ public class SqliteBatchBuilder {
     }
 
     public String build() throws IOException {
-        jsonWriter.endArray();
-        jsonWriter.flush();
-        return stringWriter.toString();
+        if(empty) {
+            return null;
+        } else {
+            jsonWriter.endArray();
+            jsonWriter.flush();
+            return stringWriter.toString();
+        }
     }
 
     public SqliteDeleteBuilder delete() {

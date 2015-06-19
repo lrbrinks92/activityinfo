@@ -33,4 +33,8 @@ public class SuggestBox extends com.google.gwt.user.client.ui.SuggestBox {
         SuggestBoxStyle.INSTANCE.ensureInjected();
         getValueBox().setStyleName("form-control");
     }
+
+    public void setPlaceholder(String text) {
+        getValueBox().getElement().setAttribute("placeholder", text);
+    }
 }

@@ -23,7 +23,11 @@ package org.activityinfo.legacy.shared.model;
  */
 
 import com.extjs.gxt.ui.client.data.BaseModelData;
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonMethod;
+import org.codehaus.jackson.annotate.JsonProperty;
 
+@JsonAutoDetect(JsonMethod.NONE)
 public class TargetValueDTO extends BaseModelData implements EntityDTO {
 
     public static final String ENTITY_NAME = "TargetValue";
@@ -40,10 +44,13 @@ public class TargetValueDTO extends BaseModelData implements EntityDTO {
         set("indicatorId", indicatorId);
     }
 
+    @JsonProperty
     public int getIndicatorId() {
         return (Integer) get("indicatorId");
     }
 
+
+    @JsonProperty
     public Double getValue() {
         return (Double) get("value");
     }
@@ -73,5 +80,14 @@ public class TargetValueDTO extends BaseModelData implements EntityDTO {
     @Override
     public String getEntityName() {
         return ENTITY_NAME;
+    }
+
+    @Override
+    public String toString() {
+        return "TargetValueDTO{" +
+                "targetId=" + getTargetId() +
+                ", indicatorId=" + getIndicatorId() +
+                ", value=" + getValue() +
+                '}';
     }
 }

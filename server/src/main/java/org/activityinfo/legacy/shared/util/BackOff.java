@@ -58,9 +58,11 @@ public interface BackOff {
      */
     BackOff ZERO_BACKOFF = new BackOff() {
 
+        @Override
         public void reset() throws IOException {
         }
 
+        @Override
         public long nextBackOffMillis() {
             return 0;
         }
@@ -72,9 +74,11 @@ public interface BackOff {
      */
     BackOff STOP_BACKOFF = new BackOff() {
 
+        @Override
         public void reset() throws IOException {
         }
 
+        @Override
         public long nextBackOffMillis() {
             return STOP;
         }

@@ -158,7 +158,7 @@ public class ItextMapRenderer extends ImageMapRenderer implements ItextRenderer<
 
     private void addPieChartDescription(MapReportElement element,
                                         Cell descriptionCell,
-                                        PiechartMapLayer layer) throws BadElementException, IOException {
+                                        PiechartMapLayer layer) throws BadElementException {
 
         for (Slice slice : layer.getSlices()) {
             IndicatorDTO indicator = element.getContent().getIndicatorById(slice.getIndicatorId());

@@ -13,8 +13,8 @@ public class InstanceSuggestOracle extends SuggestOracle {
     private List<FormInstance> instances;
     private LatinPlaceNameScorer scorer = new LatinPlaceNameScorer();
 
-    public InstanceSuggestOracle(List<FormInstance> range) {
-        this.instances = range;
+    public InstanceSuggestOracle(List<FormInstance> instances) {
+        this.instances = instances;
     }
 
     @Override
@@ -22,8 +22,18 @@ public class InstanceSuggestOracle extends SuggestOracle {
         List<Suggestion> suggestions = new ArrayList<>();
         for(FormInstance instance : instances) {
             String label = FormInstanceLabeler.getLabel(instance);
-            if(scorer.score(request.getQuery(), label) > 0.5) {
+            if (scorer.score(request.getQuery(), label) > 0.5) {
                 suggestions.add(new InstanceSuggestion(instance));
+            }
+        }
+
+        // if scorer didn't give any results try to iterate with "contains"
+        if (suggestions.isEmpty()) {
+            for(FormInstance instance : instances) {
+                String label = FormInstanceLabeler.getLabel(instance);
+                if (label.contains(request.getQuery())) {
+                    suggestions.add(new InstanceSuggestion(instance));
+                }
             }
         }
         callback.onSuggestionsReady(request, new Response(suggestions));

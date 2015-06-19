@@ -23,14 +23,14 @@ package org.activityinfo.server.database.hibernate.dao;
  */
 
 import com.google.inject.Inject;
-import junit.framework.Assert;
-import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.fixtures.AssertUtils;
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.MockHibernateModule;
 import org.activityinfo.fixtures.Modules;
+import org.activityinfo.fixtures.TestHibernateModule;
+import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.server.database.OnDataSet;
 import org.activityinfo.server.database.hibernate.entity.AdminEntity;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,7 +41,7 @@ import static junit.framework.Assert.assertEquals;
 
 @RunWith(InjectionSupport.class)
 @OnDataSet("/dbunit/adminEntities.db.xml")
-@Modules({MockHibernateModule.class})
+@Modules({TestHibernateModule.class})
 public class AdminDAOImplTest {
 
     @Inject

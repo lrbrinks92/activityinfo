@@ -8,7 +8,6 @@ import org.activityinfo.model.type.primitive.BooleanFieldValue;
 import org.activityinfo.model.type.primitive.TextValue;
 
 import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -203,7 +202,7 @@ public class PropertyBag<T extends PropertyBag> {
     }
 
 
-    public PropertyBag<T> set(@NotNull ResourceId fieldId, FieldValue fieldValue) {
+    public PropertyBag<T> set(@Nonnull ResourceId fieldId, FieldValue fieldValue) {
         Preconditions.checkNotNull(fieldId);
         if (fieldValue == null) {
             remove(fieldId.asString());

@@ -55,7 +55,9 @@ public class AdminLevel implements java.io.Serializable {
         this.name = name;
     }
 
-    @Id @JsonProperty @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id 
+    @JsonProperty 
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "AdminLevelId", unique = true, nullable = false)
     public int getId() {
         return this.id;

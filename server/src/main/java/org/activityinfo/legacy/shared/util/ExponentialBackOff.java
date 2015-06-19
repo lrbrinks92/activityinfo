@@ -191,6 +191,7 @@ public class ExponentialBackOff implements BackOff {
     /**
      * Sets the interval back to the initial retry interval and restarts the timer.
      */
+    @Override
     public final void reset() {
         currentIntervalMillis = initialIntervalMillis;
         startTimeNanos = nanoClock.nanoTime();
@@ -208,6 +209,7 @@ public class ExponentialBackOff implements BackOff {
      * Subclasses may override if a different algorithm is required.
      * </p>
      */
+    @Override
     public long nextBackOffMillis() {
         // Make sure we have not gone over the maximum elapsed time.
         if (getElapsedTimeMillis() > maxElapsedTimeMillis) {

@@ -25,7 +25,7 @@ package org.activityinfo.server.mail;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import org.activityinfo.server.util.logging.LogException;
+import org.activityinfo.server.util.monitoring.Timed;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -44,17 +44,13 @@ public abstract class MailSender {
 
     public abstract void send(Message message) throws MessagingException;
 
-    @LogException
+    @Timed(name = "mail.send")
     public void send(MessageModel model) {
         try {
             Message message = createMessage(model);
             send(message);
 
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (TemplateException e) {
+        } catch (MessagingException | IOException | TemplateException e) {
             throw new RuntimeException(e);
         }
     }
@@ -63,7 +59,6 @@ public abstract class MailSender {
             TemplateException {
         Message message = new Message();
         message.to(model.getRecipient().getEmail(), model.getRecipient().getName());
-        message.bcc("akbertram@gmail.com");
         message.subject(getSubject(model));
         message.body(composeMessage(model));
         return message;

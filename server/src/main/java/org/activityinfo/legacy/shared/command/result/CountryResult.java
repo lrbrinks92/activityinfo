@@ -46,6 +46,7 @@ public class CountryResult extends ListResult<CountryDTO> {
         return data;
     }
 
+    @Override
     public void setData(List<CountryDTO> data) {
         this.data = data;
     }

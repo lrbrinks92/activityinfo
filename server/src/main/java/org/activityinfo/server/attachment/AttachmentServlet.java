@@ -47,9 +47,9 @@ import java.util.logging.Logger;
 @Singleton
 public class AttachmentServlet extends HttpServlet {
 
-    private AttachmentService service;
-    private DispatcherSync dispatcher;
-    private Provider<EntityManager> entityManager;
+    private final AttachmentService service;
+    private final DispatcherSync dispatcher;
+    private final Provider<EntityManager> entityManager;
 
     private static final Logger LOGGER = Logger.getLogger(AttachmentServlet.class.getName());
 

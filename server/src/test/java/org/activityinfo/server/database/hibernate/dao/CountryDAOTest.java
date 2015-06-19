@@ -24,8 +24,8 @@ package org.activityinfo.server.database.hibernate.dao;
 
 import com.google.inject.Inject;
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.MockHibernateModule;
 import org.activityinfo.fixtures.Modules;
+import org.activityinfo.fixtures.TestHibernateModule;
 import org.activityinfo.server.database.OnDataSet;
 import org.activityinfo.server.database.hibernate.entity.Country;
 import org.junit.Test;
@@ -38,7 +38,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 @RunWith(InjectionSupport.class)
-@Modules({MockHibernateModule.class})
+@Modules({TestHibernateModule.class})
 public class CountryDAOTest {
 
     @Inject

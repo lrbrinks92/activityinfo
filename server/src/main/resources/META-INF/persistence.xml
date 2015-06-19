@@ -1,0 +1,56 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+  <persistence-unit name="ActivityInfo">
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
+    <class>org.activityinfo.server.database.hibernate.entity.Activity</class>
+    <class>org.activityinfo.server.database.hibernate.entity.AdminEntity</class>
+    <class>org.activityinfo.server.database.hibernate.entity.AdminLevel</class>
+    <class>org.activityinfo.server.database.hibernate.entity.AdminLevelVersion</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Attribute</class>
+    <class>org.activityinfo.server.database.hibernate.entity.AttributeGroup</class>
+    <class>org.activityinfo.server.database.hibernate.entity.AttributeValue</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Authentication</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Bounds</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Country</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Domain</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Indicator</class>
+    <class>org.activityinfo.server.database.hibernate.entity.IndicatorLinkEntity</class>
+    <class>org.activityinfo.server.database.hibernate.entity.IndicatorValue</class>
+    <class>org.activityinfo.server.database.hibernate.entity.IndicatorValueId</class>
+    <class>org.activityinfo.server.database.hibernate.entity.LockedPeriod</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Location</class>
+    <class>org.activityinfo.server.database.hibernate.entity.LocationType</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Partner</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Project</class>
+    <class>org.activityinfo.server.database.hibernate.entity.ReportingPeriod</class>
+    <class>org.activityinfo.server.database.hibernate.entity.ReportDefinition</class>
+    <class>org.activityinfo.server.database.hibernate.entity.ReportSubscription</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Target</class>
+    <class>org.activityinfo.server.database.hibernate.entity.TargetValue</class>
+    <class>org.activityinfo.server.database.hibernate.entity.Site</class>
+    <class>org.activityinfo.server.database.hibernate.entity.SiteAttachment</class>
+    <class>org.activityinfo.server.database.hibernate.entity.SiteHistory</class>
+    <class>org.activityinfo.server.database.hibernate.entity.User</class>
+    <class>org.activityinfo.server.database.hibernate.entity.UserDatabase</class>
+    <class>org.activityinfo.server.database.hibernate.entity.UserPermission</class>
+    <exclude-unlisted-classes/>
+    <validation-mode>NONE</validation-mode>
+    <properties>
+      <property name="hibernate.dialect" value="org.hibernate.spatial.dialect.mysql.MySQLSpatialInnoDBDialect"/>
+      <property name="hibernate.ejb.naming_strategy" value="org.activityinfo.server.database.hibernate.AINamingStrategy"/>
+
+      <property name="hibernate.connection.provider_class" value="com.bedatadriven.appengine.cloudsql.CloudSqlConnectionProvider"/>
+      
+      <property name="hibernate.jdbc.batch_size" value="1000" />
+      <property name="hibernate.order_inserts" value="true" />
+
+      <!-- Workaround for https://code.google.com/p/hibernate-gae/issues/detail?id=5 -->
+      <property name="javax.persistence.validation.mode" value="none"/>
+      <property name="hibernate.validator.apply_to_ddl" value="false"/>
+      <property name="hibernate.validator.autoregister_listeners" value="false"/>
+      <property name="hibernate.bytecode.use_reflection_optimizer" value="false"/>
+    </properties>
+  </persistence-unit>
+</persistence>

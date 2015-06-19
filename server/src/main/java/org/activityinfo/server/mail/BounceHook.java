@@ -22,7 +22,9 @@ public class BounceHook {
         bounceHookToken = config.getProperty("postmark.bouncehook.key");
     }
 
-    @POST @Path("/{token}") @Consumes(MediaType.APPLICATION_JSON)
+    @POST 
+    @Path("/{token}") 
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response bounced(@PathParam("token") String token, Bounce bounce) {
 
         if (Strings.isNullOrEmpty(bounceHookToken) || !bounceHookToken.equals(token)) {

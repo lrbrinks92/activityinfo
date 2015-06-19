@@ -26,23 +26,23 @@ import com.bedatadriven.rebar.sql.server.jdbc.JdbcScheduler;
 import com.bedatadriven.rebar.time.calendar.LocalDate;
 import org.activityinfo.core.client.InstanceQuery;
 import org.activityinfo.core.client.ResourceLocator;
-import org.activityinfo.legacy.shared.command.GetActivityForm;
-import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.core.shared.Projection;
 import org.activityinfo.core.shared.application.ApplicationProperties;
 import org.activityinfo.core.shared.application.FolderClass;
 import org.activityinfo.core.shared.criteria.ClassCriteria;
 import org.activityinfo.core.shared.criteria.CriteriaIntersection;
 import org.activityinfo.core.shared.criteria.ParentCriteria;
-import org.activityinfo.model.form.FormClass;
-import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.promise.Promise;
-import org.activityinfo.model.legacy.CuidAdapter;
 import org.activityinfo.legacy.shared.adapter.ResourceLocatorAdaptor;
+import org.activityinfo.legacy.shared.command.GetActivityForm;
 import org.activityinfo.legacy.shared.command.GetSchema;
 import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.model.*;
+import org.activityinfo.model.form.FormClass;
+import org.activityinfo.model.form.FormInstance;
+import org.activityinfo.model.legacy.CuidAdapter;
+import org.activityinfo.model.resource.ResourceId;
+import org.activityinfo.promise.Promise;
 import org.activityinfo.server.database.OnDataSet;
 import org.activityinfo.server.endpoint.rest.SchemaCsvWriter;
 import org.hamcrest.CoreMatchers;
@@ -55,7 +55,9 @@ import java.util.List;
 
 import static org.activityinfo.core.client.PromiseMatchers.assertResolves;
 import static org.activityinfo.core.client.PromiseMatchers.resolvesTo;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
 @RunWith(InjectionSupport.class)
@@ -170,11 +172,11 @@ public class GetSchemaTest extends CommandTestCase2 {
         assertThat("indicators are present", nfi.getIndicators(), hasSize(5));
 
         IndicatorDTO test = nfi.getIndicatorById(2);
-        assertThat(test, Matchers.hasProperty("name", equalTo("baches")));
-        assertThat(test, Matchers.hasProperty("aggregation", equalTo(IndicatorDTO.AGGREGATE_SUM)));
-        assertThat(test, Matchers.hasProperty("category", equalTo("outputs")));
-        assertThat(test, Matchers.hasProperty("listHeader", equalTo("header")));
-        assertThat(test, Matchers.hasProperty("description", equalTo("desc")));
+        assertThat(test, hasProperty("name", equalTo("baches")));
+        assertThat(test, hasProperty("aggregation", equalTo(IndicatorDTO.AGGREGATE_SUM)));
+        assertThat(test, hasProperty("category", equalTo("outputs")));
+        assertThat(test, hasProperty("listHeader", equalTo("header")));
+        assertThat(test, hasProperty("description", equalTo("desc")));
     }
 
     @Test
@@ -248,6 +250,6 @@ public class GetSchemaTest extends CommandTestCase2 {
             System.out.println(child.getStringValue(ApplicationProperties.LABEL_PROPERTY));
         }
 
-        assertThat(children.size(), equalTo(2));
+        assertThat(children, hasSize(4));
     }
 }

@@ -22,71 +22,59 @@ package org.activityinfo.server.database.hibernate;
  * #L%
  */
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
-import com.google.common.io.Resources;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
+import com.bedatadriven.appengine.cloudsql.CloudSqlFilter;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
-import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-import org.activityinfo.server.DeploymentEnvironment;
-import org.activityinfo.server.database.hibernate.dao.FixGeometryTask;
 import org.activityinfo.server.database.hibernate.dao.HibernateDAOModule;
 import org.activityinfo.server.database.hibernate.dao.TransactionModule;
 import org.activityinfo.service.DeploymentConfiguration;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Environment;
-import org.hibernate.ejb.Ejb3Configuration;
 import org.hibernate.ejb.HibernateEntityManager;
-import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.validator.HibernateValidator;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.List;
 
-/**
- * Guice module that provides Hibernate-based implementations for the DAO-layer
- * interfaces.
- *
- * @author Alex Bertram
- */
 public class HibernateModule extends ServletModule {
 
     @Override
     protected void configureServlets() {
 
+        /**
+         * Define a scope for the EntityManager that linked to the 
+         * start and end of a request
+         */
         HibernateSessionScope sessionScope = new HibernateSessionScope();
         bindScope(HibernateSessionScoped.class, sessionScope);
-
         bind(HibernateSessionScope.class).toInstance(sessionScope);
+        
+        bind(EntityManager.class).toProvider(EntityManagerProvider.class).in(HibernateSessionScoped.class);
 
+        /*
+         * Important: the CloudSqlFilter must be listed before
+         * the HibernateSessionFilter as otherwise the CloudSql filter
+         * will cleanup the connection before Hibernate has a chance to clean
+         * up the associated EntityManager
+         */
+        
+        bind(CloudSqlFilter.class).in(Singleton.class);
+        filter("/*").through(CloudSqlFilter.class);
+        
         filter("/*").through(HibernateSessionFilter.class);
-        serve(SchemaServlet.ENDPOINT).with(SchemaServlet.class);
 
-        configureEmf();
-        configureEm();
         install(new HibernateDAOModule());
         install(new TransactionModule());
-
-        // temporary fix for geometry types
-        bind(FixGeometryTask.class);
-        filter("/tasks/fixGeometry").through(GuiceContainer.class);
-
     }
 
-    protected void configureEmf() {
-        bind(EntityManagerFactory.class).toProvider(EntityManagerFactoryProvider.class).in(Singleton.class);
-    }
-
-    protected void configureEm() {
-        bind(EntityManager.class).toProvider(EntityManagerProvider.class).in(HibernateSessionScoped.class);
+    @Provides
+    @Singleton
+    public EntityManagerFactory provideFactory(DeploymentConfiguration config) {
+        return Persistence.createEntityManagerFactory("ActivityInfo", config.asProperties());
     }
 
     @Provides
@@ -95,65 +83,17 @@ public class HibernateModule extends ServletModule {
         return hem.getSession();
     }
 
-    @Provides @Singleton
+    @Provides 
+    @Singleton
     public Validator provideValidator() {
         ValidatorFactory validatorFactory = Validation.byProvider(HibernateValidator.class)
                                                       .configure()
                                                       .buildValidatorFactory();
         return validatorFactory.getValidator();
     }
-
-    protected static class EntityManagerFactoryProvider implements Provider<EntityManagerFactory> {
-        private org.activityinfo.service.DeploymentConfiguration deploymentConfig;
-
-        @Inject
-        public EntityManagerFactoryProvider(DeploymentConfiguration deploymentConfig) {
-            this.deploymentConfig = deploymentConfig;
-        }
-
-        @Override
-        public EntityManagerFactory get() {
-            Ejb3Configuration config = new Ejb3Configuration();
-            config.addProperties(deploymentConfig.asProperties());
-            for (Class clazz : getPersistentClasses()) {
-                config.addAnnotatedClass(clazz);
-            }
-            // ensure that hibernate does NOT do schema updating--liquibase is
-            // in charge
-            config.setProperty(Environment.HBM2DDL_AUTO, "");
-            config.setNamingStrategy(new AINamingStrategy());
-            EntityManagerFactory emf = config.buildEntityManagerFactory();
-
-            if (DeploymentEnvironment.isAppEngineDevelopment()) {
-                SchemaServlet.performMigration((HibernateEntityManager) emf.createEntityManager());
-            }
-
-            return emf;
-        }
-    }
-
-    @Provides
-    public static SessionFactory getSessionFactory(EntityManagerFactory emf) {
-        HibernateEntityManagerFactory hemf = (HibernateEntityManagerFactory) emf;
-        return hemf.getSessionFactory();
-    }
-
-
-    public static List<Class> getPersistentClasses() {
-        try {
-            List<Class> list = Lists.newArrayList();
-            List<String> lines = Resources.readLines(HibernateModule.class.getResource("/persistent.classes"),
-                    Charsets.UTF_8);
-            for (String line : lines) {
-                list.add(Class.forName(line));
-            }
-            return list;
-        } catch (Exception e) {
-            throw new RuntimeException("Exception loading list of persistent classes", e);
-        }
-    }
-
-    @Provides
+    
+    @Provides 
+    @Singleton
     protected HibernateEntityManager provideHibernateEntityManager(EntityManager entityManager) {
         return (HibernateEntityManager) entityManager;
     }

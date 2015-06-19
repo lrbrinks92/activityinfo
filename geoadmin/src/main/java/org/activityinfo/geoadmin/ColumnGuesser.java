@@ -1,15 +1,14 @@
 package org.activityinfo.geoadmin;
 
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import org.activityinfo.geoadmin.model.AdminEntity;
-
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+import org.activityinfo.geoadmin.model.AdminEntity;
+
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Finds a column within an import source that matches certain criteria. For
@@ -30,7 +29,8 @@ public class ColumnGuesser {
     public ColumnGuesser forPattern(String pattern) {
     	final Pattern regex = Pattern.compile(pattern);
         this.predicate = Predicates.and(predicate, new Predicate<Object>() {
-        	public boolean apply(Object value) {
+        	@Override
+            public boolean apply(Object value) {
         		if(value == null) {
         			return false;
         		} else {
@@ -48,7 +48,8 @@ public class ColumnGuesser {
 			expected.add(PlaceNames.cleanName(entity.getName()));
 		}
 		this.predicate = Predicates.and(predicate, new Predicate<Object>() {
-			public boolean apply(Object value) {
+			@Override
+            public boolean apply(Object value) {
 				if(value == null) {
 					return false;
 				} else {

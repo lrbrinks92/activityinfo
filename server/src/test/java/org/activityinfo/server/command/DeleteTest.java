@@ -23,6 +23,7 @@ package org.activityinfo.server.command;
  */
 
 import com.extjs.gxt.ui.client.data.ModelData;
+import org.activityinfo.fixtures.InjectionSupport;
 import org.activityinfo.legacy.shared.command.Delete;
 import org.activityinfo.legacy.shared.command.GetActivityForm;
 import org.activityinfo.legacy.shared.command.GetSchema;
@@ -32,7 +33,6 @@ import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.model.ActivityFormDTO;
 import org.activityinfo.legacy.shared.model.SchemaDTO;
 import org.activityinfo.legacy.shared.model.SiteDTO;
-import org.activityinfo.fixtures.InjectionSupport;
 import org.activityinfo.server.database.OnDataSet;
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,7 +40,9 @@ import org.junit.runner.RunWith;
 
 import java.util.Collection;
 
-import static org.junit.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 
 @RunWith(InjectionSupport.class)
 @OnDataSet("/dbunit/sites-simple1.db.xml")
@@ -91,6 +93,7 @@ public class DeleteTest extends CommandTestCase {
 
         form = execute(new GetActivityForm(1));
         assertNull(form.getAttributeById(1));
+       
     }
 
     @Test
@@ -103,5 +106,18 @@ public class DeleteTest extends CommandTestCase {
         SchemaDTO schema = execute(new GetSchema());
         assertNull("delete by entity reference", schema.getActivityById(1));
         assertNull("delete by id", schema.getActivityById(4));
+    }
+
+    @Test
+    public void testDeleteLocationType() throws CommandException {
+        int locationTypeId = 4;
+
+        SchemaDTO schema = execute(new GetSchema());
+        assertNotNull(schema.getLocationTypeById(locationTypeId)); // assert location type exists
+
+        execute(new Delete("LocationType", locationTypeId));
+
+        schema = execute(new GetSchema());
+        assertTrue(schema.getLocationTypeById(locationTypeId).isDeleted()); // assert "delete" flag is set
     }
 }

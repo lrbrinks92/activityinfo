@@ -32,7 +32,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity @EntityListeners(SchemaChangeListener.class)
+@Entity 
+@EntityListeners(SchemaChangeListener.class)
 public class Project implements SchemaElement, Serializable, Deleteable {
 
     private int id;

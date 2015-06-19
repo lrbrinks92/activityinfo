@@ -41,57 +41,31 @@ public final class HandlerUtil {
 
     /**
      * Returns the <code>CommandHandler</code> that corresponds to the given
-     * <code>Command</code>. <strong>Only</strong> the package
-     * org.activityinfo.server.command.handler is searched, so the handler must
-     * be there.
+     * <code>Command</code>. 
      *
      * @param cmd The <code>Command</code> for which a
      *            <code>CommandHandler</code> is to be returned
-     * @return A <code>CommandHandler</code> capabling of handling the given
+     * @return A <code>CommandHandler</code> capable of handling the given
      * <code>Command</code>
      */
     @SuppressWarnings("unchecked")
-    public static <C extends Command<R>, R extends CommandResult> Class<CommandHandlerAsync<C,
-            R>> asyncHandlerForCommand(
-            C cmd) {
+    public static Class handlerForCommand(Command cmd) {
 
         String commandName = cmd.getClass().getName().substring(cmd.getClass().getPackage().getName().length() + 1);
-        String sharedHandlerName = null;
+        String sharedHandlerName;
 
-        sharedHandlerName = "org.activityinfo.legacy.shared.impl." +
-                            commandName + "Handler";
+        sharedHandlerName = "org.activityinfo.legacy.shared.impl." + commandName + "Handler";
 
         try {
-            return (Class<CommandHandlerAsync<C, R>>) CommandHandler.class.getClassLoader()
-                                                                          .loadClass(sharedHandlerName);
+            return CommandHandler.class.getClassLoader().loadClass(sharedHandlerName);
 
         } catch (ClassNotFoundException e) {
-            String serverHandlerName = "org.activityinfo.server.command.handler." +
-                                       commandName + "Handler";
+            String serverHandlerName = "org.activityinfo.server.command.handler." + commandName + "Handler";
             try {
-                return (Class<CommandHandlerAsync<C, R>>) CommandHandler.class.getClassLoader()
-                                                                              .loadClass(serverHandlerName);
+                return CommandHandler.class.getClassLoader().loadClass(serverHandlerName);
             } catch (Exception ex) {
-                throw new IllegalArgumentException(
-                        "No async handler " + serverHandlerName + " found for " + commandName, e);
+                throw new IllegalArgumentException("No handler " + serverHandlerName + " found for " + commandName, e);
             }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <C extends Command<?>> Class<AuthorizationHandler<C>> authorizationHandlerForCommand(C cmd) {
-
-        String commandName = cmd.getClass().getName().substring(cmd.getClass().getPackage().getName().length() + 1);
-        String handlerName = null;
-
-        handlerName = "org.activityinfo.server.command.authorization." +
-                      commandName + "AuthorizationHandler";
-
-        try {
-            return (Class<AuthorizationHandler<C>>) CommandHandler.class.getClassLoader().loadClass(handlerName);
-
-        } catch (ClassNotFoundException e1) {
-            return null;
         }
     }
 

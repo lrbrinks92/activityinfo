@@ -148,6 +148,7 @@ public class LockedPeriod implements Serializable, ReallyDeleteable {
 
     @Override
     public void deleteReferences() {
+        getParentDatabase().updateVersion();
         if (activity != null) {
             activity.getLockedPeriods().remove(this);
         }

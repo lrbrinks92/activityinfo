@@ -22,17 +22,16 @@ package org.activityinfo.legacy.shared.command;
  * #L%
  */
 
+import org.activityinfo.fixtures.InjectionSupport;
+import org.activityinfo.fixtures.Modules;
+import org.activityinfo.fixtures.TestHibernateModule;
 import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.model.ActivityFormDTO;
 import org.activityinfo.legacy.shared.model.AttributeGroupDTO;
 import org.activityinfo.legacy.shared.model.SchemaDTO;
 import org.activityinfo.legacy.shared.model.UserDatabaseDTO;
-import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.MockHibernateModule;
-import org.activityinfo.fixtures.Modules;
 import org.activityinfo.server.database.OnDataSet;
 import org.activityinfo.server.endpoint.gwtrpc.GwtRpcModule;
-import org.activityinfo.server.util.logging.LoggingModule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,9 +40,8 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(InjectionSupport.class)
 @Modules({
-        MockHibernateModule.class,
+        TestHibernateModule.class,
         GwtRpcModule.class,
-        LoggingModule.class
 })
 public class LocalGetSchemaHandlerIntTest extends LocalHandlerTestCase {
 
@@ -51,7 +49,7 @@ public class LocalGetSchemaHandlerIntTest extends LocalHandlerTestCase {
     @OnDataSet("/dbunit/sites-simple1.db.xml")
     public void forDatabaseOwner() throws CommandException {
 
-        synchronizeFirstTime();
+        synchronize();
 
         SchemaDTO schema = executeLocally(new GetSchema());
         assertThat(schema.getDatabases().size(), equalTo(3));
@@ -66,7 +64,7 @@ public class LocalGetSchemaHandlerIntTest extends LocalHandlerTestCase {
     public void forUser() throws CommandException {
 
         setUser(4); // only has view access to databse 1
-        synchronizeFirstTime();
+        synchronize();
 
         SchemaDTO schema = executeLocally(new GetSchema());
 

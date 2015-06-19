@@ -74,6 +74,7 @@ public class AlertPanel extends Composite {
         setVisible(false);
     }
 
+    @Override
     public void setVisible(boolean visible) {
         GwtUtil.setVisible(visible, container);
         for (VisibilityHandler handler : visibilityHandlers) {

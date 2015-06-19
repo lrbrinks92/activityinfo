@@ -25,15 +25,18 @@ package org.activityinfo.server.database.hibernate.entity;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.codehaus.jackson.annotate.JsonMethod;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity @JsonAutoDetect(JsonMethod.NONE) @NamedQuery(name = "queryAllCountriesAlphabetically",
-        query = "select c from Country c order by c.name")
+@Entity @JsonAutoDetect(JsonMethod.NONE) 
+@NamedQuery(name = "queryAllCountriesAlphabetically", query = "select c from Country c order by c.name")
 public class Country implements Serializable {
+
+    private static final int DEFAULT_BATCH_SIZE = 100;
 
     private int id;
     private String name;
@@ -120,6 +123,7 @@ public class Country implements Serializable {
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "country")
     @org.hibernate.annotations.OrderBy(clause = "AdminLevelId")
+    @BatchSize(size = DEFAULT_BATCH_SIZE)
     public Set<AdminLevel> getAdminLevels() {
         return this.adminLevels;
     }
@@ -134,6 +138,7 @@ public class Country implements Serializable {
     }
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "country")
+    @BatchSize(size = DEFAULT_BATCH_SIZE)
     public Set<LocationType> getLocationTypes() {
         return locationTypes;
     }

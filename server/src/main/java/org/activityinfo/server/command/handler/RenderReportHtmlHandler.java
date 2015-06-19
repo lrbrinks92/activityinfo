@@ -33,7 +33,6 @@ import org.activityinfo.legacy.shared.reports.model.ReportElement;
 import org.activityinfo.server.database.hibernate.entity.User;
 import org.activityinfo.server.report.generator.ReportGenerator;
 import org.activityinfo.server.report.renderer.itext.HtmlReportRenderer;
-import org.activityinfo.server.util.logging.LogException;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -56,7 +55,7 @@ public class RenderReportHtmlHandler implements CommandHandler<RenderReportHtml>
         this.renderer = renderer;
     }
 
-    @Override @LogException
+    @Override
     public CommandResult execute(RenderReportHtml cmd, User user) throws CommandException {
         ReportElement model = cmd.getModel();
 

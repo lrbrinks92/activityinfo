@@ -31,6 +31,5 @@ public class ServerDatabaseModule extends ServletModule {
     @Override
     protected void configureServlets() {
         bind(SqlDialect.class).to(MySqlDialect.class);
-        // filter("/*").through(DatabaseFilter.class);
     }
 }

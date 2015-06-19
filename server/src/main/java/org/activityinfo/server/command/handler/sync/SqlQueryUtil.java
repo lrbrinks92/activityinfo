@@ -23,8 +23,12 @@ package org.activityinfo.server.command.handler.sync;
  */
 
 import com.bedatadriven.rebar.sql.client.query.SqlQuery;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.hibernate.Session;
 import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jdbc.AbstractWork;
 import org.hibernate.jdbc.Work;
 
 import javax.persistence.EntityManager;
@@ -32,6 +36,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SqlQueryUtil {
@@ -69,18 +74,55 @@ public class SqlQueryUtil {
         return set.toString();
     }
 
-    public static long queryLong(EntityManager entityManager, final SqlQuery query) {
+    public static String idSet(List<Integer> ids) {
+        String s = "(";
+        int size = ids.size();
+        for (int i = 0; i < size; i++) {
+            Integer id = ids.get(i);
+            s = s + id;
+            boolean isLast = (i + 1) == size;
+            if (!isLast && size != 1) {
+                s+= ",";
+            }
+        }
+        s = s + ")";
+        return s;
+    }
+
+    public static List<Long> queryLongList(EntityManager entityManager, final SqlQuery query) {
         final List<Long> result = Lists.newArrayList();
         ((HibernateEntityManager) entityManager).getSession().doWork(new Work() {
 
             @Override
             public void execute(Connection connection) throws SQLException {
                 ResultSet rs = query(connection, query);
-                rs.next();
-                result.add(rs.getLong(1));
+                while (rs.next()) {
+                    result.add(rs.getLong(1));
+                }
             }
         });
-        return result.get(0);
+        return result;
+    }
+
+    public static void execute(EntityManager entityManager, final SqlQuery query, final ResultSetHandler handler) {
+        entityManager.unwrap(Session.class).doWork(new AbstractWork() {
+            @Override
+            public void execute(Connection connection) throws SQLException {
+                try(PreparedStatement statement = connection.prepareStatement(query.sql())) {
+                    Object[] params = query.parameters();
+                    for (int i = 0; i != params.length; ++i) {
+                        statement.setObject(i + 1, params[i]);
+                    }
+                    try(ResultSet rs = statement.executeQuery()) {
+                        try {
+                            handler.handle(rs);
+                        } catch (Exception e) {
+                            throw new SQLException(e);
+                        }
+                    }
+                }
+            }
+        });
     }
 
 }

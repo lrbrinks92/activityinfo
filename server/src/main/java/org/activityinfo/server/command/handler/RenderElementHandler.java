@@ -30,9 +30,9 @@ import org.activityinfo.legacy.shared.command.result.UrlResult;
 import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.reports.model.DateRange;
 import org.activityinfo.server.database.hibernate.entity.User;
+import org.activityinfo.server.generated.GeneratedResource;
+import org.activityinfo.server.generated.StorageProvider;
 import org.activityinfo.server.report.generator.ReportGenerator;
-import org.activityinfo.server.report.output.StorageProvider;
-import org.activityinfo.server.report.output.TempStorage;
 import org.activityinfo.server.report.renderer.Renderer;
 import org.activityinfo.server.report.renderer.RendererFactory;
 
@@ -65,22 +65,22 @@ public class RenderElementHandler implements CommandHandler<RenderElement> {
 
         try {
             Renderer renderer = rendererFactory.get(cmd.getFormat());
-            TempStorage storage = storageProvider.allocateTemporaryFile(renderer.getMimeType(),
+            GeneratedResource storage = storageProvider.create(renderer.getMimeType(),
                     cmd.getFilename() + renderer.getFileSuffix());
 
-            LOGGER.fine("Rendering element: " + cmd + "\nURL: " + storage.getUrl());
+            LOGGER.fine("Rendering element: " + cmd + "\nURL: " + storage.getDownloadUri());
 
             try {
                 generator.generateElement(user, cmd.getElement(), new Filter(), new DateRange());
-                renderer.render(cmd.getElement(), storage.getOutputStream());
+                renderer.render(cmd.getElement(), storage.openOutputStream());
             } finally {
                 try {
-                    storage.getOutputStream().close();
+                    storage.openOutputStream().close();
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Exception while closing storage: " + e.getMessage(), e);
                 }
             }
-            return new UrlResult(storage.getUrl());
+            return new UrlResult(storage.getDownloadUri());
         } catch (Exception e) {
             throw new RuntimeException("Exception generating export", e);
         }

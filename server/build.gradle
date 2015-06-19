@@ -1,0 +1,175 @@
+
+apply plugin: 'gwt'
+apply plugin: 'war'
+apply plugin: 'appengine'
+
+apply from: './src/script/dependencies.gradle'
+apply from: './src/script/databaseSetup.gradle'
+apply from: './src/script/buildProperties.gradle'
+apply from: './src/script/instrumentedGwt.gradle'
+apply from: './src/script/devServer.gradle'
+
+
+description = 'ActivityInfo Server'
+
+
+ext {
+    // The location of the configuration file to be used 
+    // for the appengine dev server
+    configFile = project.file("$buildDir/config.properties")
+}
+
+gwt {
+    gwtVersion = project.gwtVersion
+
+    minHeapSize = "512M";
+    maxHeapSize = "2048M";
+
+    if (gwtMode.equals('safari')) {
+        modules 'org.activityinfo.ui.ActivityInfoSafariTest'
+        compiler {
+            draftCompile = true
+        }
+    } else {
+        modules 'org.activityinfo.ui.ActivityInfoRelease',
+                'org.activityinfo.ui.Embed'
+    }
+}
+
+appengine {
+    downloadSdk = true
+    
+    // This defines the default value for the httpPort
+    // property for all appengine-related tasks.
+    // ==> To change this port for your own workstation,
+    // set a new value in your personal
+    // gradle.properties file
+    httpPort = Integer.parseInt(devServerPort)
+
+}
+
+war {
+    archiveName = "activityinfo-b${buildNumber}.war"
+    classpath = classpath.filter { file ->
+        return !file.name.startsWith('guava-gwt') &&
+                !file.name.startsWith('gwt-user')
+    }
+    exclude("**/*.symbolMap")
+}
+
+
+test {
+    systemProperty "testDatabaseName", "testDb"
+    systemProperty "testDatabaseUsername", localMySqlUsername
+    systemProperty "testDatabasePassword", localMySqlPassword
+
+    maxParallelForks = Runtime.runtime.availableProcessors()
+    
+    doFirst {
+        testLogging {
+            showStandardStreams = false
+            events = ['failed']
+        }
+        
+        // still have a few tests writing to maven 'target' dir
+        project.file('target').mkdirs()
+    }
+}
+
+processResources {
+    filter { line ->
+        line.replace('$[display.version]', project.version.toString())
+            .replace('$[git.commit.id]', commitId)
+    }
+}
+
+task checkDownloadSize(type: org.activityinfo.gwt.CheckDownloadSizeTask) {
+    group = "Verification"
+    dependsOn 'compileGwt'
+    initialJsDownloadSizeLimit "300kb"
+    totalJsDownloadSizeLimit "650kb"
+    appCacheDownloadSizeLimit "2000kb"
+}
+
+tasks.compileGwt.onlyIf { !project.property('gwtMode').equals("skip") }
+
+task archive(type: org.activityinfo.gcloud.ArchiveArtifactTask) {
+    group = "Delivery Pipeline"
+    description = "Builds, verifies, and archives the binary WAR that is used by subsequent stages"
+    dependsOn 'war'
+    archivePath = war.archivePath
+}
+
+
+task downloadBuild {
+    description = "Downloads and unpacks a previous build"
+    ext {
+        warFile = "$buildDir/build${project.buildNumber}.war"
+        warDir = "$buildDir/build${project.buildNumber}"
+    }
+
+    inputs.property 'build', build
+    outputs.file "$buildDir/build${project.buildNumber}.war"
+
+    doLast {
+
+        project.exec {
+            commandLine 'gsutil', 'cp', "gs://ai-pipeline/artifacts/activityinfo-b${project.buildNumber}.war", warFile
+        }
+        ant.unzip(src: warFile, dest: warDir)
+
+    }
+}
+
+task deploy(type: com.google.appengine.task.appcfg.UpdateTask) {
+    description = "Deploys a build to the staging environment"
+    
+    if(project.buildNumber != 'dev') {
+        dependsOn downloadBuild
+        explodedAppDirectory = project.file(downloadBuild.warDir)
+    } else {
+        dependsOn 'appengineExplodeApp'
+    }
+    
+    dependsOn appengineDownloadSdk
+
+
+    extraOptions = ["--application=${environment.projectId}", '--version=qa']
+    oauth2 = true
+    
+    doFirst {
+        if(environment.local) {
+            throw new IllegalStateException("You must be provide a target environment using -Penv=<PROJECT_ID>")
+        }
+    }
+}
+
+task rollback(type: com.google.appengine.task.appcfg.RollbackTask) {
+    description = "Rolls back a previous build to the staging environment"
+    dependsOn appengineDownloadSdk
+
+    extraOptions = ["--application=${environment.projectId}", '--version=1']
+    oauth2 = true
+}
+
+// Define an i18n jar containing only the localized strings
+// so they can be used by the acceptance tests.
+// Only necessary until we've merged with the beta branch
+// where we have this is as a seperate module
+configurations {
+    i18n
+}
+
+task i18nJar(type: Jar, dependsOn: compileJava) {
+    classifier 'i18n'
+    from(sourceSets.main.output.classesDir) {
+        include 'org/activityinfo/i18n/**/*'
+    }
+    from(sourceSets.main.resources) {
+        include 'org/activityinfo/i18n/**/*'
+    }
+}
+
+artifacts {
+    i18n i18nJar
+}

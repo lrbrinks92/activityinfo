@@ -1,20 +1,19 @@
 package org.activityinfo.geoadmin.writer;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.zip.GZIPOutputStream;
-
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONWriter;
-import org.geotools.feature.FeatureCollection;
-
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONWriter;
+import org.geotools.feature.FeatureCollection;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.zip.GZIPOutputStream;
 
 public class GoogleMapsWriter implements OutputWriter {
 
@@ -33,6 +32,7 @@ public class GoogleMapsWriter implements OutputWriter {
         // writer.setIndent("  ");
     }
 
+    @Override
     public void start(FeatureCollection features) throws IOException {
         try {
             writer.object();
@@ -47,6 +47,7 @@ public class GoogleMapsWriter implements OutputWriter {
         }
     }
 
+    @Override
     public void write(int adminEntityId, Geometry geometry) throws IOException {
         try {
             writer.object();
@@ -80,6 +81,7 @@ public class GoogleMapsWriter implements OutputWriter {
         writer.endObject();
     }
 
+    @Override
     public void close() throws IOException {
         try {
             writer.endArray();

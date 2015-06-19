@@ -88,7 +88,7 @@ public class UpdateEntityHandler extends BaseEntityHandler implements CommandHan
         } else if ("LocationType".equals(cmd.getEntityName())) {
             LocationTypePolicy policy = injector.getInstance(LocationTypePolicy.class);
             policy.update(user, cmd.getId(), changeMap);
-
+            
         } else {
             throw new RuntimeException("unknown entity type");
         }

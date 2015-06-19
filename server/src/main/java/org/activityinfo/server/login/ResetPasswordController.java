@@ -31,7 +31,6 @@ import org.activityinfo.server.database.hibernate.entity.User;
 import org.activityinfo.server.login.model.ResetPasswordPageModel;
 import org.activityinfo.server.mail.MailSender;
 import org.activityinfo.server.mail.ResetPasswordMessage;
-import org.activityinfo.server.util.logging.LogException;
 
 import javax.inject.Provider;
 import javax.persistence.NoResultException;
@@ -57,12 +56,15 @@ public class ResetPasswordController {
     @Inject
     private Provider<UserDAO> userDAO;
 
-    @GET @Produces(MediaType.TEXT_HTML) @LogException(emailAlert = true)
+    @GET 
+    @Produces(MediaType.TEXT_HTML)
     public Viewable getPage(@Context HttpServletRequest req) throws ServletException, IOException {
         return new ResetPasswordPageModel().asViewable();
     }
 
-    @POST @Produces(MediaType.TEXT_HTML) @LogException(emailAlert = true) @Transactional
+    @POST 
+    @Produces(MediaType.TEXT_HTML) 
+    @Transactional
     public Viewable resetPassword(@FormParam("email") String email) {
         try {
             User user = userDAO.get().findUserByEmail(email);

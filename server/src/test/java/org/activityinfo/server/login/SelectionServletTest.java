@@ -102,6 +102,7 @@ public class SelectionServletTest {
         replay(config);
 
         HttpServletRequest request = createMock(HttpServletRequest.class);
+        expect(request.getServerName()).andReturn("www.activityinfo.org").anyTimes();
         expect(request.getHeader(eq("User-Agent")))
                 .andReturn(
                         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.112 Safari/535.1 Paros/3.2.13");

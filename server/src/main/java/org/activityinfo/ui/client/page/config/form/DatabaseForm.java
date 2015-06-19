@@ -100,8 +100,8 @@ public class DatabaseForm extends FormPanel {
     public FormBinding getBinding() {
         return binding;
     }
-
-    public void removeCountry() {
-        remove(countryField);
+    
+    public void hideCountryField() {
+        countryField.setVisible(false);
     }
 }

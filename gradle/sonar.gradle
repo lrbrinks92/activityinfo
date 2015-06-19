@@ -1,0 +1,38 @@
+
+apply plugin: "sonar-runner"
+
+
+sonarRunner {
+    sonarProperties {
+        property "sonar.projectName", "ActivityInfo"
+        property "sonar.host.url", "http://sonar.bedatadriven.com"
+        property "sonar.jdbc.url", "jdbc:mysql://sonar.bedatadriven.com/sonardb"
+        property "sonar.jdbc.driverClassName", "com.mysql.jdbc.Driver"
+        property "sonar.jdbc.username", "sonar"
+        property "sonar.jdbc.password", sonarDatabasePassword
+        property "sonar.issuesReport.html.enable", true
+    }
+}
+
+subprojects {
+    sonarRunner {
+        sonarProperties {
+            property "sonar.genericcoverage.itReportPaths", "$buildDir/coverage-at.xml"
+        }
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+// Ensure that we run the acceptanceTest with coverage enabled
+// to ensure that we have the coverage data to provide sonar
+tasks.sonarRunner.dependsOn ':tests:acceptance:acceptanceTestCoverage'
+

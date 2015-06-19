@@ -56,19 +56,13 @@ public class SectionTabStrip extends Widget implements HasSelectionHandlers<Sect
     @UiField DivElement sectionDiv;
 
     @UiField MyStyle style;
-
-    // Not ready yet
-    // SectionPopup popup;
-
+    
     DivElement hoverElement;
 
     public SectionTabStrip() {
         setElement(uiBinder.createAndBindUi(this));
         sinkEvents(Event.MOUSEEVENTS);
         sinkEvents(Event.ONCLICK);
-
-        // popup = new SectionPopup();
-
     }
 
     @Override
@@ -86,7 +80,6 @@ public class SectionTabStrip extends Widget implements HasSelectionHandlers<Sect
                 if (hoverElement != null && element.dom.isOrHasChild(hoverElement)) {
                     unhighlight();
                 }
-                // popup.delayedHide();
                 break;
             case Event.ONCLICK:
                 if (element.hasStyleName(style.section())) {
@@ -106,10 +99,6 @@ public class SectionTabStrip extends Widget implements HasSelectionHandlers<Sect
     private void highlight(Element element) {
         hoverElement = element.cast();
         hoverElement.addClassName(style.hoverSection());
-
-        // popup.setPopupPosition(element.getAbsoluteLeft(),
-        // element.getAbsoluteBottom());
-        // popup.delayedShow();SectionPopup popup;
 
     }
 

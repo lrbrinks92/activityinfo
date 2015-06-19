@@ -5,8 +5,12 @@ import org.activityinfo.legacy.shared.reports.util.mapping.Extents;
 import org.discotools.gwt.leaflet.client.types.LatLng;
 import org.discotools.gwt.leaflet.client.types.LatLngBounds;
 
-public class LeafletUtil {
+public final class LeafletUtil {
 
+    private static final double EPSILON = 0.000001;
+    
+    private LeafletUtil() {}
+    
     public static LatLngBounds newLatLngBounds(Extents bounds) {
         LatLng southWest = new LatLng(bounds.getMinLat(), bounds.getMinLon());
         LatLng northEast = new LatLng(bounds.getMaxLat(), bounds.getMaxLon());
@@ -27,21 +31,20 @@ public class LeafletUtil {
         }
     }
 
-    public static boolean equals(LatLngBounds b1, LatLngBounds b2) {
-        if (b1 != null && b2 != null) {
-            LatLng northWest = b1.getNorthWest();
-            LatLng southEast = b1.getSouthEast();
+    public static boolean equal(LatLngBounds a, LatLngBounds b) {
+        if (a != null && b != null) {
+            LatLng northWest = a.getNorthWest();
+            LatLng southEast = a.getSouthEast();
             if (northWest != null && southEast != null) {
-                return equals(northWest, b2.getNorthWest()) && equals(southEast, b2.getSouthEast());
+                return equal(northWest, b.getNorthWest()) && equal(southEast, b.getSouthEast());
             }
         }
         return false;
     }
 
-    public static boolean equals(LatLng latLng1, LatLng latLng2) {
-        if (latLng1 != null && latLng2 != null) {
-            return latLng1.lat() == latLng2.lat() && latLng1.lng() == latLng2.lng();
-        }
-        return false;
+    public static boolean equal(LatLng a, LatLng b) {
+        return a != null && b != null && 
+                Math.abs(a.lat() - b.lat()) < EPSILON && 
+                Math.abs(a.lng() - b.lng()) < EPSILON;
     }
 }

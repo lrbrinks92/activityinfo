@@ -128,7 +128,8 @@ public class DbUserEditor extends ContentPanel implements DbPage, ActionListener
     private void createGrid() {
 
         loader = new BasePagingLoader<UserResult>(new UserProxy());
-
+        loader.setRemoteSort(true);
+        
         store = new ListStore<UserPermissionDTO>(loader);
         store.setKeyProvider(new ModelKeyProvider<UserPermissionDTO>() {
             @Override

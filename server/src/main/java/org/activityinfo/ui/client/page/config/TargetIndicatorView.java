@@ -31,6 +31,7 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.TreeStore;
+import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.grid.*;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
@@ -41,9 +42,9 @@ import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.inject.Inject;
 import org.activityinfo.i18n.shared.I18N;
 import org.activityinfo.legacy.client.Dispatcher;
-import org.activityinfo.legacy.shared.model.IsActivityDTO;
-import org.activityinfo.legacy.shared.model.TargetValueDTO;
-import org.activityinfo.legacy.shared.model.UserDatabaseDTO;
+import org.activityinfo.legacy.client.type.IndicatorNumberFormat;
+import org.activityinfo.legacy.shared.model.*;
+import org.activityinfo.model.type.FieldTypeClass;
 import org.activityinfo.ui.client.page.common.grid.AbstractEditorTreeGridView;
 import org.activityinfo.ui.client.page.common.grid.ImprovedCellTreeGridSelectionModel;
 import org.activityinfo.ui.client.page.common.nav.Link;
@@ -94,6 +95,7 @@ public class TargetIndicatorView extends AbstractEditorTreeGridView<ModelData, T
         tree.setClicksToEdit(EditorGrid.ClicksToEdit.ONE);
         tree.setLoadMask(true);
         tree.setStateId("TargetValueGrid" + db.getId());
+        tree.setStateful(true);
 
         tree.setIconProvider(new ModelIconProvider<ModelData>() {
             @Override
@@ -128,9 +130,27 @@ public class TargetIndicatorView extends AbstractEditorTreeGridView<ModelData, T
                 if (!(be.getModel() instanceof TargetValueDTO)) {
                     be.setCancelled(true);
                 }
+
+                setValidatorForCellBeforeEdit((TargetValueDTO) be.getModel(), be.getColIndex());
+
             }
 
         });
+    }
+
+    private void setValidatorForCellBeforeEdit(TargetValueDTO targetValueDTO, int column) {
+        TextField field = new TextField<String>();
+        field.setAllowBlank(true);
+
+        IndicatorDTO indicatorById = presenter.getIndicatorById(targetValueDTO.getIndicatorId());
+        FieldTypeClass type = indicatorById.getType();
+        if (type == FieldTypeClass.QUANTITY) {
+            field = new NumberField();
+            ((NumberField) field).setFormat(IndicatorNumberFormat.INSTANCE);
+            field.setAllowBlank(true);
+        }
+
+        tree.getColumnModel().getColumn(column).setEditor(new CellEditor(field));
     }
 
     private void addAfterEditListener() {
@@ -148,6 +168,10 @@ public class TargetIndicatorView extends AbstractEditorTreeGridView<ModelData, T
             }
 
         });
+    }
+
+    private ActivityDTO getActivityDto() {
+        return (ActivityDTO) tree.getStore().getAt(0);
     }
 
     @Override

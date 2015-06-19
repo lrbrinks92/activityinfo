@@ -23,11 +23,9 @@ package org.activityinfo.legacy.shared.command;
  */
 
 import org.activityinfo.fixtures.InjectionSupport;
-import org.activityinfo.fixtures.Modules;
 import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.server.command.CommandTestCase2;
 import org.activityinfo.server.database.OnDataSet;
-import org.activityinfo.server.database.TestDatabaseModule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,7 +35,6 @@ import java.util.Map;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(InjectionSupport.class)
-@Modules({TestDatabaseModule.class})
 @OnDataSet("/dbunit/sites-simple1.db.xml")
 public class GetDimensionLabelsHandlerTest extends CommandTestCase2 {
 

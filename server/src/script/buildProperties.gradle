@@ -1,0 +1,21 @@
+
+ext {
+    commitIdFile = project.file("$buildDir/commit.id")
+}
+
+task writeBuildProperties {
+    inputs.property "commitId", commitId
+    outputs.file commitIdFile
+    
+    doLast {
+        commitIdFile.write(commitId)
+    }
+}
+
+war {
+    from(commitIdFile.parentFile) {
+        include commitIdFile.name
+    }
+}
+
+tasks['war'].dependsOn writeBuildProperties

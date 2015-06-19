@@ -22,6 +22,7 @@ package org.activityinfo.i18n.shared;
  * #L%
  */
 
+import com.google.gwt.i18n.client.Messages;
 import com.google.gwt.safehtml.shared.SafeHtml;
 
 import java.util.Date;
@@ -359,4 +360,7 @@ public interface UiMessages extends com.google.gwt.i18n.client.Messages {
 
     @DefaultMessage("Please enter a number. For example: {0} or {1} or {2}")
     String quantityFieldInvalidValue(int integer, double doubleWithoutPoint, double doubleWithPoint);
+
+    @Messages.DefaultMessage("Failed to find nationwide location type, db: {0}, country: {1}")
+    String noNationWideLocationType(String dbName, String countryName);
 }

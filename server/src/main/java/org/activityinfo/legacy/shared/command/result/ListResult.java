@@ -79,7 +79,15 @@ public abstract class ListResult<D extends ModelData> implements CommandResult, 
         if (obj == null || !(obj instanceof ListResult<?>)) {
             return false;
         }
-
         return CollectionUtil.containsEqual(this.getData(), ((ListResult<D>) obj).getData());
+    }
+
+    @Override
+    public int hashCode() {
+        if(data == null) {
+            return 0;
+        } else {
+            return data.hashCode();
+        }
     }
 }

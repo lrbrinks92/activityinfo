@@ -22,12 +22,28 @@ package org.activityinfo.server.util.monitoring;
  * #L%
  */
 
+import com.bedatadriven.appengine.metrics.MetricsRequestFilter;
+import com.bedatadriven.appengine.metrics.MetricsServlet;
+import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
+
+import java.util.logging.Logger;
 
 public class MonitoringModule extends ServletModule {
 
+    private static final Logger LOGGER = Logger.getLogger(MonitoringModule.class.getName());
+    
+
+    public MonitoringModule() {
+    }
+
     @Override
     protected void configureServlets() {
-        serve("/ActivityInfo/clientMetrics").with(ClientMetricsServlet.class);
+
+        bind(MetricsRequestFilter.class).in(Singleton.class);
+        bind(MetricsServlet.class).in(Singleton.class);
+        
+        filter("/*").through(MetricsRequestFilter.class);
+        serve("/tasks/metrics").with(MetricsServlet.class);
     }
 }

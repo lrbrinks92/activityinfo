@@ -50,6 +50,7 @@ public class ChooseSourcePage extends ResizeComposite implements ImportPage {
         });
     }
 
+    @Override
     public void fireStateChanged() {
 
         // validate

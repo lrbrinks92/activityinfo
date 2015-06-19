@@ -17,6 +17,8 @@ import org.activityinfo.model.form.*;
 import org.activityinfo.model.resource.Resource;
 import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.model.type.FieldValue;
+import org.activityinfo.model.type.ReferenceValue;
+import org.activityinfo.model.type.enumerated.EnumValue;
 import org.activityinfo.promise.Promise;
 import org.activityinfo.ui.client.component.form.event.FieldMessageEvent;
 import org.activityinfo.ui.client.component.form.field.FormFieldWidget;
@@ -229,13 +231,19 @@ public class SimpleFormPanel implements DisplayWidget<FormInstance> {
         if (value != null && value.getTypeClass() != field.getType().getTypeClass()) {
             value = null;
         }
-        if (field.isRequired() && value == null && field.isVisible()) { // if field is not visible user doesn't have chance to fix it
+        if (field.isRequired() && isEmpty(value) && field.isVisible()) { // if field is not visible user doesn't have chance to fix it
             container.setInvalid(I18N.CONSTANTS.requiredFieldMessage());
             return false;
         } else {
             container.setValid();
             return true;
         }
+    }
+
+    private boolean isEmpty(FieldValue value) {
+        return value == null ||
+                (value instanceof EnumValue && ((EnumValue) value).getResourceIds().isEmpty()) ||
+                (value instanceof ReferenceValue && ((ReferenceValue) value).getResourceIds().isEmpty());
     }
 
     public boolean validate() {

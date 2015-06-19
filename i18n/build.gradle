@@ -1,0 +1,20 @@
+
+description = 'ActivityInfo Internationalization Resources'
+
+apply plugin: 'gwt-base'
+
+gwt {
+    gwtVersion = project.gwtVersion
+}
+
+dependencies {
+    compile libraries.guava
+    compile libraries.gwt.i18nServer
+    gwt     libraries.gwt.guava
+}
+
+
+jar {
+    from project.sourceSets.main.allSource
+    from project.sourceSets.main.output
+}

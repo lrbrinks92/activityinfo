@@ -22,11 +22,11 @@ package org.activityinfo.ui.client.component.importDialog;
  */
 
 import com.google.common.collect.Lists;
-import org.activityinfo.model.formTree.FormTree;
 import org.activityinfo.core.shared.importing.model.ImportModel;
 import org.activityinfo.core.shared.importing.validation.ValidationResult;
-import org.activityinfo.promise.Promise;
 import org.activityinfo.i18n.shared.I18N;
+import org.activityinfo.model.formTree.FormTree;
+import org.activityinfo.promise.Promise;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -58,6 +58,7 @@ public class ValidateClassImportCommand implements ImportCommand<List<Validation
         return validationResults;
     }
 
+    @Override
     public void setCommandExecutor(ImportCommandExecutor commandExecutor) {
         this.commandExecutor = commandExecutor;
     }

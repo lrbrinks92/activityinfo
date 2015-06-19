@@ -56,5 +56,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
   <include file="org/activityinfo/database/changelog/db.changelog-029-formclass.xml"/>
   <include file="org/activityinfo/database/changelog/db.changelog-030-pivot-indexes.xml"/>
   <include file="org/activityinfo/database/changelog/db.changelog-031-locationtype.xml"/>
-
+  <include file="org/activityinfo/database/changelog/db.changelog-032-cache-regions.xml"/>
+  <include file="org/activityinfo/database/changelog/db.changelog-033-utf-fix.xml"/>
 </databaseChangeLog>

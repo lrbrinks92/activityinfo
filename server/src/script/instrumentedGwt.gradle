@@ -1,0 +1,80 @@
+/**
+ * Defines tasks to compile and build a version of our WAR whose GWT-generated javascript
+ * is instrumented to allow measurement of test coverage
+ */
+
+
+task compileInstrumentedGwt(type: de.richsource.gradle.plugins.gwt.GwtCompile) {
+    group = "GWT"
+    description = "Runs the GWT compiler to produce instrumented output for test coverage measurement"
+
+    // Compile a single permutation
+    modules = ['org.activityinfo.ui.ActivityInfoCoverage']
+
+    ext {
+        // Keep this output seperate from the output to be deployed
+        subdir = { name -> project.file("$buildDir/instrumentedGwt/${name}") }
+
+        // Provide the compiler with a list of source files to instrument
+        sourceListFile = subdir('gwt.coverage')
+    }
+    
+    war = subdir('out')
+    workDir = subdir('work')
+    extra = subdir('extra')
+    gen = subdir('gen')
+
+    // Configure the compiler
+    disableRunAsync = true
+    draftCompile = true
+    src = project.tasks.compileGwt.src
+    classpath = project.tasks.compileGwt.classpath
+
+    // Turn on coverage instrumentation
+    jvmArgs "-Dgwt.coverage=${sourceListFile}"
+
+    doFirst {
+        // Write the file for the compiler containing a list of all
+        // sources to instrument
+        def sourceSets = [project.sourceSets.main.java]
+        def sources = []
+        
+        sourceSets.each {  SourceDirectorySet s ->  
+            s.visit { FileVisitDetails f ->
+                sources.add(f.relativePath.toString())
+            }
+        }
+       
+        sourceListFile.parentFile.mkdirs()
+        sourceListFile.write sources.join("\n")
+    }
+}
+
+task instrumentedWar(type: War, dependsOn: 'compileInstrumentedGwt') {
+    group = "Build"
+    description = "Generates a war archive using the instrumented javascript"
+    archiveName = "instrumented.war"
+    classpath = project.war.classpath
+
+    from(project.file('src/test/resources')) {
+        include 'coverage.html'
+    }
+
+    doFirst {
+        from compileInstrumentedGwt.war
+    }
+}
+
+task appengineExplodeInstrumentedApp  {
+    group = "Google App Engine"
+    description = "Explodes the instrumented WAR into a directory"
+    ext {
+        warDir = project.file("$buildDir/instrumented-app")
+    }
+    dependsOn {
+        'instrumentedWar'
+    }
+    doLast {
+        ant.unzip(src: instrumentedWar.archivePath, dest: warDir)
+    }
+}

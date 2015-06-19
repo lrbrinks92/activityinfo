@@ -33,7 +33,7 @@ import java.util.Set;
  *
  * @author Alex Bertram
  */
-public class GetSites extends PagingGetCommand<SiteResult> implements Cloneable {
+public class GetSites extends PagingGetCommand<SiteResult> {
 
     private Filter filter = new Filter();
 
@@ -70,16 +70,6 @@ public class GetSites extends PagingGetCommand<SiteResult> implements Cloneable 
     public void setFilter(Filter filter) {
         assert filter != null : "Filter cannot be null! Use new Filter() to create an empty filter";
         this.filter = filter;
-    }
-
-    public GetSites clone() {
-        GetSites c = new GetSites();
-        c.filter = new Filter(filter);
-        c.setLimit(getLimit());
-        c.setOffset(getOffset());
-        c.setSortInfo(getSortInfo());
-
-        return c;
     }
 
     public static GetSites byId(int siteId) {

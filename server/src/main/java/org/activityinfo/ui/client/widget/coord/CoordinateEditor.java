@@ -25,6 +25,7 @@ package org.activityinfo.ui.client.widget.coord;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.PropertyEditor;
 import com.extjs.gxt.ui.client.widget.form.Validator;
+import com.google.common.annotations.VisibleForTesting;
 import org.activityinfo.core.client.type.converter.JsCoordinateNumberFormatter;
 import org.activityinfo.core.shared.type.converter.CoordinateAxis;
 import org.activityinfo.core.shared.type.converter.CoordinateFormatException;
@@ -41,20 +42,14 @@ public class CoordinateEditor implements PropertyEditor<Double>, Validator {
     private double maxValue;
 
     public CoordinateEditor(CoordinateAxis axis) {
-        switch (axis) {
-            case LATITUDE:
-                minValue = -CoordinateParser.MAX_LATITUDE;
-                maxValue = +CoordinateParser.MAX_LATITUDE;
-                break;
-            case LONGITUDE:
-                minValue = -CoordinateParser.MAX_LONGITUDE;
-                maxValue = +CoordinateParser.MAX_LONGITUDE;
-                break;
-            default:
-                throw new IllegalArgumentException("Axis: " + axis);
-        }
+        this(axis, JsCoordinateNumberFormatter.INSTANCE);
+    }
 
-        parser = new CoordinateParser(axis, JsCoordinateNumberFormatter.INSTANCE);
+    public CoordinateEditor(CoordinateAxis axis, CoordinateParser.NumberFormatter instance) {
+        minValue = axis.getMinimumValue();
+        maxValue = axis.getMaximumValue();
+
+        parser = new CoordinateParser(axis, instance);
 
         // the parser does not enforce the bounds, but it can use them to infer the
         // hemisphere.
@@ -86,6 +81,11 @@ public class CoordinateEditor implements PropertyEditor<Double>, Validator {
 
     @Override
     public String validate(Field<?> field, String value) {
+        return validate(value);
+    }
+
+    @VisibleForTesting
+    String validate(String value) {
         if (value == null) {
             return null;
         }
@@ -104,7 +104,6 @@ public class CoordinateEditor implements PropertyEditor<Double>, Validator {
             return ex.getMessage();
         }
     }
-
 
 
     public double getMinValue() {

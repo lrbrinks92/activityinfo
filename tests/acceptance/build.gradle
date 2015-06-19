@@ -1,0 +1,191 @@
+
+dependencies {
+
+
+    compile 'org.apache.poi:poi-ooxml:3.12-beta1'
+    compile 'org.apache.poi:poi:3.12-beta1'
+    
+    testCompile libraries.junit
+    testCompile libraries.guice
+    testCompile libraries.jersey.client
+    testCompile libraries.jersey.json
+    testCompile libraries.cucumber.java
+    testCompile libraries.cucumber.junit
+    testCompile libraries.cucumber.guice
+    testCompile libraries.jsr305
+    compile libraries.jdbc.mysql
+
+    testCompile 'org.seleniumhq.selenium:selenium-java:2.43.0'
+    testCompile 'com.saucelabs:sauce_junit:2.1.13'
+    testCompile 'com.github.detro:phantomjsdriver:1.2.0'
+    testCompile 'org.yaml:snakeyaml:1.14'
+    testCompile 'org.apache.commons:commons-pool2:2.0'
+    testCompile 'joda-time:joda-time:2.5'
+    testCompile 'org.littleshoot:littleproxy:1.0.0-beta7'
+    testCompile libraries.bcrypt
+    testCompile libraries.metrics.core
+    testCompile libraries.jersey.server
+    testCompile libraries.jersey.simpleServer
+
+    testCompile libraries.c3p0
+
+    testCompile project(':core:model')
+    testCompile project(':i18n')
+    testCompile project(path: ':server', configuration: 'i18n')
+    testCompile libraries.gwt.i18nServer
+}
+
+test {
+    // Do not run acceptance tests during normal test phase
+    exclude "**/*AT.*"
+    exclude "**/*Smoke*.*"
+    exclude "**/*UiTest*"
+    
+}
+
+task commitTest(type: Test) {
+    group = "Verification"
+    description = "Runs API tests against Local Development Server upon commit"
+    
+    dependsOn ':server:configureDatabase'
+    dependsOn ':server:appengineStartAT'
+    finalizedBy ':server:appengineStop'
+    
+    include "**/FunctionalApiAT*"
+}
+
+task acceptanceTest(type: Test) {
+    group = "Verification"
+    description = 'Runs acceptance test suite'
+    
+    dependsOn ':server:configureDatabase'
+    
+    // Determine the server against which to test
+    if(project.environment.local) {
+        dependsOn ':server:appengineStartAT'
+        finalizedBy ':server:appengineStop'
+    } 
+
+    // Run only functional tests
+    include "**/Functional*AT*"
+    include "**/*UiTest*"
+}
+
+task browserAcceptanceTest(type: Test) {
+    group = "Verification"
+    description = 'Runs functional tests against a specific browser'
+    dependsOn ':server:configureDatabase'
+
+    include "**/CrossBrowserAT*"
+    
+    outputs.upToDateWhen { false }
+}
+
+task instrumentedAcceptanceTest(type: Test) {
+    group = "Verification"
+    description = 'Runs acceptance tests against an instrumented server to gather test coverage metrics'
+
+    ext {
+        coverageReportDir = project.file("$buildDir/gwtCoverage")
+    }
+
+    // Determine the server against which to test
+    dependsOn { ':server:appengineStartInstrumentedAT' }
+    finalizedBy { ':server:appengineStop' }
+
+    // some tests may fail due to the instrumentation process
+    ignoreFailures = true
+    systemProperty "gwt.coverage.report.dir", coverageReportDir
+
+    include "**/Functional*AT.*"
+    include "**/*UiTest*"
+}
+
+
+task acceptanceTestJacocoReport(type:JacocoReport, dependsOn: 'instrumentedAcceptanceTest') {
+    def sourceSets = rootProject.subprojects.findResults { p -> p.sourceSets?.main }
+
+    sourceDirectories = project.files(sourceSets.collect { s -> s.java })
+    classDirectories = project.files(sourceSets.collect { s -> s.output.classesDir })
+    executionData jacocoAcceptanceDataFile
+
+    reports {
+        xml.enabled = true
+    }
+}
+
+task acceptanceTestCoverage(type: org.activityinfo.coverage.MergeCoverageTask) {
+    dependsOn 'acceptanceTestJacocoReport'
+
+    gwtCoverageReportsDir = instrumentedAcceptanceTest.coverageReportDir
+    jacocoReportFile = acceptanceTestJacocoReport.reports.xml.destination
+    outputFile = project.acceptanceDataFile
+    
+    outputs.upToDateWhen { false }
+    
+    doFirst {
+        if (!project.environment.local) {
+            throw new IllegalStateException("${task.name} can only run in a local environment")
+        }
+    }
+}
+
+task capacityTest(type: JavaExec) {
+    description = 'Runs capacity tests to verify performance under load'
+    main = 'org.activityinfo.test.capacity.CapacityTest'
+    dependsOn 'testClasses', ':server:configureDatabase'
+    classpath = sourceSets.test.runtimeClasspath
+    workingDir = "$buildDir/capacity"
+    
+    doFirst {
+        workingDir.mkdir()
+        systemProperties.putAll(project.environment.systemProperties)
+    }
+}
+
+
+task smokeTest(type: Test) {
+    description = 'Runs pre-release smoke tests'
+    group = "Delivery Pipeline"
+    dependsOn 'testClasses'
+
+    include "**/*SmokeTest.*"
+
+    if(project.hasProperty("testUrl")) {
+        systemProperty "test.url", project.property("testUrl")
+    }
+}
+
+tasks.each { task ->
+    if(task.name =~ /commitTest|[aA]cceptanceTest$/) {
+        task.configure {
+            scanForTestClasses = false
+
+            doFirst {
+                systemProperties.putAll(project.environment.systemProperties)
+
+                // Keep console output to a minimum
+                testLogging {
+                    showStandardStreams = false
+                    events = ['failed', 'passed']
+                }
+            }
+            systemProperty 'webdriver', project.property('webdriver')
+            systemProperty 'webdriver.chrome.silentOutput', 'true'
+
+            // When running the tests locally, the test code should start a server to 
+            // listen for postmark mail sending requests at the given port
+            if (project.environment.local) {
+                systemProperty 'postmarkStubPort', project.property('postmarkStubPort')
+            }
+
+            if (project.hasProperty('mailinatorApiKey')) {
+                systemProperty 'mailinatorApiKey', project.property('mailinatorApiKey')
+            }
+
+            if (project.hasProperty("phantomjsPath")) {
+                systemProperty "phantomjsPath", project.property("phantomjsPath")
+            }
+        }
+    }
+}

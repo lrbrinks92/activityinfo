@@ -80,6 +80,7 @@ public class OnlyValidFieldBinding extends FieldBinding {
     public void bind(ModelData model) {
         super.bind(model);
         field.addListener(Events.KeyUp, new Listener<FieldEvent>() {
+            @Override
             public void handleEvent(FieldEvent be) {
                 onFieldChange(be);
             }

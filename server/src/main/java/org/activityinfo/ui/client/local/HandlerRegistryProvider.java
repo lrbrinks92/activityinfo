@@ -39,15 +39,15 @@ public class HandlerRegistryProvider implements Provider<HandlerRegistry> {
                                    GetAdminEntitiesHandler adminHandler,
                                    GetPartnersDimensionHandler partnersDimensionHandler,
                                    GetAttributeGroupsDimensionHandler attributeGroupsDimensionHandler,
-                                   CreateSiteHandler createSiteHandler,
-                                   UpdateSiteHandler updateSiteHandler,
+                                   CreateSiteHandlerAsync createSiteHandler,
+                                   UpdateSiteHandlerAsync updateSiteHandlerAsync,
                                    UpdateMonthlyReportsAsync updateMonthly,
-                                   CreateLocationHandler createLocationHandler,
+                                   CreateLocationHandlerAsync createLocationHandler,
                                    SearchLocationsHandler searchLocationsHandler,
                                    // SearchHandler searchHandler,
                                    PivotSitesHandler pivotSitesHandler,
                                    GetLocationsHandler getLocationsHandler,
-                                   DeleteSiteHandler deleteSiteHandler,
+                                   DeleteSiteHandlerAsync deleteSiteHandler,
                                    GetSiteAttachmentsHandler getSiteAttachmentsHandler,
                                    GetActivityFormHandler getActivityHandler) {
 
@@ -58,7 +58,7 @@ public class HandlerRegistryProvider implements Provider<HandlerRegistry> {
         registry.registerHandler(GetPartnersDimension.class, partnersDimensionHandler);
         registry.registerHandler(GetAttributeGroupsDimension.class, attributeGroupsDimensionHandler);
         registry.registerHandler(CreateSite.class, createSiteHandler);
-        registry.registerHandler(UpdateSite.class, updateSiteHandler);
+        registry.registerHandler(UpdateSite.class, updateSiteHandlerAsync);
         registry.registerHandler(CreateLocation.class, createLocationHandler);
         registry.registerHandler(UpdateMonthlyReports.class, updateMonthly);
         // registry.registerHandler(Search.class, searchHandler);

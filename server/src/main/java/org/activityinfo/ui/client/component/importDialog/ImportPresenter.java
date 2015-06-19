@@ -27,7 +27,6 @@ import org.activityinfo.ui.client.widget.FullScreenOverlay;
 import org.activityinfo.ui.client.widget.ModalDialog;
 
 import java.util.List;
-import java.util.ListIterator;
 
 public class ImportPresenter {
 

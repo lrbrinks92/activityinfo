@@ -17,5 +17,10 @@
     <description>Mail Daily Geographic Digests</description>
     <schedule>every day 17:00</schedule>
   </cron>
-
+  
+  <cron>
+    <url>/tasks/metrics</url>
+    <description>Flush metrics to Cloud Monitoring</description>
+    <schedule>every 1 minutes</schedule>
+  </cron>
 </cronentries>

@@ -27,6 +27,7 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.google.common.base.Optional;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.ImplementedBy;
@@ -36,6 +37,7 @@ import org.activityinfo.i18n.shared.I18N;
 import org.activityinfo.legacy.client.AsyncMonitor;
 import org.activityinfo.legacy.client.Dispatcher;
 import org.activityinfo.legacy.client.state.StateProvider;
+import org.activityinfo.legacy.shared.Log;
 import org.activityinfo.legacy.shared.command.AddTarget;
 import org.activityinfo.legacy.shared.command.Delete;
 import org.activityinfo.legacy.shared.command.GetTargets;
@@ -140,7 +142,7 @@ public class DbTargetEditor extends AbstractGridPresenter<TargetDTO> implements 
         service.execute(new Delete(model), view.getDeletingMonitor(), new AsyncCallback<VoidResult>() {
             @Override
             public void onFailure(Throwable caught) {
-
+                Log.error("Failed to remove target. ", caught);
             }
 
             @Override
@@ -155,6 +157,7 @@ public class DbTargetEditor extends AbstractGridPresenter<TargetDTO> implements 
     @Override
     protected void onAdd() {
         final TargetDTO newTarget = new TargetDTO();
+
         this.view.showAddDialog(newTarget, db, new FormDialogCallback() {
 
             @Override
@@ -170,11 +173,15 @@ public class DbTargetEditor extends AbstractGridPresenter<TargetDTO> implements 
                     public void onSuccess(CreateResult result) {
                         newTarget.setId(result.getNewId());
 
-                        PartnerDTO partner = db.getPartnerById((Integer) newTarget.get("partnerId"));
-                        newTarget.setPartner(partner);
+                        if (newTarget.get("partnerId") != null) {
+                            PartnerDTO partner = db.getPartnerById((Integer) newTarget.get("partnerId"));
+                            newTarget.setPartner(partner);
+                        }
 
-                        ProjectDTO project = db.getProjectById((Integer) newTarget.get("projectId"));
-                        newTarget.setProject(project);
+                        if (newTarget.get("projectId") != null) {
+                            ProjectDTO project = db.getProjectById((Integer) newTarget.get("projectId"));
+                            newTarget.setProject(project);
+                        }
 
                         store.add(newTarget);
                         store.commitChanges();
@@ -257,8 +264,8 @@ public class DbTargetEditor extends AbstractGridPresenter<TargetDTO> implements 
 
     @Override
     public void onSelectionChanged(ModelData selectedItem) {
-        view.setActionEnabled(UIActions.DELETE, true);
-        view.setActionEnabled(UIActions.EDIT, true);
-        targetIndicatorPresenter.load(view.getSelection());
+        view.setActionEnabled(UIActions.DELETE, selectedItem != null);
+        view.setActionEnabled(UIActions.EDIT, selectedItem != null);
+        targetIndicatorPresenter.load(Optional.fromNullable(view.getSelection()));
     }
 }

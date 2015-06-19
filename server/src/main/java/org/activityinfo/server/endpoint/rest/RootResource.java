@@ -39,7 +39,6 @@ import org.codehaus.jackson.map.annotate.JsonView;
 import javax.persistence.EntityManager;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.List;
 
@@ -65,7 +64,9 @@ public class RootResource {
         return new AdminEntityResource(entityManager.get().find(AdminEntity.class, id));
     }
 
-    @GET @Path("/countries") @JsonView(DTOViews.List.class) @Produces(MediaType.APPLICATION_JSON)
+    @GET @Path("/countries") 
+    @JsonView(DTOViews.List.class) 
+    @Produces(MediaType.APPLICATION_JSON)
     public List<CountryDTO> getCountries() {
         return dispatcher.execute(new GetCountries()).getData();
     }
@@ -95,7 +96,9 @@ public class RootResource {
         return new CountryResource(results.get(0));
     }
 
-    @GET @Path("/databases") @JsonView(DTOViews.List.class) @Produces(MediaType.APPLICATION_JSON)
+    @GET @Path("/databases") 
+    @JsonView(DTOViews.List.class) 
+    @Produces(MediaType.APPLICATION_JSON)
     public List<UserDatabaseDTO> getDatabases() {
         List<UserDatabaseDTO> databases = dispatcher.execute(new GetSchema()).getDatabases();
         return databases;

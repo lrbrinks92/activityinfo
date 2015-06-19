@@ -23,12 +23,12 @@ package org.activityinfo.legacy.client.remote;
  */
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import org.activityinfo.promise.Promise;
 import org.activityinfo.legacy.client.AsyncMonitor;
 import org.activityinfo.legacy.client.Dispatcher;
 import org.activityinfo.legacy.client.monitor.MonitoringCallback;
 import org.activityinfo.legacy.shared.command.Command;
 import org.activityinfo.legacy.shared.command.result.CommandResult;
+import org.activityinfo.promise.Promise;
 
 public abstract class AbstractDispatcher implements Dispatcher {
 
@@ -51,6 +51,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
      * @param command the command to execute
      * @param <R>     the type of the {@code Command}'s {@code CommandResult}
      */
+    @Override
     public final <R extends CommandResult> Promise<R> execute(final Command<R> command) {
         final Promise<R> promise = new Promise<>();
 

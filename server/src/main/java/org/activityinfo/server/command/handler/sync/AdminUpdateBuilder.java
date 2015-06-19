@@ -22,22 +22,25 @@ package org.activityinfo.server.command.handler.sync;
  * #L%
  */
 
-import com.bedatadriven.rebar.sql.client.query.SqlQuery;
 import com.google.inject.Inject;
 import org.activityinfo.legacy.shared.command.GetSyncRegionUpdates;
 import org.activityinfo.legacy.shared.command.result.SyncRegionUpdate;
-import org.activityinfo.legacy.shared.impl.Tables;
+import org.activityinfo.server.database.hibernate.entity.AdminEntity;
+import org.activityinfo.server.database.hibernate.entity.AdminLevel;
+import org.activityinfo.server.database.hibernate.entity.Country;
 import org.activityinfo.server.database.hibernate.entity.User;
 
 import javax.persistence.EntityManager;
 import java.io.IOException;
 
 public class AdminUpdateBuilder implements UpdateBuilder {
-    private EntityManager em;
-    private int levelId;
-    private AdminLocalState localState;
+
+    public static final String REGION_TYPE = "admin";
+
     public static final int LAST_VERSION_NUMBER = 1;
-    private SqliteBatchBuilder builder;
+
+    private EntityManager em;
+    private SqliteBatchBuilder batch;
 
     @Inject
     public AdminUpdateBuilder(EntityManager em) {
@@ -46,52 +49,29 @@ public class AdminUpdateBuilder implements UpdateBuilder {
 
     @Override
     public SyncRegionUpdate build(User user, GetSyncRegionUpdates request) throws IOException {
-        parseLevelId(request);
-        localState = new AdminLocalState(request.getLocalVersion());
 
         SyncRegionUpdate update = new SyncRegionUpdate();
-        builder = new SqliteBatchBuilder();
+        batch = new SqliteBatchBuilder();
 
-        if (localState.getVersion() < LAST_VERSION_NUMBER) {
+        AdminLevel level = em.find(AdminLevel.class, request.getRegionId());
+        
+        JpaBatchBuilder builder = new JpaBatchBuilder(batch, em);
+
+        if (request.getLocalVersionNumber() < LAST_VERSION_NUMBER) {
             /*
              * This level is out of date, delete all on the client and send all
              * from the server
              */
-            builder.addStatement("CREATE TABLE IF NOT EXISTS AdminEntity " +
-                                 "(AdminEntityId INT, " +
-                                 "Name TEXT," +
-                                 "Code TEXT," +
-                                 "AdminLevelId INT," +
-                                 "AdminEntityParentId INT," +
-                                 "Deleted INT," +
-                                 "X1 REAL, Y1 REAL, X2 REAL, Y2 REAL)");
-            builder.addStatement("DELETE FROM AdminEntity WHERE AdminLevelId=" + levelId);
-
-            SqlQuery query = SqlQuery.select("AdminEntityId",
-                    "Name",
-                    "AdminLevelId",
-                    "AdminEntityParentId",
-                    "Code",
-                    "AdminLevelId",
-                    "AdminEntityParentId",
-                    "Deleted",
-                    "X1",
-                    "Y1",
-                    "X2",
-                    "Y2").from(Tables.ADMIN_ENTITY).where("AdminLevelId").equalTo(levelId);
-
-            builder.insert().into(Tables.ADMIN_ENTITY).from(query).execute(em);
-
-            update.setSql(builder.build());
+            builder.insert(Country.class, "CountryId=" + level.getCountry().getId());
+            builder.insert(AdminLevel.class, "AdminLevelId=" + level.getId());
+            builder.delete(AdminEntity.class, "AdminLevelId=" + level.getId());
+            builder.insert(AdminEntity.class, "AdminLevelId=" + level.getId());
+            update.setSql(batch.build());
         }
         update.setComplete(true);
         update.setVersion(Integer.toString(LAST_VERSION_NUMBER));
 
         return update;
-    }
-
-    private void parseLevelId(GetSyncRegionUpdates request) {
-        levelId = Integer.parseInt(request.getRegionId().substring("admin/".length()));
     }
 
 }

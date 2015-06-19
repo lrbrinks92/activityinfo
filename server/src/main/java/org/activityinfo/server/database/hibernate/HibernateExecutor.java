@@ -61,22 +61,9 @@ public class HibernateExecutor extends JdbcExecutor {
             @Override
             public void execute(Connection connection) throws SQLException {
                 try {
-                    if (LOGGER.isLoggable(Level.FINEST)) {
-                        LOGGER.finest("Starting query: " + format(statement));
-                    }
-
-                    long startTime = System.currentTimeMillis();
                     result.add(doExecute(connection, statement, params));
-                    long elapsed = System.currentTimeMillis() - startTime;
-
-                    LOGGER.finest("Query complete");
-
-                    if (elapsed > 100) {
-                        String formatted = format(statement);
-                        LOGGER.warning("Slow query completed in " + elapsed + "ms:\n" + formatted);
-                    }
                 } catch (Throwable e) {
-                    LOGGER.log(Level.SEVERE, "Exception occured while executing query: " + statement, e);
+                    LOGGER.log(Level.SEVERE, "Exception thrown while executing query: " + statement, e);
                     throw new SQLException(e);
                 }
             }

@@ -56,7 +56,8 @@ public class ReportingPeriod implements java.io.Serializable, Deleteable {
         setSite(site);
     }
 
-    @Id @Column(name = "ReportingPeriodId", unique = true, nullable = false)
+    @Id
+    @Column(name = "ReportingPeriodId", unique = true, nullable = false)
     public int getId() {
         return this.id;
     }
@@ -65,7 +66,8 @@ public class ReportingPeriod implements java.io.Serializable, Deleteable {
         this.id = id;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "SiteId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "SiteId", nullable = false)
     public Site getSite() {
         return this.site;
     }
@@ -74,7 +76,8 @@ public class ReportingPeriod implements java.io.Serializable, Deleteable {
         this.site = site;
     }
 
-    @Temporal(TemporalType.DATE) @Column(name = "Date1", nullable = false, length = 23)
+    @Temporal(TemporalType.DATE)
+    @Column(name = "Date1", nullable = false, length = 23)
     public Date getDate1() {
         return this.date1;
     }
@@ -83,7 +86,8 @@ public class ReportingPeriod implements java.io.Serializable, Deleteable {
         this.date1 = date1;
     }
 
-    @Temporal(TemporalType.DATE) @Column(name = "Date2", nullable = false, length = 23)
+    @Temporal(TemporalType.DATE)
+    @Column(name = "Date2", nullable = false, length = 23)
     public Date getDate2() {
         return this.date2;
     }
@@ -101,7 +105,8 @@ public class ReportingPeriod implements java.io.Serializable, Deleteable {
         this.comments = comments;
     }
 
-    @Temporal(TemporalType.TIMESTAMP) @Column(name = "DateCreated", nullable = false, length = 23)
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "DateCreated", nullable = false, length = 23)
     public Date getDateCreated() {
         return this.dateCreated;
     }
@@ -110,7 +115,8 @@ public class ReportingPeriod implements java.io.Serializable, Deleteable {
         this.dateCreated = dateCreated;
     }
 
-    @Temporal(TemporalType.TIMESTAMP) @Column(name = "DateEdited", nullable = false, length = 23)
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "DateEdited", nullable = false, length = 23)
     public Date getDateEdited() {
         return this.dateEdited;
     }
@@ -119,9 +125,7 @@ public class ReportingPeriod implements java.io.Serializable, Deleteable {
         this.dateEdited = dateEdited;
     }
 
-    @OneToMany(mappedBy = "reportingPeriod", fetch = FetchType.LAZY) @org.hibernate.annotations.Filter(
-            name = "hideDeleted",
-            condition = "(IndicatorId not in (select i.IndicatorId from indicator i where i.dateDeleted is not null))")
+    @OneToMany(mappedBy = "reportingPeriod", fetch = FetchType.LAZY)
     public Set<IndicatorValue> getIndicatorValues() {
         return indicatorValues;
     }
@@ -152,7 +156,8 @@ public class ReportingPeriod implements java.io.Serializable, Deleteable {
         return this.getId();
     }
 
-    @Column @Temporal(value = TemporalType.TIMESTAMP)
+    @Column
+    @Temporal(value = TemporalType.TIMESTAMP)
     protected Date getDateDeleted() {
         return this.dateDeleted;
     }
@@ -166,7 +171,8 @@ public class ReportingPeriod implements java.io.Serializable, Deleteable {
         setDateDeleted(new Date());
     }
 
-    @Override @Transient
+    @Override
+    @Transient
     public boolean isDeleted() {
         return getDateDeleted() == null;
     }

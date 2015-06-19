@@ -23,6 +23,14 @@ package org.activityinfo.legacy.shared.model;
  */
 
 import com.extjs.gxt.ui.client.data.BaseModelData;
+import org.activityinfo.server.endpoint.jsonrpc.Required;
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonMethod;
+import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonSetter;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.Length;
 
 /**
  * Projection DTO of the
@@ -31,6 +39,7 @@ import com.extjs.gxt.ui.client.data.BaseModelData;
  *
  * @author Alex Bertram
  */
+@JsonAutoDetect(JsonMethod.NONE)
 public final class UserPermissionDTO extends BaseModelData implements DTO {
 
     public UserPermissionDTO() {
@@ -52,10 +61,15 @@ public final class UserPermissionDTO extends BaseModelData implements DTO {
      *
      * @return the user's name
      */
+    @Required
+    @Length(max = 50)
+    @JsonProperty
     public String getName() {
         return get("name");
     }
 
+    @JsonProperty
+    @Length(max = 100)
     public String getOrganization() {
         return get("organization");
     }
@@ -64,6 +78,8 @@ public final class UserPermissionDTO extends BaseModelData implements DTO {
         set("organization", organization);
     }
 
+    @JsonProperty
+    @Length(max = 100)
     public String getJobtitle() {
         return get("jobtitle");
     }
@@ -81,6 +97,10 @@ public final class UserPermissionDTO extends BaseModelData implements DTO {
      *
      * @return the User's email
      */
+    @Required
+    @Email
+    @JsonProperty
+    @Length(max = 75)
     public String getEmail() {
         return get("email");
     }
@@ -93,10 +113,12 @@ public final class UserPermissionDTO extends BaseModelData implements DTO {
         set("allowDesign", value);
     }
 
+    @JsonProperty
     public boolean getAllowDesign() {
         return (Boolean) get("allowDesign");
     }
 
+    @JsonProperty
     public boolean getAllowView() {
         return (Boolean) get("allowView");
     }
@@ -105,6 +127,7 @@ public final class UserPermissionDTO extends BaseModelData implements DTO {
         set("allowViewAll", value);
     }
 
+    @JsonProperty
     public boolean getAllowViewAll() {
         return (Boolean) get("allowViewAll");
     }
@@ -113,6 +136,7 @@ public final class UserPermissionDTO extends BaseModelData implements DTO {
         set("allowEdit", value);
     }
 
+    @JsonProperty
     public boolean getAllowEdit() {
         return (Boolean) get("allowEdit");
     }
@@ -121,10 +145,12 @@ public final class UserPermissionDTO extends BaseModelData implements DTO {
         set("allowEditAll", value);
     }
 
+    @JsonProperty
     public boolean getAllowEditAll() {
         return (Boolean) get("allowEditAll");
     }
 
+    @JsonProperty
     public boolean getAllowManageUsers() {
         return (Boolean) get("allowManageUsers");
     }
@@ -133,6 +159,7 @@ public final class UserPermissionDTO extends BaseModelData implements DTO {
         set("allowManageUsers", allowManageUsers);
     }
 
+    @JsonProperty
     public boolean getAllowManageAllUsers() {
         return (Boolean) get("allowManageAllUsers");
     }
@@ -141,6 +168,7 @@ public final class UserPermissionDTO extends BaseModelData implements DTO {
         set("allowManageAllUsers", allowManageAll);
     }
 
+    @JsonProperty
     public PartnerDTO getPartner() {
         return get("partner");
     }
@@ -148,4 +176,13 @@ public final class UserPermissionDTO extends BaseModelData implements DTO {
     public void setPartner(PartnerDTO value) {
         set("partner", value);
     }
+    
+
+    @JsonSetter
+    public void setPartnerId(int partnerId) {
+        PartnerDTO partner = new PartnerDTO();
+        partner.setId(partnerId);
+        setPartner(partner);
+    }
+    
 }

@@ -6,14 +6,25 @@ import org.activityinfo.i18n.shared.I18N;
 public class CoordinateParser {
 
 
-    public static final double MAX_LATITUDE = 90;
-    public static final double MAX_LONGITUDE = 180;
-
-
-
+    /**
+     * Notation used to format a geographic coordinate
+     * 
+     * @see <a href="http://en.wikipedia.org/wiki/Geographic_coordinate_conversion">Wikipedia</a>
+     */
     public enum Notation {
+        /**
+         * Decimal degrees: 40.446° N or +40.446
+         */
         DDd,
+
+        /**
+         * Degree minutes decimals. For example: 40° 26.767′ N
+         */
         DMd,
+
+        /**
+         * Degree minutes seconds. For example: 40° 26′ 46″ N
+         */
         DMS
     }
 
@@ -63,23 +74,17 @@ public class CoordinateParser {
     private boolean requireSign = true;
 
 
+    private CoordinateAxis axis;
     private final NumberFormatter numberFormatter;
 
 
     public CoordinateParser(CoordinateAxis axis, NumberFormatter numberFormatter) {
+        this.axis = axis;
         this.numberFormatter = numberFormatter;
-        switch (axis) {
-            case LATITUDE:
-                posHemiChars = I18N.CONSTANTS.northHemiChars();
-                negHemiChars = I18N.CONSTANTS.southHemiChars();
-                break;
-            case LONGITUDE:
-                posHemiChars = I18N.CONSTANTS.eastHemiChars();
-                negHemiChars = I18N.CONSTANTS.westHemiChars();
-                break;
-            default:
-                throw new IllegalArgumentException("Axis: " + axis);
-        }
+        this.minValue = axis.getMinimumValue();
+        this.maxValue = axis.getMaximumValue();
+        this.posHemiChars = axis.getPositiveHemisphereCharacters();
+        this.negHemiChars = axis.getNegativeHemisphereCharacters();
     }
 
 
@@ -87,9 +92,20 @@ public class CoordinateParser {
         this.requireSign = requireSign;
     }
 
+    /**
+     * Parses the given string in either Degree Decimal, Degree Minutes Seconds, or
+     * Degree Minutes Decimal notation.
+     * 
+     * <p>This parser's {@code notation} property is updated to the detected notation
+     * after this method returns.</p>
+     * 
+     * @param value a coordinate value as text
+     * @return the coordinate as a floating point number, or {@code null} if value is null or empty.
+     * @throws CoordinateFormatException
+     */
     public Double parse(String value) throws CoordinateFormatException {
 
-        if (value == null) {
+        if (value == null || value.length() == 0) {
             return null;
         }
 
@@ -118,8 +134,7 @@ public class CoordinateParser {
                 sign = 1;
             } else if (isNumberPart(c)) {
                 if (numberIndex > 2) {
-                    throw new CoordinateFormatException(
-                            tooManyNumbersErrorMessage);
+                    throw new CoordinateFormatException(tooManyNumbersErrorMessage);
                 }
                 numbers[numberIndex].append(c);
             } else if (numberIndex != 2 && numbers[numberIndex].length() > 0) {
@@ -141,6 +156,10 @@ public class CoordinateParser {
         return parseCoordinate(numbers) * sign;
     }
 
+    /**
+     * 
+     * @return true if the hemisphere of this coordinate can be inferred from its bounds. 
+     */
     private double maybeInferSignFromBounds() {
         double sign = 0;
         if (maxValue < 0) {
@@ -195,7 +214,8 @@ public class CoordinateParser {
 
 
     /**
-     * Formats coordinate value into Degree-Minute-decimal notation
+     * Formats the given coordinate {@code value} using Degree-Minute-decimal notation. 
+     * For example: 40° 26.767′ N
      */
     public String formatAsDMd(double value) {
 
@@ -211,12 +231,17 @@ public class CoordinateParser {
     }
 
 
+    /**
+     * Formats the given coordinate {@code value} using the decimal degree notation. 
+     * For example: +40.767333
+     */
     public String formatAsDDd(double coordinate) {
         return numberFormatter.formatDDd(coordinate);
     }
 
     /**
-     * Formats coordinate value into Degree-Minute-Second notation
+     * Formats the given coordinate {@code value} using Degree-Minute-Second notation.
+     * For example: 40° 26′ 46″ N
      */
     public String formatAsDMS(double value) {
         double absv = Math.abs(value);
@@ -235,10 +260,16 @@ public class CoordinateParser {
         return sb.toString();
     }
 
+    /**
+     * Formats the given coordinate {@code value} using this parser's current notation. 
+     */
     public String format(double coordinate) {
         return format(notation, coordinate);
     }
 
+    /**
+     * Formats the given coordinate {@code value} using the given {@code notation}.
+     */
     public String format(Notation notation, double coordinate) {
         switch (notation) {
             case DDd:
@@ -259,10 +290,19 @@ public class CoordinateParser {
         }
     }
 
+    /**
+     * 
+     * @return the detected notation of the last coordinate parsed.
+     */
     public Notation getNotation() {
         return notation;
     }
 
+    /**
+     * Sets the notation to be used for formatting. 
+     * 
+     * @param notation the notation to be used for formatting
+     */
     public void setNotation(Notation notation) {
         this.notation = notation;
     }
@@ -271,7 +311,14 @@ public class CoordinateParser {
         return minValue;
     }
 
+    /**
+     * 
+     * Sets the minimum coordinate value expected. This is used only for inferring a coordinate's sign while parsing.
+     *
+     */
     public void setMinValue(double minValue) {
+        assert minValue >= axis.getMinimumValue();
+        
         this.minValue = minValue;
     }
 
@@ -279,7 +326,14 @@ public class CoordinateParser {
         return maxValue;
     }
 
+    /**
+     *
+     * Sets the maximum coordinate value expected. This is used only for inferring a coordinate's sign while parsing.
+     *
+     */
     public void setMaxValue(double maxValue) {
+        assert maxValue <= axis.getMaximumValue();
+
         this.maxValue = maxValue;
     }
 }

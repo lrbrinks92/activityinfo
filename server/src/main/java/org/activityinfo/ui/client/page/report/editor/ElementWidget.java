@@ -67,6 +67,8 @@ public class ElementWidget extends Composite {
         void onElementRemoveClicked(ElementWidget widget);
 
         void onElementChanged(ElementWidget widget);
+
+        void onElementMove(ElementWidget elementWidget, int delta);
     }
 
     interface MyStyle extends CssResource {
@@ -75,9 +77,13 @@ public class ElementWidget extends Composite {
         String container();
 
         String editButton();
-
+        
         String removeButton();
 
+        String moveUpButton();
+        
+        String moveDownButton();
+        
         String blockHover();
     }
 
@@ -91,6 +97,8 @@ public class ElementWidget extends Composite {
     @UiField DivElement contentElement;
     @UiField DivElement contentContainerElement;
     @UiField DivElement loadingElement;
+    @UiField SpanElement moveDownSpan;
+    @UiField SpanElement moveUpSpan;
 
     private ReportElement model;
 
@@ -195,9 +203,14 @@ public class ElementWidget extends Composite {
                 edit();
             } else if (clicked.getClassName().contains(style.removeButton())) {
                 parent.onElementRemoveClicked(this);
+            } else if (clicked.getClassName().contains(style.moveUpButton())) {
+                parent.onElementMove(this, -1);
+            } else if (clicked.getClassName().contains(style.moveDownButton())) { 
+                parent.onElementMove(this, +1);
+                
             } else if (contentElement.isOrHasChild(clicked)) {
                 edit();
-            }
+            } 
 
         } else if (event.getTypeInt() == Event.ONMOUSEOVER) {
             buttonElement.getStyle().setVisibility(Visibility.VISIBLE);

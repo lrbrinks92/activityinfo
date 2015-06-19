@@ -1,0 +1,19 @@
+import org.activityinfo.DeploymentEnvironment
+import org.activityinfo.store.mysql.MySqlDatabase
+
+ext {
+    environment = new DeploymentEnvironment()
+    
+    if(project.hasProperty('env')) {
+        environment.projectId = project.property('env')
+        environment.url = "https://qa-dot-${environment.projectId}.appspot.com"
+        
+        // needs to be configured by the 
+        environment.database = new MySqlDatabase() 
+        
+    } else {
+        environment.url = "http://localhost:${devServerPort}"
+        environment.database = mysql.localAT
+    }
+}
+

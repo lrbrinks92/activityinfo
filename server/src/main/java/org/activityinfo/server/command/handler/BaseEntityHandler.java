@@ -24,14 +24,18 @@ package org.activityinfo.server.command.handler;
 
 import com.bedatadriven.rebar.time.calendar.LocalDate;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.inject.util.Providers;
-import org.activityinfo.model.type.FieldTypeClass;
+import org.activityinfo.legacy.shared.exception.CommandException;
 import org.activityinfo.legacy.shared.exception.IllegalAccessCommandException;
+import org.activityinfo.model.type.FieldTypeClass;
 import org.activityinfo.model.type.TypeRegistry;
+import org.activityinfo.server.command.handler.crud.PropertyMap;
 import org.activityinfo.server.database.hibernate.entity.*;
 
 import javax.persistence.EntityManager;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,14 +54,15 @@ public class BaseEntityHandler {
         this.permissionsOracle = new PermissionOracle(Providers.of(em));
     }
 
-    protected void updateIndicatorProperties(Indicator indicator, Map<String, Object> changes) {
+    protected void updateIndicatorProperties(Indicator indicator, Map<String, Object> changeMap) {
+        PropertyMap changes = new PropertyMap(changeMap);
+        
         if (changes.containsKey("name")) {
             indicator.setName(trim(changes.get("name")));
         }
 
         if (changes.containsKey("type")) {
-            String typeId = (String) changes.get("type");
-            FieldTypeClass type = TypeRegistry.get().getTypeClass(typeId);
+            FieldTypeClass type = parseType(changes.get("type"));
             indicator.setType(type != null ? type.getId() : null);
             if (type != FieldTypeClass.QUANTITY && !changes.containsKey("units")) {
                 indicator.setUnits("");
@@ -109,6 +114,23 @@ public class BaseEntityHandler {
         }
 
         indicator.getActivity().getDatabase().setLastSchemaUpdate(new Date());
+    }
+
+    private FieldTypeClass parseType(Object type) {
+        List<String> registeredTypes = Lists.newArrayList();
+        if(type instanceof FieldTypeClass) {
+            return (FieldTypeClass) type;
+        } else if(type instanceof String) {
+            String typeName = (String) type;
+            for (FieldTypeClass fieldTypeClass : TypeRegistry.get().getTypeClasses()) {
+                if(fieldTypeClass.getId().equalsIgnoreCase(typeName)) {
+                    return fieldTypeClass;
+                }
+                registeredTypes.add(fieldTypeClass.getId());
+            }
+        }
+        throw new CommandException(String.format("Invalid 'type' property value '%s'. Expected: %s",
+                type.toString(), registeredTypes.toString()));
     }
 
     protected void updateAttributeProperties(Map<String, Object> changes, Attribute attribute) {
