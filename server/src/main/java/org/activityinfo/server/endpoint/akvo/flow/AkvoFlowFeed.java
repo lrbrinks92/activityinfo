@@ -22,12 +22,16 @@ import org.activityinfo.service.feed.FeedService;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static com.google.appengine.api.taskqueue.QueueFactory.getQueue;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
 import static org.activityinfo.model.resource.Resources.toJson;
 
 public class AkvoFlowFeed implements FeedService {
+    
+    private static final Logger LOGGER = Logger.getLogger(AkvoFlowFeed.class.getName());
+    
     static final public String KIND = "AkvoFlowSurveyId";
     static final private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
 
@@ -59,7 +63,10 @@ public class AkvoFlowFeed implements FeedService {
             throw new IllegalStateException("ParameterFormClass is invalid");
         }
 
+
         for (SurveyInstance instance : akvoFlow.getSurveyInstances(parameters, timestampId)) {
+            LOGGER.info("Found new survey instance " + instance.keyId);
+            
             getQueue("akvo-fetch").add(withUrl("/tasks/fetch")
                     .param("formClass", toJson(formClass))
                     .param("parameters", toJson(parameters))
@@ -91,13 +98,19 @@ public class AkvoFlowFeed implements FeedService {
             }
 
             for (QuestionAnswer questionAnswer : akvoFlow.getQuestionAnswers(Integer.parseInt(id, 10))) {
-                FormField formField = formFields.get(questionAnswer.textualQuestionId);
+                String questionId = questionAnswer.textualQuestionId;
+                if(questionId.endsWith("_copy")) {
+                    questionId = questionId.substring(0, questionId.length() - "_copy".length());
+                }
+                FormField formField = formFields.get(questionId);
 
-                if (formField == null) throw new IllegalStateException("Can't get " + questionAnswer.textualQuestionId);
-
-                for (EnumItem enumItem : ((EnumType) formField.getType()).getValues()) {
-                    if (enumItem.getLabel().equals(questionAnswer.value)) {
-                        formInstance.set(formField.getId(), new EnumValue(enumItem.getId()));
+                if (formField == null) {
+                    LOGGER.severe("Can't get " + questionId);
+                } else {
+                    for (EnumItem enumItem : ((EnumType) formField.getType()).getValues()) {
+                        if (enumItem.getLabel().equals(questionAnswer.value)) {
+                            formInstance.set(formField.getId(), new EnumValue(enumItem.getId()));
+                        }
                     }
                 }
             }

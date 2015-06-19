@@ -15,11 +15,16 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static com.google.common.base.Optional.of;
+import static java.lang.String.format;
 import static org.codehaus.jackson.map.DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 public class AkvoFlow {
+    
+    private static final Logger LOGGER = Logger.getLogger(AkvoFlow.class.getName());
+    
     static final private String ALGORITHM = "HmacSHA1";
 
     final private String server;
@@ -54,6 +59,8 @@ public class AkvoFlow {
         List<SurveyInstance> surveyInstances = Lists.newArrayList();
         SurveyInstance.Array array = null;
 
+        LOGGER.info(format("Fetching survey instances in range [%d, %d]", begin, end));
+        
         do {
             final String since;
 
@@ -80,13 +87,13 @@ public class AkvoFlow {
             String resource = "/api/v1/" + location;
             String url = "http://" + server + resource;
             String date = String.valueOf(System.currentTimeMillis() / 1000);
-            String plaintext = String.format("%s\n%s\n%s", "GET", date, resource);
+            String plaintext = format("%s\n%s\n%s", "GET", date, resource);
             String signature = Base64.encodeBase64String(mac.doFinal(plaintext.getBytes()));
             WebResource webResource = client.resource(parameters.isPresent() ? url + "?" + parameters.get() : url);
 
             return new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(webResource
                     .header("Date", date)
-                    .header("Authorization", String.format("%s:%s", access, signature))
+                    .header("Authorization", format("%s:%s", access, signature))
                     .get(String.class), type);
         } catch (RuntimeException e) {
             throw e;

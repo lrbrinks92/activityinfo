@@ -144,6 +144,18 @@ task deploy(type: com.google.appengine.task.appcfg.UpdateTask) {
     }
 }
 
+
+task deployBranch(type: com.google.appengine.task.appcfg.UpdateTask) {
+    description = "Deploys a build to the staging environment"
+
+    dependsOn 'appengineExplodeApp'
+    dependsOn appengineDownloadSdk
+    
+    extraOptions = ["--application=activityinfoeu", '--version=akvo']
+    oauth2 = true
+}
+
+
 task rollback(type: com.google.appengine.task.appcfg.RollbackTask) {
     description = "Rolls back a previous build to the staging environment"
     dependsOn appengineDownloadSdk
