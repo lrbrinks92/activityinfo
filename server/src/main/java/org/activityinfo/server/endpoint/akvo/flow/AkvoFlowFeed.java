@@ -17,6 +17,8 @@ import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.model.type.enumerated.EnumItem;
 import org.activityinfo.model.type.enumerated.EnumType;
 import org.activityinfo.model.type.enumerated.EnumValue;
+import org.activityinfo.model.type.primitive.TextType;
+import org.activityinfo.model.type.primitive.TextValue;
 import org.activityinfo.server.command.ResourceLocatorSync;
 import org.activityinfo.service.feed.FeedService;
 
@@ -106,15 +108,18 @@ public class AkvoFlowFeed implements FeedService {
 
                 if (formField == null) {
                     LOGGER.severe("Can't get " + questionId);
-                } else if(!(formField.getType() instanceof EnumType)) {
-                    LOGGER.severe("Field " + formField.getCode() + " is not an EnumField");
-                    
-                } else {
+                } else if ((formField.getType() instanceof EnumType)) {
                     for (EnumItem enumItem : ((EnumType) formField.getType()).getValues()) {
                         if (enumItem.getLabel().equals(questionAnswer.value)) {
                             formInstance.set(formField.getId(), new EnumValue(enumItem.getId()));
                         }
                     }
+                } else if (formField.getType() instanceof TextType) {
+                    formInstance.set(formField.getId(), TextValue.valueOf((String)questionAnswer.value));
+                    
+                } else {
+                    LOGGER.severe("Field " + formField.getCode() + " is not an EnumField");
+                    
                 }
             }
 
