@@ -6,7 +6,7 @@ import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.model.legacy.CuidAdapter;
 import org.activityinfo.server.authentication.ServerSideAuthProvider;
 import org.activityinfo.server.command.ResourceLocatorSync;
-import org.activityinfo.server.database.hibernate.entity.UserDatabase;
+import org.activityinfo.server.database.hibernate.entity.User;
 import org.activityinfo.service.feed.FeedService;
 
 import javax.persistence.EntityManager;
@@ -15,12 +15,19 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import java.util.logging.Logger;
+
 import static javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED;
 import static org.activityinfo.model.legacy.CuidAdapter.getLegacyIdFromCuid;
 import static org.activityinfo.model.resource.Resources.fromJson;
 
 @Path("/tasks")
 public class AkvoFlowTaskResource {
+    
+    private static final Logger LOGGER = Logger.getLogger(AkvoFlowTaskResource.class.getName());
+    
+    private static final int CALCULATOR_USER_ID = 8230;
+    
     private final EntityManager manager;
     private final ServerSideAuthProvider authProvider;
     private final FeedService feedService;
@@ -38,10 +45,13 @@ public class AkvoFlowTaskResource {
     @Path("/index")
     @Consumes(APPLICATION_FORM_URLENCODED)
     public void index(@FormParam("formClass") String formClassString, @FormParam("parameters") String parameterString) {
+
+        LOGGER.info("Starting indexing task...");
+        
         FormClass formClass = FormClass.fromResource(fromJson(formClassString));
         FormInstance parameters = FormInstance.fromResource(fromJson(parameterString));
 
-        initialize(formClass);
+        authenticate(formClass);
 
         if (parameters.getOwnerId().equals(feedService.getParameterFormClass().getId())) {
             feedService.updateFeed(formClass, parameters);
@@ -59,14 +69,18 @@ public class AkvoFlowTaskResource {
         FormClass formClass = FormClass.fromResource(fromJson(formClassString));
         FormInstance parameters = FormInstance.fromResource(fromJson(parameterString));
 
-        initialize(formClass);
+        authenticate(formClass);
 
         if (parameters.getOwnerId().equals(feedService.getParameterFormClass().getId())) {
             feedService.fetchInstance(formClass, parameters, id, startDate, endDate);
         }
     }
 
-    private void initialize(FormClass formClass) {
-        authProvider.set(manager.find(UserDatabase.class, getLegacyIdFromCuid(formClass.getOwnerId())).getOwner());
+    private void authenticate(FormClass formClass) {
+        User parameterClassOwner = manager.find(User.class, CALCULATOR_USER_ID);
+        
+        LOGGER.info("Parameter Form class owner = " + parameterClassOwner.getEmail());
+
+        authProvider.set(parameterClassOwner);
     }
 }
