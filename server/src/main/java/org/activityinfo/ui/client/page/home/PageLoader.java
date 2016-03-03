@@ -1,23 +1,14 @@
 package org.activityinfo.ui.client.page.home;
 
-import com.google.common.base.Function;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import org.activityinfo.core.client.ResourceLocator;
-import org.activityinfo.core.shared.application.FolderClass;
-import org.activityinfo.core.shared.criteria.ClassCriteria;
-import org.activityinfo.core.shared.criteria.CriteriaIntersection;
-import org.activityinfo.core.shared.criteria.ParentCriteria;
-import org.activityinfo.model.form.FormInstance;
 import org.activityinfo.ui.client.page.*;
 import org.activityinfo.ui.client.page.instance.InstancePage;
 import org.activityinfo.ui.client.page.instance.InstancePlace;
 import org.activityinfo.ui.client.style.BaseStylesheet;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class PageLoader implements org.activityinfo.ui.client.page.PageLoader {
 
@@ -32,9 +23,6 @@ public class PageLoader implements org.activityinfo.ui.client.page.PageLoader {
         this.resourceLocator = resourceLocator;
         this.pageManager = pageManager;
 
-
-        pageManager.registerPageLoader(HomePage.PAGE_ID, this);
-        placeSerializer.registerParser(HomePage.PAGE_ID, new HomePlace.Parser());
 
         pageManager.registerPageLoader(InstancePage.DESIGN_PAGE_ID, this);
         placeSerializer.registerParser(InstancePage.DESIGN_PAGE_ID, new InstancePlace.Parser(InstancePage.DESIGN_PAGE_ID));
@@ -51,10 +39,7 @@ public class PageLoader implements org.activityinfo.ui.client.page.PageLoader {
         GWT.runAsync(new RunAsyncCallback() {
             @Override
             public void onSuccess() {
-                if (pageState instanceof HomePlace) {
-                    loadHomePage(callback);
-
-                } else if (pageState instanceof InstancePlace) {
+                if (pageState instanceof InstancePlace) {
                     InstancePlace instancePlace = (InstancePlace) pageState;
                     InstancePage page = new InstancePage(resourceLocator, instancePlace.getPageId(), pageManager.getEventBus());
                     page.navigate(pageState);
@@ -69,15 +54,4 @@ public class PageLoader implements org.activityinfo.ui.client.page.PageLoader {
         });
     }
 
-    private void loadHomePage(AsyncCallback<Page> callback) {
-        CriteriaIntersection criteria = new CriteriaIntersection(new ClassCriteria(FolderClass.CLASS_ID),
-                ParentCriteria.isRoot());
-
-        resourceLocator.queryInstances(criteria).then(new Function<List<FormInstance>, Page>() {
-            @Nullable @Override
-            public Page apply(List<FormInstance> formInstances) {
-                return new HomePage(formInstances);
-            }
-        }).then(callback);
-    }
 }
