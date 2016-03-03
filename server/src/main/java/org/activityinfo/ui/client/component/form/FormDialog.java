@@ -21,6 +21,7 @@ package org.activityinfo.ui.client.component.form;
  * #L%
  */
 
+import com.google.gwt.dom.builder.shared.IFrameBuilder;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -33,7 +34,9 @@ import org.activityinfo.model.resource.ResourceId;
 import org.activityinfo.promise.Promise;
 import org.activityinfo.ui.client.component.form.field.FieldWidgetMode;
 import org.activityinfo.ui.client.component.form.field.FormFieldWidgetFactory;
+import org.activityinfo.ui.client.style.ElementStyle;
 import org.activityinfo.ui.client.style.ModalStylesheet;
+import org.activityinfo.ui.client.widget.Button;
 import org.activityinfo.ui.client.widget.LoadingPanel;
 import org.activityinfo.ui.client.widget.ModalDialog;
 import org.activityinfo.ui.client.widget.loading.ExceptionOracle;
@@ -77,7 +80,18 @@ public class FormDialog {
                 save();
             }
         });
+
+        Button printButton = new Button(ElementStyle.DEFAULT);
+        printButton.setLabel("Print");
+        printButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                printForm();
+            }
+        });
+        dialog.getFooter().add(printButton);
     }
+
 
     public void setDialogTitle(String text) {
         dialog.setDialogTitle(text);
@@ -138,6 +152,13 @@ public class FormDialog {
                 callback.onPersisted(formPanel.getInstance());
             }
         });
+    }
+    
+    
+    private void printForm() {
+        Printer printer = new Printer();
+        printer.print(formPanel.getHtml());
+        
     }
 
 }

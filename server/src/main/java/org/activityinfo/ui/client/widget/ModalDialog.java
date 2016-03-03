@@ -200,4 +200,8 @@ public class ModalDialog  {
     public HasText getStatusLabel() {
         return statusLabel;
     }
+    
+    public HTMLPanel getFooter() {
+        return modalFooter;
+    }
 }

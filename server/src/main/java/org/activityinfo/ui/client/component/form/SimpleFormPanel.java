@@ -92,6 +92,10 @@ public class SimpleFormPanel implements DisplayWidget<FormInstance> {
 
         bindEvents();
     }
+    
+    public String getHtml() {
+        return panel.getElement().getInnerHTML();
+    }
 
     private void bindEvents() {
         eventBus.addHandler(FieldMessageEvent.TYPE, new FieldMessageEvent.Handler() {
