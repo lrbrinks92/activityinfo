@@ -12,8 +12,6 @@ import org.activityinfo.model.type.subform.SubFormTypeRegistry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.Nullable;
-import java.io.Serializable;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
@@ -50,7 +48,6 @@ public class FormClass implements IsResource, FormElementContainer, Serializable
     private final List<FormElement> elements = Lists.newArrayList();
     private final Set<ResourceLock> locks = Sets.newHashSet();
 
-    private Optional<ResourceId> parentFormId = Optional.absent();
     private Optional<ResourceId> subformType = Optional.absent();
 
     public FormClass(ResourceId id) {
@@ -263,15 +260,6 @@ public class FormClass implements IsResource, FormElementContainer, Serializable
         return locks;
     }
 
-    public Optional<ResourceId> getParentFormId() {
-        return parentFormId;
-    }
-
-    public FormClass setParentFormId(ResourceId parentFormId) {
-        this.parentFormId = Optional.fromNullable(parentFormId);
-        return this;
-    }
-
     public Optional<ResourceId> getSubformType() {
         return subformType;
     }
@@ -298,7 +286,6 @@ public class FormClass implements IsResource, FormElementContainer, Serializable
         formClass.locks.addAll(ResourceLock.fromRecords(resource.getRecordList("locks")));
         formClass.subformType = resource.isString("subformType") != null ?
                 Optional.of(ResourceId.valueOf(resource.isString("subformType"))) : Optional.<ResourceId>absent();
-        formClass.parentFormId = Optional.fromNullable(resource.isResourceId("parentFormId"));
 
         return formClass;
     }
@@ -330,30 +317,6 @@ public class FormClass implements IsResource, FormElementContainer, Serializable
         resource.set("elements", Resources.asRecordList(elements));
         resource.set("locks", Resources.asRecordList(locks));
         resource.set("subformType", subformType.isPresent() ? subformType.get().asString() : null);
-        resource.set("parentFormId", parentFormId.isPresent() ? parentFormId.get() : null);
         return resource;
     }
-
-    public List<FormElement> getBuiltInElements() {
-        List<FormElement> builtIn = Lists.newArrayList();
-        for (FormElement elem : elements) {
-            if (elem.getId().asString().startsWith(getId().asString())) {
-                builtIn.add(elem);
-            }
-        }
-        return builtIn;
-    }
-
-
-    /**
-     * Normalized FormFields order. Puts built-in formfields at the end of the list.
-     * Not super smart, one day (when we don't need built-in formfields encoded via id) we have to remove this method.
-     * (todo: ask Alex whether it's ok or it's better to put it at the beginning of the list)
-     */
-    public void reorderFormFields() {
-//        List<FormElement> builtInElements = getBuiltInElements();
-//        elements.removeAll(builtInElements); // remove
-//        elements.addAll(builtInElements); // add to the end
-    }
-
 }
