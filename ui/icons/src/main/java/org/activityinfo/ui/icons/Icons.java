@@ -26,6 +26,10 @@ public class Icons  {
         return "icon icon_plus";
     }
 
+    public String minus() {
+        return "icon icon_minus";
+    }
+
     //@Source(value = "icons/icomoon/remove.svg")
     public String remove() {
         return "icon icon_remove";

@@ -1,0 +1,23 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:a='urn:import:org.activityinfo.ui.client.widget'
+>
+
+    <ui:with field="i18n" type="org.activityinfo.i18n.shared.UiConstants"/>
+    <ui:with field="icons" type="org.activityinfo.ui.icons.Icons"/>
+
+    <g:HTMLPanel addStyleNames="form-inline">
+            <div class="form-group" ui:field="removeGroup">
+                <a:Button style="DEFAULT" ui:field="removeButton">
+                    <span class="{icons.minus}"/>
+                </a:Button>
+            </div>
+            <div class="form-group">
+                <g:ListBox addStyleNames="form-control" ui:field="fieldSelect"/>
+            </div>
+            <div class="form-group">
+                <g:ListBox addStyleNames="form-control" ui:field="operatorSelect"/>
+            </div>
+            <g:FlowPanel addStyleNames="form-group" ui:field="operandGroup"/>
+    </g:HTMLPanel>
+</ui:UiBinder>

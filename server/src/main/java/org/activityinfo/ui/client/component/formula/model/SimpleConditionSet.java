@@ -1,4 +1,4 @@
-package org.activityinfo.ui.client.component.formula;
+package org.activityinfo.ui.client.component.formula.model;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -7,6 +7,7 @@ import org.activityinfo.model.expr.FunctionCallNode;
 import org.activityinfo.model.expr.GroupExpr;
 import org.activityinfo.model.expr.functions.AndFunction;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
  * <p>Condition list takes an expression like {@code A=1 AND B=2} and parses it into a list of simple boolean
  * conditions that can be presented to the user in a simplified user interface.</p>
  */
-public class FieldConditionList {
+public class SimpleConditionSet {
 
     public enum Criteria {
         ALL,
@@ -24,51 +25,53 @@ public class FieldConditionList {
     };
 
 
-    private final List<FieldCondition> conditions;
-    private Criteria criteria;
+    private final List<SimpleCondition> conditions;
+
+    private Criteria criteria = Criteria.ALL;
 
 
-    public FieldConditionList(FieldCondition condition) {
+    public SimpleConditionSet(SimpleCondition condition) {
       this.conditions = Lists.newArrayList(condition);
     }
 
-    public FieldConditionList(FieldCondition... conditions) {
+    public SimpleConditionSet(SimpleCondition... conditions) {
         this.conditions = Lists.newArrayList(conditions);
     }
 
-    private FieldConditionList(ArrayList<FieldCondition> conditions) {
+    private SimpleConditionSet(ArrayList<SimpleCondition> conditions) {
         this.conditions = conditions;
     }
 
-    /**
+    /**`
      * Tries to match an expr node to a list of simple field conditions.
      * @param node
-     * @return a new {@code FieldConditionList}, or {@code null} if the expression
+     * @return a new {@code SimpleConditionSet}, or {@code null} if the expression
      * does not fit the shape of a condition list.
      */
-    public static FieldConditionList tryMatch(ExprNode node) {
-        ArrayList<FieldCondition> conditions = new ArrayList<>();
+    public static SimpleConditionSet tryMatch(ExprNode node) {
+        ArrayList<SimpleCondition> conditions = new ArrayList<>();
         if(tryMatch(conditions, node)) {
-            return new FieldConditionList(conditions);
+            return new SimpleConditionSet(conditions);
         }
         return null;
     }
 
-    public List<FieldCondition> getConditions() {
+    public List<SimpleCondition> getConditions() {
         return conditions;
     }
 
+    @Nonnull
     public Criteria getCriteria() {
         return criteria;
     }
 
-    public void setCriteria(Criteria criteria) {
+    public void setCriteria(@Nonnull Criteria criteria) {
         this.criteria = criteria;
     }
 
-    private static boolean tryMatch(List<FieldCondition> conditions, ExprNode node) {
+    private static boolean tryMatch(List<SimpleCondition> conditions, ExprNode node) {
         node = simplify(node);
-        FieldCondition leaf = tryMatchLeaf(node);
+        SimpleCondition leaf = tryMatchLeaf(node);
         if(leaf != null) {
             conditions.add(leaf);
             return true;
@@ -92,8 +95,8 @@ public class FieldConditionList {
         }
     }
 
-    private static FieldCondition tryMatchLeaf(ExprNode node) {
-        FieldCondition condition = FieldCondition.tryMatch(node);
+    private static SimpleCondition tryMatchLeaf(ExprNode node) {
+        SimpleCondition condition = SimpleCondition.tryMatch(node);
         if(condition != null) {
             return condition;
         }
@@ -105,7 +108,7 @@ public class FieldConditionList {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        FieldConditionList that = (FieldConditionList) o;
+        SimpleConditionSet that = (SimpleConditionSet) o;
 
         return conditions.equals(that.conditions);
     }

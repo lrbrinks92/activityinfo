@@ -1,4 +1,4 @@
-package org.activityinfo.ui.client.component.formula;
+package org.activityinfo.ui.client.component.formula.editor;
 
 import com.google.gwt.editor.client.LeafValueEditor;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -52,7 +52,7 @@ public class FieldSelector implements LeafValueEditor<SymbolExpr>, IsWidget, Has
     @Override
     public void setValue(SymbolExpr value) {
         if(value != null) {
-            // Find the fieldListBox with the given id
+            // Find the fieldSelect with the given id
             for (int i = 0; i < fields.size(); i++) {
                 FormField field = fields.get(i);
                 if (field.getId().asString().equals(value.getName())) {

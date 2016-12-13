@@ -1,0 +1,36 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:a='urn:import:org.activityinfo.ui.client.widget'
+>
+    <ui:with field="i18n" type="org.activityinfo.i18n.shared.UiConstants"/>
+    <ui:with field="icons" type="org.activityinfo.ui.icons.Icons"/>
+    <ui:style>
+        @external form-inline;
+        .condition-panel .form-inline {
+            margin-bottom: 10px;
+        }
+    </ui:style>
+
+
+    <g:HTMLPanel addStyleNames="{style.condition-panel}">
+        <div class="form-inline">
+            <div class="form-group">
+                <label>Show this field only if
+                    <g:ListBox ui:field="criteria" addStyleNames="form-control">
+                        <g:item><ui:text from="{i18n.allConditions}"/></g:item>
+                        <g:item><ui:text from="{i18n.anyCondition}"/></g:item>
+                    </g:ListBox> the following conditions are met:</label>
+            </div>
+        </div>
+
+        <g:FlowPanel ui:field="conditionPanel"/>
+
+        <div class="form-inline">
+            <div class="form-group">
+                <a:Button style="DEFAULT" ui:field="addButton">
+                    <span class="{icons.add}"/> <ui:text from="{i18n.add}"/>
+                </a:Button>
+            </div>
+        </div>
+    </g:HTMLPanel>
+</ui:UiBinder>
