@@ -1611,4 +1611,24 @@ public interface UiConstants extends Constants {
 
     @DefaultStringValue("Choose reference value")
     String chooseReferenceValue();
+
+    @DefaultStringValue("Equal To")
+    String operatorEquals();
+
+    @DefaultStringValue("Not Equal To")
+    String operatorNotEqual();
+
+    @DefaultStringValue("Less Than")
+    String operatorLessThan();
+
+
+    @DefaultStringValue("Less Than or Equal To")
+    String operatorLessThanEqual();
+
+    @DefaultStringValue("Greater Than")
+    String operatorGreaterThan();
+
+    @DefaultStringValue("Greater Than or Equal")
+    String operatorGreaterThanEqual();
+
 }

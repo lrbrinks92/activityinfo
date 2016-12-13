@@ -72,4 +72,15 @@ public class Exprs {
         }
         return anyTrue(conditions);
     }
+
+    public static ConstantExpr constant(Number value) {
+        return new ConstantExpr(value.doubleValue());
+    }
+
+
+
+    public static ConstantExpr constant(String value) {
+        return new ConstantExpr(value);
+    }
+
 }
